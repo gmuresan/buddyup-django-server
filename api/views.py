@@ -44,6 +44,8 @@ def facebookRegister(request, facebookAuthKey):
             except UserProfile.DoesNotExist:
                 pass
 
+            response['friends'].append(friendData)
+
     response['success'] = True
     response['firstName'] = userProfile.user.first_name
     response['lastName'] = userProfile.user.last_name
