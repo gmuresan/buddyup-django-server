@@ -11,7 +11,7 @@ def facebookRegister(request, facebookAuthKey):
     try:
         graph = facebook.GraphAPI(facebookAuthKey)
         profile = graph.get_object("me")
-    except:
+    except facebook.GraphAPIError:
         response['error'] = "Invalid Facebook AUTH Key"
         response['success'] = False
         return HttpResponse(json.dumps(response))
@@ -39,12 +39,14 @@ def facebookRegister(request, facebookAuthKey):
             try:
                 friendProfile = UserProfile.objects.get(facebookUID=friendFBID)
                 friendData = {'id': friendProfile.id, 'firstName': friendProfile.user.first_name, 'lastName': friendProfile.user.last_name}
-                if friendProfile in userProfile.blockedFriends:
+                if friendProfile in userProfile.blockedFriends.all():
                     friendData['blocked'] = True
             except UserProfile.DoesNotExist:
                 pass
 
     response['success'] = True
+    response['firstName'] = userProfile.user.first_name
+    response['lastName'] = userProfile.user.last_name
     response['id'] = userProfile.id
 
     return HttpResponse(json.dumps(response))

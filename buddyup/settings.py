@@ -148,7 +148,7 @@ INSTALLED_APPS = (
     'status',
     'chat',
     'api',
-    'open_facebook',
+    #'open_facebook',
     # Uncomment the next line to enable the admin:
      'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
