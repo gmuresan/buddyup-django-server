@@ -5,10 +5,15 @@ from django.contrib.auth.models import User
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User)
-    facebookUID = models.CharField(max_length=64, db_index=True)
+    facebookUID = models.CharField(max_length=64, db_index=True, blank=True, null=True)
     lastActivity = models.DateTimeField(auto_now=True)
     friends = models.ManyToManyField("self", related_name='myFriends', null=True, blank=True)
     blockedFriends = models.ManyToManyField("self", related_name="blocked", null=True, blank=True)
+    device = models.CharField(max_length=10, default='ios')
+
+    def getUnblockedFriends(self):
+        blocked = self.blockedFriends.values_list('pk', flat=True)
+        return self.friends.exclude(pk__in=list(blocked))
 
 
 class Group(models.Model):
