@@ -1,0 +1,5 @@
+post status with location
+
+http://localhost:8000/api/poststatus/?text=hangout-at-my-arbys&userid=3&groupids=[]&expires=07-01-2013%2012:12&location={%22lat%22:90,%22lng%22:90,%22address%22:%22123fakest%22,%22city%22:%22canton%22,%22state%22:%22MI%22}
+
+
