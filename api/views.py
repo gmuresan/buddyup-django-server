@@ -28,7 +28,7 @@ def facebookRegister(request):
     device = request.REQUEST['device']
     facebookAuthKey = request.REQUEST['fbauthkey']
 
-    if device is not 'ios' or device is not 'android':
+    if device is not 'ios' and device is not 'android':
         return errorResponse('Invalid device: ' + device)
 
     try:
@@ -71,9 +71,9 @@ def facebookRegister(request):
                 pass
 
     response['success'] = True
-    response['firstName'] = userProfile.user.first_name
-    response['lastName'] = userProfile.user.last_name
-    response['id'] = userProfile.id
+    response['firstname'] = userProfile.user.first_name
+    response['lastname'] = userProfile.user.last_name
+    response['userid'] = userProfile.id
 
     return HttpResponse(json.dumps(response))
 
