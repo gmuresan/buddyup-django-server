@@ -28,7 +28,7 @@ def facebookRegister(request):
     device = request.REQUEST['device']
     facebookAuthKey = request.REQUEST['fbauthkey']
 
-    if device is not 'ios' and device is not 'android':
+    if device != 'ios' and device != 'android':
         return errorResponse('Invalid device: ' + device)
 
     try:
