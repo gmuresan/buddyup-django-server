@@ -1,4 +1,5 @@
 
+USE_TZ = True
 
 FACEBOOK_APP_ID = '142269385966400'
 FACEBOOK_APP_SECRET = 'fe9ae4f096756dfd59e5ed2d5225e552'
@@ -37,8 +38,8 @@ DATABASES = {
         # The following settings are not used with sqlite3:
         'USER': 'dev',
         'PASSWORD': 'buddyupdev',
-        'HOST': '184.173.100.253',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '10606',                      # Set to empty string for default.
+        'HOST': 'web405.webfaction.com',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'PORT': '5432',                      # Set to empty string for default.
     }
 }
 
@@ -183,3 +184,8 @@ LOGGING = {
         },
     }
 }
+
+try:
+    from local_settings import *
+except ImportError, e:
+    pass

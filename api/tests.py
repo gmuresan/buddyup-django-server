@@ -7,37 +7,69 @@ Replace this with more appropriate tests for your application.
 from datetime import datetime
 import json
 from django.contrib.auth.models import User
-
+import pytz
 from django.test import TestCase, Client
+from status.models import Status
 from userprofile.models import UserProfile
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M'
 
 
 class PostStatusTests(TestCase):
-
     def setUp(self):
+        self.local = pytz.timezone("US/Eastern")
+        self.utc = pytz.timezone("UTC")
+
         user1 = User.objects.create(username='user1', password='0', email='user1')
         self.user = UserProfile.objects.create(user=user1)
 
         self.text = "Hangout at my house"
-        self.expires = datetime(2013, 5, 1)
 
-    def postNoLocation(self):
+        self.expires = self.utc.localize(datetime(2013, 5, 1))
+
+        self.lng = 42.341560
+        self.lat = -83.501783
+        self.address = '46894 spinning wheel'
+        self.city = 'canton'
+        self.state = 'MI'
+        self.location = {'lat': self.lat, 'lng': self.lng, 'address': self.address, 'state': self.state,
+                         'city': self.city}
+
+    def test_postNoLocation(self):
         client = Client()
 
         response = client.post('/api/poststatus/', {'userid': self.user.id,
-                                                    'expires': self.expires.strftotime(DATETIME_FORMAT),
+                                                    'expires': self.expires.strftime(DATETIME_FORMAT),
                                                     'text': self.text
-                                                    }
-        )
+        })
 
-        responseObj = json.loads(response)
+        responseObj = json.loads(response.content)
         self.assertEqual(responseObj['success'], True)
         self.assertEqual(responseObj['statusid'], 1)
-        self.assertIsNot(responseObj['error'])
-        print responseObj
+        self.assertNotIn('error', responseObj)
 
+        status = Status.objects.get(pk=responseObj['statusid'])
 
-    def postWithLocation(self):
+        self.assertEqual(status.user, self.user)
+        self.assertEqual(status.expires, self.expires)
+        self.assertEqual(status.text, self.text)
+
+    def test_postWithLocation(self):
         client = Client()
+
+        response = client.post('/api/poststatus/', {'userid': self.user.id,
+                                                   'expires': self.expires.strftime(DATETIME_FORMAT),
+                                                   'text': self.text,
+                                                   'location': json.dumps(self.location)
+        })
+
+        response = json.loads(response.content)
+
+        status = Status.objects.get(pk=response['statusid'])
+
+        self.assertEqual(status.location.lat, self.location['lat'])
+        self.assertEqual(status.location.lng, self.location['lng'])
+        self.assertEqual(status.location.city, self.location['city'])
+        self.assertEqual(status.location.state, self.location['state'])
+        self.assertEqual(status.location.address, self.location['address'])
+

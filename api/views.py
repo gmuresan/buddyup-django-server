@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.utils.datetime_safe import datetime
 from datetime import timedelta
 import facebook
+import pytz
 from status.models import Status, Location, Poke
 from userprofile.models import UserProfile, Group
 
@@ -83,14 +84,14 @@ def postStatus(request):
 
     text = request.REQUEST['text']
     userid = request.REQUEST['userid']
-    groupids = request.REQUEST.get('groupids', '')
+    groupids = request.REQUEST.get('groupids', '[]')
     expires = request.REQUEST['expires']
     locationData = request.REQUEST.get('location', '{}')
-    statusid = request.REQUEST.get('statusid', '')
+    statusid = request.REQUEST.get('statusid', 0)
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
-    expires = datetime.strptime(expires, DATETIME_FORMAT)
+    expires = datetime.strptime(expires, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
 
     try:
         userprofile = UserProfile.objects.get(pk=userid)
@@ -150,7 +151,7 @@ def postStatus(request):
     response['success'] = True
     response['statusid'] = status.id
 
-    return HttpResponse(response)
+    return HttpResponse(json.dumps(response))
 
 
 def getStatuses(request):
