@@ -1,5 +1,5 @@
 *.pyc
-buddyup/local_setting.py
+buddyup/local_settings.py
 .idea
 .idea/
 .idea/*
