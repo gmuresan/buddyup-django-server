@@ -217,8 +217,8 @@ def poke(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    targetid = request.REQUEST['targetid']
-    lastHour = datetime.now() - timedelta()
+    targetid = request.REQUEST['targetuserid']
+    lastHour = datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(hours=1)
 
     try:
         user = UserProfile.objects.get(pk=userid)
@@ -230,14 +230,14 @@ def poke(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid target user id")
 
-    if targetUser not in user.friends:
+    if targetUser not in user.friends.all():
         return errorResponse("User is not your friend")
 
-    try:
-        poke = Poke.objects.filter(sender=user, recipient=targetUser, created_gt=lastHour)
+    poke = Poke.objects.filter(sender=user, recipient=targetUser, created__gt=lastHour)
+
+    if poke:
         return errorResponse("Already poked user in the last hour")
-    except Poke.DoesNotExist:
-        poke = Poke.objects.create(sender=user, recipient=targetUser)
+    poke = Poke.objects.create(sender=user, recipient=targetUser)
 
     # TODO: need to send push notification to target user
 

@@ -9,7 +9,7 @@ import json
 from django.contrib.auth.models import User
 import pytz
 from django.test import TestCase, Client
-from status.models import Status
+from status.models import Status, Poke
 from userprofile.models import UserProfile
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M'
@@ -73,3 +73,40 @@ class PostStatusTests(TestCase):
         self.assertEqual(status.location.state, self.location['state'])
         self.assertEqual(status.location.address, self.location['address'])
 
+
+class PokeTest(TestCase):
+    def setUp(self):
+        user1 = User.objects.create(username='user1', password='0', email='user1')
+        self.user1 = UserProfile.objects.create(user=user1)
+
+        user2 = User.objects.create(username='user2', password='0', email='user2')
+        self.user2 = UserProfile.objects.create(user=user2)
+
+        self.user1.friends.add(self.user2)
+        self.user2.friends.add(self.user1)
+
+    def testPoke(self):
+        client = Client()
+
+        response = client.post('/api/poke/', {'userid': self.user1.id,
+                                              'targetuserid': self.user2.id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+        self.assertIsNotNone(response['pokeid'])
+
+        poke = Poke.objects.get(pk=response['pokeid'])
+
+        self.assertEqual(poke.sender, self.user1)
+        self.assertEqual(poke.recipient, self.user2)
+
+        response = client.post('/api/poke/', {'userid': self.user1.id,
+                                              'targetuserid': self.user2.id
+        })
+
+        response = json.loads(response.content)
+        self.assertNotIn('pokeid', response)
+        self.assertEqual(response['success'], False)
+        self.assertIsNotNone(response['error'])
