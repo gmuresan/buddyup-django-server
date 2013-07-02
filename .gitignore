@@ -1,2 +1,8 @@
 *.pyc
+buddyup/local_setting.py
+.idea
+.idea/
+.idea/*
+.idea/**
+
 
