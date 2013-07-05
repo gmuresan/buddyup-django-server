@@ -23,7 +23,7 @@ class Group(models.Model):
 
 
 class Feedback(models.Model):
-    user = models.ForeignKey(UserProfile)
+    user = models.ForeignKey(UserProfile, related_name='submittedFeedback')
     date = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
 

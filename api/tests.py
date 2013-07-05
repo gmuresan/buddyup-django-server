@@ -11,21 +11,21 @@ from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
 import pytz
 from django.test import TestCase, Client
-from chat.models import Conversation, Message
+from chat.models import Conversation
 from status.models import Status, Poke, Location
-from userprofile.models import UserProfile
+from userprofile.models import UserProfile, Group, Feedback
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M'
 
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABADwArZBOZAq7TCJJZCI8P0ataZBX4bZCLLMmvfLr1pws6d5IrcUmzZCkpZCK2hQrromJSxm76nJ7ptPH6FqPV7JSELcE7lrPekq6pNjWfJNtEE3SSMNxGJsHx5DBzuotahMZBZBLzeO4lHHeS1jArYX3ECkAXZCP6NfwZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAGz01K5sOcDzEJNyNI6cCnJ2Qz8zSyZCoX4ad0TQCOdEjnE54cRvyYdUZBI2nPW9apXxRjyqpzIkAXSpNR39YtvD5mNjcYEXuhNdxbVzILmplXCjvrP2g0PypZAml8aIQUTequD5ubteCM7nEdJb3n13eoKGgZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
     def testRegister(self):
-        print "testRegister"
+        print "Register"
         client = Client()
 
         response = client.post(reverse('facebookRegisterAPI'), {'fbauthkey': self.authKey,
@@ -41,7 +41,7 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(userProfile.user.last_name, self.lastName)
 
     def testFacebookLoginWithFriends(self):
-        print "testFacebookLoginWithFriends"
+        print "FacebookLoginWithFriends"
         client = Client()
 
         user = User.objects.create(username='user1', password='0', email='user1', first_name='first', last_name='last')
@@ -53,6 +53,7 @@ class FacebookRegisterTest(TestCase):
 
         self.assertEqual(response['success'], True)
         self.assertIn('userid', response)
+
         myProfile = UserProfile.objects.get(pk=response['userid'])
         myProfile.friends.add(userprofile)
         myProfile.save()
@@ -63,7 +64,7 @@ class FacebookRegisterTest(TestCase):
                                                                 'device': 'android'})
         response = json.loads(response.content)
 
-        userprofileFriendData = {'id': userprofile.id, 'firstName': user.first_name, 'lastName': user.last_name,
+        userprofileFriendData = {'userid': userprofile.id, 'firstname': user.first_name, 'lastname': user.last_name,
                                  'blocked': False}
         self.assertNotEqual(len(response['friends']), 0)
         self.assertIn(userprofileFriendData, response['friends'])
@@ -90,7 +91,7 @@ class PostStatusTests(TestCase):
                          'city': self.city}
 
     def testPostNoLocation(self):
-        print "testPostNoLocation"
+        print "PostNoLocation"
         client = Client()
 
         response = client.post('/api/poststatus/', {'userid': self.user.id,
@@ -106,11 +107,11 @@ class PostStatusTests(TestCase):
         status = Status.objects.get(pk=responseObj['statusid'])
 
         self.assertEqual(status.user, self.user)
-        self.assertEqual(status.expires, self.expires)
+        #self.assertEqual(status.expires, self.expires)
         self.assertEqual(status.text, self.text)
 
     def testPostWithLocation(self):
-        print "testPostWithLocation"
+        print "PostWithLocation"
         client = Client()
 
         response = client.post('/api/poststatus/', {'userid': self.user.id,
@@ -156,7 +157,7 @@ class getStatusesTest(TestCase):
                                              text='Hang out', location=self.location)
 
     def testSingleStatus(self):
-        print "testSingleStatus"
+        print "SingleStatus"
         client = Client()
 
         myLat = 42.321620
@@ -176,7 +177,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(response['statuses'][0]['text'], self.status1.text)
 
     def testSingleStatusOutOfRange(self):
-        print "testSingleStatusOutOfRange"
+        print "SingleStatusOutOfRange"
         client = Client()
 
         myLat = 42.321620
@@ -208,7 +209,7 @@ class PokeTest(TestCase):
         self.user2.friends.add(self.user1)
 
     def testPoke(self):
-        print "testPoke"
+        print "Poke"
         client = Client()
 
         response = client.post('/api/poke/', {'userid': self.user1.id,
@@ -266,7 +267,7 @@ class ConversationTests(TestCase):
         self.user.save()
 
     def testCreateConversation(self):
-        print "testCreateConversation"
+        print "CreateConversation"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -285,7 +286,7 @@ class ConversationTests(TestCase):
         self.assertTrue(self.friend in members)
 
     def testCreateConverationWithNonFriend(self):
-        print "testCreateConversationWithNonFriend"
+        print "CreateConversationWithNonFriend"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -297,7 +298,7 @@ class ConversationTests(TestCase):
         self.assertIn('error', response)
 
     def testCreateConversationWithBlockedFriend(self):
-        print "testCreateConversationWithBlockedFriend"
+        print "CreateConversationWithBlockedFriend"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -309,7 +310,7 @@ class ConversationTests(TestCase):
         self.assertIn('error', response)
 
     def testChatInvite(self):
-        print "testChatInvite"
+        print "ChatInvite"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -334,7 +335,7 @@ class ConversationTests(TestCase):
         self.assertTrue(self.friend2 in members)
 
     def testChatInviteNonFriend(self):
-        print "testChatInviteNonFriend"
+        print "ChatInviteNonFriend"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -354,7 +355,7 @@ class ConversationTests(TestCase):
         self.assertIn('error', response)
 
     def testChatInviteBlockedFriend(self):
-        print "testChatInviteBlockedFriend"
+        print "ChatInviteBlockedFriend"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -374,7 +375,7 @@ class ConversationTests(TestCase):
         self.assertIn('error', response)
 
     def testLeaveChat(self):
-        print "testLeaveChat"
+        print "LeaveChat"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -397,7 +398,7 @@ class ConversationTests(TestCase):
         self.assertTrue(self.friend in members)
 
     def testLeaveInvalidChat(self):
-        print "testLeaveInvalidChat"
+        print "LeaveInvalidChat"
         client = Client()
 
         response = client.post(reverse('leaveChatAPI'), {'userid': self.user.id,
@@ -409,7 +410,7 @@ class ConversationTests(TestCase):
         self.assertIn('error', response)
 
     def testLastPersonToLeaveChat(self):
-        print "testLastPersonToLeaveChat"
+        print "LastPersonToLeaveChat"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -449,7 +450,7 @@ class ChatMessageTests(TestCase):
         self.friend2.friends.add(self.user)
 
     def testSendMessage(self):
-        print "testSendMessage"
+        print "SendMessage"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
@@ -475,11 +476,11 @@ class ChatMessageTests(TestCase):
         self.assertEqual(message.conversation, convo)
 
     def testGetSingleMessage(self):
-        print "testGetSingleMessage"
+        print "GetSingleMessage"
         client = Client()
 
         response = response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+                                                                     'friendid': self.friend.id
         })
 
         response = json.loads(response.content)
@@ -510,5 +511,411 @@ class ChatMessageTests(TestCase):
         self.assertEqual(message['chatid'], convo.id)
         self.assertEqual(message['text'], convoMessage.text)
         self.assertEqual(message['userid'], convoMessage.user.id)
+
+
+class GroupTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+        friend = User.objects.create(username='friend', password='0', email='friend')
+        self.friend = UserProfile.objects.create(user=friend)
+
+        self.user.friends.add(self.friend)
+        self.friend.friends.add(self.user)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.user.friends.add(self.friend2)
+        self.friend2.friends.add(self.user)
+
+    def testCreateGroup(self):
+        print "CreateGroup"
+
+        client = Client()
+        groupName = "group1"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+        response = json.loads(response.content)
+
+        groupid = response['groupid']
+        group = self.user.groups.latest('id')
+        self.assertEqual(response['success'], True)
+        self.assertNotIn('error', response)
+        self.assertEqual(group.id, groupid)
+
+    def testCreateGroupDuplicateName(self):
+        print "CreateGroupDuplicateName"
+
+        client = Client()
+        groupName = "group1"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+        response = json.loads(response.content)
+        self.assertEqual(response['success'], False)
+        self.assertIn('error', response)
+
+    def testDeleteGroup(self):
+        print "DeleteGroup"
+
+        client = Client()
+        groupName = "group1"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = json.loads(response.content)
+        groupid = response['groupid']
+
+        response = client.post(reverse('deleteGroupAPI'), {
+            'userid': self.user.id,
+            'groupid': groupid
+        })
+
+        response = json.loads(response.content)
+        self.assertEqual(response['success'], True)
+        self.assertNotIn('error', response)
+
+        self.assertRaises(Group.objects.get(pk=groupid))
+
+    def testDeleteOtherUserGroup(self):
+        print "DeleteOtherUserGroup"
+
+        client = Client()
+        groupName = "group1"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = json.loads(response.content)
+        groupid = response['groupid']
+
+        response = client.post(reverse('deleteGroupAPI'), {
+            'userid': self.friend.id,
+            'groupid': groupid
+        })
+        response = json.loads(response.content)
+
+        self.assertFalse(response['success'])
+        self.assertIn('error', response)
+
+    def testEditGroupName(self):
+        print "EditGroupName"
+
+        client = Client()
+        groupName = "group1"
+        newGroupName = "group2"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = json.loads(response.content)
+        groupid = response['groupid']
+
+        response = client.post(reverse('editGroupNameAPI'), {
+            'userid': self.user.id,
+            'groupid': groupid,
+            'groupname': newGroupName
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        group = Group.objects.get(pk=groupid)
+        self.assertEqual(group.name, newGroupName)
+
+    def testEditOtherUserGroupName(self):
+        print "EditOtherUserGroupName"
+
+        client = Client()
+        groupName = "group1"
+        newGroupName = "group2"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = json.loads(response.content)
+        groupid = response['groupid']
+
+        response = client.post(reverse('editGroupNameAPI'), {
+            'userid': self.friend.id,
+            'groupid': groupid,
+            'groupname': newGroupName
+        })
+        response = json.loads(response.content)
+
+        self.assertFalse(response['success'])
+        self.assertIn('error', response)
+
+        group = Group.objects.get(pk=groupid)
+        self.assertEqual(group.name, groupName)
+
+    def testAddGroupMembers(self):
+        print "AddGroupMembers"
+
+        client = Client()
+        groupName = "group1"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = json.loads(response.content)
+        groupid = response['groupid']
+
+        response = client.post(reverse('addGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id,
+            'groupid': groupid
+        })
+
+        response = client.post(reverse('addGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend2.id,
+            'groupid': groupid
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        group = Group.objects.get(pk=groupid)
+        members = group.members.all()
+
+        self.assertIn(self.friend, members)
+        self.assertIn(self.friend2, members)
+
+    def testRemoveGroupMembers(self):
+        print "RemoveGroupMembers"
+
+        client = Client()
+        groupName = "group1"
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = json.loads(response.content)
+        groupid = response['groupid']
+
+        response = client.post(reverse('addGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id,
+            'groupid': groupid
+        })
+
+        response = client.post(reverse('addGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend2.id,
+            'groupid': groupid
+        })
+
+        response = client.post(reverse('removeGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id,
+            'groupid': groupid
+        })
+        response = client.post(reverse('removeGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend2.id,
+            'groupid': groupid
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        group = Group.objects.get(pk=groupid)
+        members = group.members.all()
+
+        self.assertNotIn(self.friend, members)
+        self.assertNotIn(self.friend2, members)
+
+        response = client.post(reverse('removeGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id,
+            'groupid': groupid
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+    def testGetGroups(self):
+        print "GetGroups"
+        client = Client()
+
+        groupName1 = "group1"
+        groupName2 = "group2"
+        groupName3 = "group3"
+
+        group1 = Group.objects.create(user=self.user, name=groupName1)
+        group2 = Group.objects.create(user=self.user, name=groupName2)
+        group3 = Group.objects.create(user=self.user, name=groupName3)
+
+        group1.members.add(self.friend)
+        group1.save()
+
+        group2.members.add(self.friend2)
+        group2.save()
+
+        group3.members.add(self.friend)
+        group3.members.add(self.friend2)
+        group3.save()
+
+        response = client.post(reverse('getGroupsAPI'), {
+            'userid': self.user.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertIn('groups', response)
+        self.assertEqual(len(response['groups']), 3)
+
+        groups = {group['groupname']: group for group in response['groups']}
+
+        group1Data = groups['group1']
+        self.assertEqual(group1Data['groupid'], group1.id)
+        self.assertIn(self.friend.id, group1Data['userids'])
+
+        group2Data = groups['group2']
+        self.assertEqual(group2Data['groupid'], group2.id)
+        self.assertIn(self.friend2.id, group2Data['userids'])
+
+        group3Data = groups['group3']
+        self.assertEqual(group3Data['groupid'], group3.id)
+        self.assertIn(self.friend.id, group3Data['userids'])
+        self.assertIn(self.friend2.id, group3Data['userids'])
+
+
+class FriendsListTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+        friend = User.objects.create(username='friend', password='0', email='friend', first_name="friend",
+                                     last_name="1")
+        self.friend = UserProfile.objects.create(user=friend)
+
+        self.user.friends.add(self.friend)
+        self.friend.friends.add(self.user)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name='friend2',
+                                      last_name="2")
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.user.friends.add(self.friend2)
+        self.friend2.friends.add(self.user)
+
+    def testGetFriends(self):
+        print "GetFriends"
+
+        client = Client()
+
+        response = client.post(reverse('getFriendsAPI'), {
+            'userid': self.user.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        friends = response['friends']
+        self.assertEqual(len(friends), 2)
+
+        friend1 = {'userid': self.friend.id, 'firstname': self.friend.user.first_name,
+                   'lastname': self.friend.user.last_name, 'blocked': False}
+        friend2 = {'userid': self.friend2.id, 'firstname': self.friend2.user.first_name,
+                   'lastname': self.friend2.user.last_name, 'blocked': False}
+
+        self.assertIn(friend1, friends)
+        self.assertIn(friend2, friends)
+
+    def testBlockFriends(self):
+        print "BlockFriends"
+
+        client = Client()
+
+        response = client.post(reverse('blockFriendAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
+        })
+
+        response = client.post(reverse('blockFriendAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend2.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        self.assertIn(self.friend, self.user.blockedFriends.all())
+        self.assertIn(self.friend2, self.user.blockedFriends.all())
+
+    def testUnblockFriends(self):
+        print "UnblockFriends"
+
+        self.user.blockedFriends.add(self.friend)
+        self.user.blockedFriends.add(self.friend2)
+
+        client = Client()
+
+        response = client.post(reverse("unblockFriendAPI"), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
+        })
+
+        response = client.post(reverse("unblockFriendAPI"), {
+            'userid': self.user.id,
+            'friendid': self.friend2.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        self.assertNotIn(self.friend, self.user.blockedFriends.all())
+        self.assertNotIn(self.friend2, self.user.blockedFriends.all())
+
+
+class FeedbackTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+    def testSubmitFeedback(self):
+        print "SubmitFeedback"
+
+        client = Client()
+        text = "I think this app is very useful and well made"
+
+        response = client.post(reverse('submitFeedbackAPI'), {
+            'userid': self.user.id,
+            'text': text
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        feedback = self.user.submittedFeedback.latest('id')
+
+        self.assertEqual(feedback.text, text)
 
 

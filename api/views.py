@@ -1,17 +1,21 @@
 import json
+from datetime import timedelta
+
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import Point, GEOSGeometry
+from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.http import HttpResponse
 from django.utils.datetime_safe import datetime
-from datetime import timedelta
 import facebook
 import pytz
+
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
-from userprofile.models import UserProfile, Group
+from userprofile.models import UserProfile, Group, Feedback
+
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M'  # 06-01-2013 13:12
+
 
 def errorResponse(error, response=None):
     if not response:
@@ -63,8 +67,16 @@ def facebookRegister(request):
             try:
                 friendProfile = UserProfile.objects.get(facebookUID=friendFBID)
 
-                friendData = {'id': friendProfile.id, 'firstName': friendProfile.user.first_name,
-                              'lastName': friendProfile.user.last_name, 'blocked': False}
+                # Add the user to the friends list if they arent a friend already
+                if friendProfile not in userProfile.friend.all():
+                    userProfile.friends.add(friendProfile)
+                    userProfile.save()
+                if userProfile not in friendProfile.friends.all():
+                    friendProfile.friends.add(userProfile)
+                    friendProfile.save()
+
+                friendData = {'userid': friendProfile.id, 'firstname': friendProfile.user.first_name,
+                              'lastname': friendProfile.user.last_name, 'blocked': False}
 
                 if friendProfile in userProfile.blockedFriends.all():
                     friendData['blocked'] = True
@@ -78,8 +90,8 @@ def facebookRegister(request):
     # Check all buddyup friends and add them if they weren't already included in facebook friends check
     for friend in userProfile.friends.all():
         if friend.id not in friendIds:
-            friendData = {'id': friend.id, 'firstName': friend.user.first_name,
-                          'lastName': friend.user.last_name, 'blocked': False}
+            friendData = {'userid': friend.id, 'firstname': friend.user.first_name,
+                          'lastname': friend.user.last_name, 'blocked': False}
 
             if friend in userProfile.blockedFriends.all():
                 friendData['blocked'] = True
@@ -212,7 +224,7 @@ def getStatuses(request):
                 continue
 
         statusData = dict()
-        statusData['id'] = status.id
+        statusData['statusid'] = status.id
         statusData['userid'] = status.user_id
         statusData['text'] = status.text
 
@@ -442,5 +454,282 @@ def getMessages(request):
 
     response['success'] = True
     response['messages'] = messagesData
+
+    return HttpResponse(json.dumps(response))
+
+
+def createGroup(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    groupName = request.REQUEST['groupname']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    group = Group.objects.filter(name=groupName, user=userProfile)
+    if group.count() != 0:
+        return errorResponse("You already have a group with that name")
+
+    group = Group.objects.create(name=groupName, user=userProfile)
+
+    response['success'] = True
+    response['groupid'] = group.id
+
+    return HttpResponse(json.dumps(response))
+
+
+def deleteGroup(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    groupid = request.REQUEST['groupid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        group = Group.objects.get(pk=groupid)
+    except Group.DoesNotExist:
+        return errorResponse("Invalid group id")
+
+    if group.user != userProfile:
+        return errorResponse("Group does not belong to user")
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def editGroupName(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    groupName = request.REQUEST['groupname']
+    groupid = request.REQUEST['groupid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        group = Group.objects.get(pk=groupid)
+    except Group.DoesNotExist:
+        return errorResponse("Invalid group id")
+
+    if group.user != userProfile:
+        return errorResponse("Group does not belong to user")
+
+    group.name = groupName
+    group.save()
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def addGroupMember(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    friendid = request.REQUEST['friendid']
+    groupid = request.REQUEST['groupid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        group = Group.objects.get(pk=groupid)
+    except Group.DoesNotExist:
+        return errorResponse("Invalid group id")
+
+    if group.user != userProfile:
+        return errorResponse("Group does not belong to user")
+
+    try:
+        friendProfile = UserProfile.objects.get(pk=friendid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Friend user does not exist")
+
+    if friendProfile not in userProfile.friends.all():
+        return errorResponse("That user is not your friend")
+
+    if friendProfile not in group.members.all():
+        group.members.add(friendProfile)
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def removeGroupMember(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    friendid = request.REQUEST['friendid']
+    groupid = request.REQUEST['groupid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        group = Group.objects.get(pk=groupid)
+    except Group.DoesNotExist:
+        return errorResponse("Invalid group id")
+
+    if group.user != userProfile:
+        return errorResponse("Group does not belong to user")
+
+    try:
+        friendProfile = UserProfile.objects.get(pk=friendid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Friend user does not exist")
+
+    if friendProfile not in userProfile.friends.all():
+        return errorResponse("That user is not your friend")
+
+    if friendProfile in group.members.all():
+        group.members.remove(friendProfile)
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def getGroups(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    groups = userProfile.groups.all()
+    groupsData = list()
+
+    for group in groups:
+        groupData = dict()
+
+        groupData['groupname'] = group.name
+        groupData['groupid'] = group.id
+
+        memberIds = group.members.values_list('id', flat=True)
+        groupData['userids'] = map(int, memberIds)
+        groupsData.append(groupData)
+
+    response['success'] = True
+    response['groups'] = groupsData
+
+    return HttpResponse(json.dumps(response))
+
+
+def getFriends(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    blockedFriends = userProfile.blockedFriends.all()
+    friendsData = list()
+
+    for friend in userProfile.friends.all():
+        friendData = dict()
+        friendData['userid'] = friend.id
+        friendData['firstname'] = friend.user.first_name
+        friendData['lastname'] = friend.user.last_name
+        friendData['blocked'] = friend in blockedFriends
+
+        friendsData.append(friendData)
+
+    response['success'] = True
+    response['friends'] = friendsData
+
+    return HttpResponse(json.dumps(response))
+
+
+def blockFriend(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    friendid = request.REQUEST['friendid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        friendProfile = UserProfile.objects.get(pk=friendid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid friend id")
+
+    if friendProfile not in userProfile.friends.all():
+        return errorResponse("Target is not your friend")
+
+    userProfile.blockedFriends.add(friendProfile)
+    userProfile.save()
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def unblockFriend(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    friendid = request.REQUEST['friendid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        friendProfile = UserProfile.objects.get(pk=friendid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid friend id")
+
+    if friendProfile not in userProfile.friends.all():
+        return errorResponse("Target is not your friend")
+
+    if friendProfile in userProfile.blockedFriends.all():
+        userProfile.blockedFriends.remove(friendProfile)
+        userProfile.save()
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def submitFeedback(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    text = request.REQUEST['text']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    Feedback.objects.create(user=userProfile, text=text)
+
+    response['success'] = True
 
     return HttpResponse(json.dumps(response))
