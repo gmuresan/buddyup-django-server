@@ -213,7 +213,7 @@ class PokeTest(TestCase):
         client = Client()
 
         response = client.post('/api/poke/', {'userid': self.user1.id,
-                                              'targetuserid': self.user2.id
+                                              'friendid': self.user2.id
         })
 
         response = json.loads(response.content)
@@ -227,7 +227,7 @@ class PokeTest(TestCase):
         self.assertEqual(poke.recipient, self.user2)
 
         response = client.post('/api/poke/', {'userid': self.user1.id,
-                                              'targetuserid': self.user2.id
+                                              'friendid': self.user2.id
         })
 
         response = json.loads(response.content)

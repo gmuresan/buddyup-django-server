@@ -248,7 +248,7 @@ def poke(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    targetid = request.REQUEST['targetuserid']
+    friendid = request.REQUEST['friendid']
     lastHour = datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(hours=1)
 
     try:
@@ -257,7 +257,7 @@ def poke(request):
         return errorResponse("Invalid user id")
 
     try:
-        targetUser = UserProfile.objects.get(pk=targetid)
+        targetUser = UserProfile.objects.get(pk=friendid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid target user id")
 
