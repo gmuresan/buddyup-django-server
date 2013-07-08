@@ -227,6 +227,7 @@ def getStatuses(request):
         statusData['statusid'] = status.id
         statusData['userid'] = status.user_id
         statusData['text'] = status.text
+        statusData['datecreated'] = status.date.strftime(DATETIME_FORMAT)
 
         if status.location:
             location = dict()

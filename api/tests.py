@@ -156,6 +156,7 @@ class getStatusesTest(TestCase):
         self.status1 = Status.objects.create(user=self.user1, expires=datetime.utcnow() + timedelta(hours=1),
                                              text='Hang out', location=self.location)
 
+
     def testSingleStatus(self):
         print "SingleStatus"
         client = Client()
@@ -163,6 +164,7 @@ class getStatusesTest(TestCase):
         myLat = 42.321620
         myLng = -83.507794
         since = datetime.utcnow() - timedelta(hours=1)
+
 
         response = client.get(reverse('api.views.getStatuses'), {'userid': self.user2.id,
                                                                  'since': since.strftime(DATETIME_FORMAT),
@@ -175,6 +177,9 @@ class getStatusesTest(TestCase):
         self.assertNotIn('error', response)
         self.assertEqual(len(response['statuses']), 1)
         self.assertEqual(response['statuses'][0]['text'], self.status1.text)
+
+        statusDate = response['statuses'][0]['datecreated']
+        self.assertEqual(statusDate, self.status1.date.strftime(DATETIME_FORMAT))
 
     def testSingleStatusOutOfRange(self):
         print "SingleStatusOutOfRange"
