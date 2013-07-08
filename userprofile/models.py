@@ -4,6 +4,9 @@ from django.contrib.auth.models import User
 
 
 class UserProfile(models.Model):
+    def __unicode__(self):
+        return self.user.username
+
     user = models.OneToOneField(User)
     facebookUID = models.CharField(max_length=64, db_index=True, blank=True, null=True)
     lastActivity = models.DateTimeField(auto_now=True)
