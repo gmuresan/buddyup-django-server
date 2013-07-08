@@ -237,6 +237,7 @@ def getStatuses(request):
             location['address'] = status.location.address
             location['city'] = status.location.city
             location['state'] = status.location.state
+            statusData['location'] = location
 
         statusesData.append(statusData)
 
