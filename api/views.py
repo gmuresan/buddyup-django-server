@@ -192,21 +192,22 @@ def getStatuses(request):
     lng = request.REQUEST['lng']
     distance = request.REQUEST.get('distance', 5)
     point = Point(float(lng), float(lat))
+    since = request.REQUEST.get('since', None)
 
     try:
         userprofile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User Id')
 
-    since = request.REQUEST['since']
-    since = datetime.strptime(since, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
-
     now = datetime.utcnow().replace(tzinfo=pytz.utc)
-
     friends = userprofile.getUnblockedFriends()
 
-    statuses = Status.objects.filter(user__in=friends, date__gt=since, expires__gt=now,
-                                     location__point__distance_lte=(point, D(mi=int(distance))))
+    if since is not None:
+        since = datetime.strptime(since, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
+        statuses = Status.objects.filter(user__in=friends, date__gt=since, expires__gt=now,
+                                         location__point__distance_lte=(point, D(mi=int(distance))))
+    else:
+        statuses = Status.objects.filter(user__in=friends, location__point__distance_lte=(point, D(mi=int(distance))))
 
     statusesData = []
     for status in statuses:
