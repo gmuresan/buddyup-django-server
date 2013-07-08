@@ -68,7 +68,7 @@ def facebookRegister(request):
                 friendProfile = UserProfile.objects.get(facebookUID=friendFBID)
 
                 # Add the user to the friends list if they arent a friend already
-                if friendProfile not in userProfile.friend.all():
+                if friendProfile not in userProfile.friends.all():
                     userProfile.friends.add(friendProfile)
                     userProfile.save()
                 if userProfile not in friendProfile.friends.all():
