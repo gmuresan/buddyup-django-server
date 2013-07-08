@@ -20,6 +20,9 @@ class Status(geomodels.Model):
 
 
 class Location(geomodels.Model):
+    def __unicode__(self):
+        return "{0}, {1}".format(self.lat, self.lng)
+
     lat = geomodels.FloatField()
     lng = geomodels.FloatField()
     point = geomodels.PointField(srid=4326, geography=True)
