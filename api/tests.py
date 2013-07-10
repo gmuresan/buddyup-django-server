@@ -20,7 +20,7 @@ DATETIME_FORMAT = '%m-%d-%Y %H:%M'
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAGz01K5sOcDzEJNyNI6cCnJ2Qz8zSyZCoX4ad0TQCOdEjnE54cRvyYdUZBI2nPW9apXxRjyqpzIkAXSpNR39YtvD5mNjcYEXuhNdxbVzILmplXCjvrP2g0PypZAml8aIQUTequD5ubteCM7nEdJb3n13eoKGgZDZD'
+        self.authKey = 'CAACEdEose0cBAG6Q3ZB8x2PdEZB1xNIpkfo8Hn3LBQEUP30k1X1xye3rlTUAEFHO2yaiyLGxivASlqwlla89wSajRD6H2Ngh9XMND1HoIdJ4RsWUFs2KYZBohElZBCGP2ofm3R97fsLv9IAxyKQFWsBKMpEdKnQZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -132,6 +132,7 @@ class PostStatusTests(TestCase):
 
 
 class getStatusesTest(TestCase):
+    # TODO: create a test for testing that the location is present in the status
     def setUp(self):
         user1 = User.objects.create(username='user1', password='0', email='user1')
         self.user1 = UserProfile.objects.create(user=user1)
@@ -156,7 +157,6 @@ class getStatusesTest(TestCase):
         self.status1 = Status.objects.create(user=self.user1, expires=datetime.utcnow() + timedelta(hours=1),
                                              text='Hang out', location=self.location)
 
-
     def testSingleStatus(self):
         print "SingleStatus"
         client = Client()
@@ -165,12 +165,10 @@ class getStatusesTest(TestCase):
         myLng = -83.507794
         since = datetime.utcnow() - timedelta(hours=1)
 
-
         response = client.get(reverse('api.views.getStatuses'), {'userid': self.user2.id,
                                                                  'since': since.strftime(DATETIME_FORMAT),
                                                                  'lat': myLat,
                                                                  'lng': myLng})
-
         response = json.loads(response.content)
 
         self.assertEqual(response['success'], True)
@@ -819,14 +817,14 @@ class FriendsListTests(TestCase):
 
         friend = User.objects.create(username='friend', password='0', email='friend', first_name="friend",
                                      last_name="1")
-        self.friend = UserProfile.objects.create(user=friend)
+        self.friend = UserProfile.objects.create(user=friend, facebookUID='friend1fbid')
 
         self.user.friends.add(self.friend)
         self.friend.friends.add(self.user)
 
         friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name='friend2',
                                       last_name="2")
-        self.friend2 = UserProfile.objects.create(user=friend2)
+        self.friend2 = UserProfile.objects.create(user=friend2, facebookUID='friend2fbid')
 
         self.user.friends.add(self.friend2)
         self.friend2.friends.add(self.user)
@@ -847,9 +845,9 @@ class FriendsListTests(TestCase):
         self.assertEqual(len(friends), 2)
 
         friend1 = {'userid': self.friend.id, 'firstname': self.friend.user.first_name,
-                   'lastname': self.friend.user.last_name, 'blocked': False}
+                   'lastname': self.friend.user.last_name, 'blocked': False, 'facebookid': self.friend.facebookUID}
         friend2 = {'userid': self.friend2.id, 'firstname': self.friend2.user.first_name,
-                   'lastname': self.friend2.user.last_name, 'blocked': False}
+                   'lastname': self.friend2.user.last_name, 'blocked': False, 'facebookid': self.friend2.facebookUID}
 
         self.assertIn(friend1, friends)
         self.assertIn(friend2, friends)

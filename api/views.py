@@ -76,7 +76,7 @@ def facebookRegister(request):
                     friendProfile.save()
 
                 friendData = {'userid': friendProfile.id, 'firstname': friendProfile.user.first_name,
-                              'lastname': friendProfile.user.last_name, 'blocked': False}
+                              'lastname': friendProfile.user.last_name, 'blocked': False, 'facebookid': friendFBID}
 
                 if friendProfile in userProfile.blockedFriends.all():
                     friendData['blocked'] = True
@@ -91,7 +91,7 @@ def facebookRegister(request):
     for friend in userProfile.friends.all():
         if friend.id not in friendIds:
             friendData = {'userid': friend.id, 'firstname': friend.user.first_name,
-                          'lastname': friend.user.last_name, 'blocked': False}
+                          'lastname': friend.user.last_name, 'blocked': False, 'facebookid': friend.facebookUID}
 
             if friend in userProfile.blockedFriends.all():
                 friendData['blocked'] = True
@@ -656,6 +656,7 @@ def getFriends(request):
         friendData['firstname'] = friend.user.first_name
         friendData['lastname'] = friend.user.last_name
         friendData['blocked'] = friend in blockedFriends
+        friendData['facebookid'] = friend.facebookUID
 
         friendsData.append(friendData)
 
