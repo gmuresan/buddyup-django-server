@@ -137,6 +137,7 @@ def postStatus(request):
         address = locationData.get('address', None)
         city = locationData.get('city', None)
         state = locationData.get('state', None)
+        venue = locationData.get('venue', None)
 
         loc = Location.objects
         if lat:
@@ -149,11 +150,13 @@ def postStatus(request):
             loc = loc.filter(city=city)
         if state:
             loc = loc.filter(state=state)
+        if venue:
+            loc = loc.filter(venue=venue)
 
         if loc:
             location = loc[0]
         else:
-            location = Location(lat=lat, lng=lng, address=address, city=city, state=state)
+            location = Location(lat=lat, lng=lng, address=address, city=city, state=state, venue=venue)
             if lat and lng:
                 location.point = Point(lng, lat)
             location.save()
@@ -237,6 +240,7 @@ def getStatuses(request):
             location['address'] = status.location.address
             location['city'] = status.location.city
             location['state'] = status.location.state
+            location['venue'] = status.location.venue
             statusData['location'] = location
 
         statusesData.append(statusData)

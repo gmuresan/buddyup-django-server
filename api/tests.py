@@ -87,8 +87,9 @@ class PostStatusTests(TestCase):
         self.address = '46894 spinning wheel'
         self.city = 'canton'
         self.state = 'MI'
+        self.venue = "My house"
         self.location = {'lat': self.lat, 'lng': self.lng, 'address': self.address, 'state': self.state,
-                         'city': self.city}
+                         'city': self.city, 'venue': self.venue}
 
     def testPostNoLocation(self):
         print "PostNoLocation"
@@ -129,6 +130,7 @@ class PostStatusTests(TestCase):
         self.assertEqual(status.location.city, self.location['city'])
         self.assertEqual(status.location.state, self.location['state'])
         self.assertEqual(status.location.address, self.location['address'])
+        self.assertEqual(status.location.venue, self.location['venue'])
 
 
 class getStatusesTest(TestCase):
@@ -151,9 +153,10 @@ class getStatusesTest(TestCase):
         self.address = '46894 spinning wheel'
         self.city = 'canton'
         self.state = 'MI'
+        self.venue = "My house"
 
         self.location = Location.objects.create(lng=self.lng, lat=self.lat, point=Point(self.lng, self.lat),
-                                                city=self.city, state=self.state)
+                                                city=self.city, state=self.state, venue=self.venue)
         self.status1 = Status.objects.create(user=self.user1, expires=datetime.utcnow() + timedelta(hours=1),
                                              text='Hang out', location=self.location)
 
