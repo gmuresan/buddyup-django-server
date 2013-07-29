@@ -20,6 +20,9 @@ class UserProfile(models.Model):
 
 
 class Group(models.Model):
+    def __unicode__(self):
+        return self.name + " - " + self.user.user.username
+
     name = models.CharField(max_length=64, db_index=True)
     members = models.ManyToManyField(UserProfile, related_name='groupsIn')
     user = models.ForeignKey(UserProfile, related_name='groups')
