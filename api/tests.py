@@ -154,11 +154,12 @@ class getStatusesTest(TestCase):
         self.city = 'canton'
         self.state = 'MI'
         self.venue = "My house"
+        self.expirationDate = datetime.utcnow() + timedelta(hours=1)
 
         self.location = Location.objects.create(lng=self.lng, lat=self.lat, point=Point(self.lng, self.lat),
                                                 city=self.city, state=self.state, venue=self.venue)
-        self.status1 = Status.objects.create(user=self.user1, expires=datetime.utcnow() + timedelta(hours=1),
-                                             text='Hang out', location=self.location)
+        self.status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
+                                             location=self.location)
 
     def testSingleStatus(self):
         print "SingleStatus"
@@ -178,6 +179,7 @@ class getStatusesTest(TestCase):
         self.assertNotIn('error', response)
         self.assertEqual(len(response['statuses']), 1)
         self.assertEqual(response['statuses'][0]['text'], self.status1.text)
+        self.assertEqual(response['statuses'][0]['dateexpires'], self.expirationDate.strftime(DATETIME_FORMAT))
 
         statusDate = response['statuses'][0]['datecreated']
         self.assertEqual(statusDate, self.status1.date.strftime(DATETIME_FORMAT))
@@ -872,7 +874,6 @@ class GroupTests(TestCase):
         self.assertTrue(self.friend not in group1.members.all())
         self.assertTrue(self.friend not in group2.members.all())
         self.assertTrue(self.friend not in group3.members.all())
-
 
 
 class FriendsListTests(TestCase):
