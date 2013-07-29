@@ -598,7 +598,8 @@ class GroupTests(TestCase):
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
 
-        self.assertRaises(Group.objects.get(pk=groupid))
+        with self.assertRaises(Group.DoesNotExist):
+            Group.objects.get(pk=groupid)
 
     def testDeleteOtherUserGroup(self):
         print "DeleteOtherUserGroup"

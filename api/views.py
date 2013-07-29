@@ -508,6 +508,8 @@ def deleteGroup(request):
     if group.user != userProfile:
         return errorResponse("Group does not belong to user")
 
+    group.delete()
+
     response['success'] = True
 
     return HttpResponse(json.dumps(response))
