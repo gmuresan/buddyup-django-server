@@ -232,6 +232,7 @@ def getStatuses(request):
         statusData['userid'] = status.user_id
         statusData['text'] = status.text
         statusData['datecreated'] = status.date.strftime(DATETIME_FORMAT)
+        statusData['dateexpires'] = status.expires.strftime(DATETIME_FORMAT)
 
         if status.location:
             location = dict()
@@ -537,6 +538,55 @@ def editGroupName(request):
 
     response['success'] = True
 
+    return HttpResponse(json.dumps(response))
+
+
+def setGroups(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    friendid = request.REQUEST['friendid']
+    groupids = request.REQUEST.get('groupids', '[]')
+    groupids = json.loads(groupids)
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        friendProfile = UserProfile.objects.get(pk=friendid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Friend user does not exist")
+
+    if friendProfile not in userProfile.friends.all():
+        return errorResponse("That user is not your friend")
+
+    newGroups = []
+    for groupid in groupids:
+        try:
+            group = Group.objects.get(pk=groupid)
+        except Group.DoesNotExist:
+            return errorResponse("Group does not exist")
+
+        if group not in userProfile.groups.all():
+            return errorResponse("Invalid groupid")
+
+        newGroups.append(group)
+
+    for group in userProfile.groups.all():
+        # if friend in current group and current group not in newGroups then remove from group
+        if friendProfile in group.members.all():
+            if group not in newGroups:
+                group.members.remove(friendProfile)
+                group.save()
+        # if friend not in current group and current group is in newGroups then add to group
+        else:
+            if group in newGroups:
+                group.members.add(friendProfile)
+                group.save()
+
+    response['success'] = True
     return HttpResponse(json.dumps(response))
 
 

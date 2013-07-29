@@ -812,6 +812,68 @@ class GroupTests(TestCase):
         self.assertIn(self.friend.id, group3Data['userids'])
         self.assertIn(self.friend2.id, group3Data['userids'])
 
+    def testSetGroups(self):
+        print "SetGroups"
+        client = Client()
+
+        groupName1 = "group1"
+        groupName2 = "group2"
+        groupName3 = "group3"
+
+        group1 = Group.objects.create(user=self.user, name=groupName1)
+        group2 = Group.objects.create(user=self.user, name=groupName2)
+        group3 = Group.objects.create(user=self.user, name=groupName3)
+
+        group1.members.add(self.friend)
+        group1.save()
+
+        group2.members.add(self.friend2)
+        group2.save()
+
+        group3.members.add(self.friend)
+        group3.members.add(self.friend2)
+        group3.save()
+
+        groups = [group1.id, group2.id, group3.id]
+        response = client.post(reverse('setGroupsAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id,
+            'groupids': json.dumps(groups)
+        })
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+        self.assertTrue(self.friend in group1.members.all())
+        self.assertTrue(self.friend in group2.members.all())
+        self.assertTrue(self.friend in group3.members.all())
+
+        groups = [group1.id]
+        response = client.post(reverse('setGroupsAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend2.id,
+            'groupids': json.dumps(groups)
+        })
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+        self.assertTrue(self.friend2 in group1.members.all())
+        self.assertTrue(self.friend2 not in group2.members.all())
+        self.assertTrue(self.friend2 not in group3.members.all())
+
+        groups = []
+        response = client.post(reverse('setGroupsAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id,
+            'groupids': json.dumps(groups)
+        })
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+        self.assertTrue(self.friend not in group1.members.all())
+        self.assertTrue(self.friend not in group2.members.all())
+        self.assertTrue(self.friend not in group3.members.all())
+
+
 
 class FriendsListTests(TestCase):
     def setUp(self):
