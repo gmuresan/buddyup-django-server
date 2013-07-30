@@ -4,10 +4,12 @@ when you run "manage.py test".
 
 Replace this with more appropriate tests for your application.
 """
+from compiler.ast import name
 from datetime import datetime, timedelta
 import json
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import D
 from django.core.urlresolvers import reverse
 import pytz
 from django.test import TestCase, Client
@@ -161,6 +163,7 @@ class getStatusesTest(TestCase):
         self.status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
                                              location=self.location)
 
+
     def testSingleStatus(self):
         print "SingleStatus"
         client = Client()
@@ -203,6 +206,49 @@ class getStatusesTest(TestCase):
         self.assertEqual(response['success'], True)
         self.assertEqual(len(response['statuses']), 0)
         self.assertNotIn('error', response)
+
+    def testGetStatusesWithGroups(self):
+        print "GetStatusesWithGroups"
+
+        group1 = Group.objects.create(name="group1", user=self.user1)
+        group1.members.add(self.user2)
+        group1.save()
+
+        group2 = Group.objects.create(name="group2", user=self.user1)
+
+        group1StatusText = 'group1StatusText'
+        group1Status = Status.objects.create(user=self.user1, expires=self.expirationDate, location=self.location,
+                                             text=group1StatusText)
+        group1Status.groups.add(group1)
+        group1Status.save()
+
+        group2StatusText = "group2StatusText"
+        group2Status = Status.objects.create(user=self.user1, expires=self.expirationDate, location=self.location,
+                                             text=group2StatusText)
+        group2Status.groups.add(group2)
+        group2Status.save()
+
+        client = Client()
+
+        since = datetime.utcnow() - timedelta(hours=1)
+
+        response = client.get(reverse('api.views.getStatuses'), {
+            'userid': self.user2.id,
+            'since': since.strftime(DATETIME_FORMAT),
+            'lat': self.lat,
+            'lng': self.lng
+        })
+        print response
+        response = json.loads(response.content)
+
+        self.assertEqual(len(response['statuses']), 2)
+
+        group1StatusFound = False
+        for status in response['statuses']:
+            self.assertNotEqual(status['text'], group2StatusText)
+            if status['text'] == group1StatusText:
+                group1StatusFound = True
+        self.assertTrue(group1StatusFound)
 
 
 class PokeTest(TestCase):

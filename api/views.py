@@ -219,8 +219,8 @@ def getStatuses(request):
         # Check if the current user is in one of those groups
         if status.groups.count():
             inGroup = False
-            for group in status.groups:
-                if userprofile in group.members:
+            for group in status.groups.all():
+                if userprofile in group.members.all():
                     inGroup = True
                     break
 
