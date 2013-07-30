@@ -185,6 +185,32 @@ def postStatus(request):
     return HttpResponse(json.dumps(response))
 
 
+def deleteStatus(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    statusid = request.REQUEST['statusid']
+
+    try:
+        user = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse('Invalid User Id')
+
+    try:
+        status = Status.objects.get(pk=statusid)
+    except Status.DoesNotExist:
+        return errorResponse('Invalid Response Id')
+
+    if status.user != user:
+        return errorResponse('That is not your status')
+
+    status.delete()
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
 def getStatuses(request):
     response = dict()
 
@@ -239,7 +265,7 @@ def getMyStatuses(request):
 
     userid = request.REQUEST['userid']
 
-    now = datetime.utcnow()
+    now = datetime.utcnow().replace(tzinfo=pytz.utc)
 
     try:
         user = UserProfile.objects.get(pk=userid)

@@ -141,6 +141,62 @@ class PostStatusTests(TestCase):
         self.assertEqual(status.location.venue, self.location['venue'])
 
 
+class deleteStatusTest(TestCase):
+    def setUp(self):
+        user1 = User.objects.create(username='user1', password='0', email='user1')
+        self.user1 = UserProfile.objects.create(user=user1)
+
+        user2 = User.objects.create(username='user2', password='0', email='user2')
+        self.user2 = UserProfile.objects.create(user=user2)
+
+        self.lat = 42.341560
+        self.lng = -83.501783
+        self.address = '46894 spinning wheel'
+        self.city = 'canton'
+        self.state = 'MI'
+        self.venue = "My house"
+        self.expirationDate = datetime.utcnow() + timedelta(hours=1)
+
+        self.location = Location.objects.create(lng=self.lng, lat=self.lat, point=Point(self.lng, self.lat),
+                                                city=self.city, state=self.state, venue=self.venue)
+        self.status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
+                                             location=self.location)
+        self.status1Id = self.status1.id
+
+    def testDeleteStatus(self):
+        print "DeleteStatus"
+        client = Client()
+
+        response = client.post(reverse('deleteStatusAPI'), {
+            'userid': self.user1.id,
+            'statusid': self.status1Id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        with self.assertRaises(Status.DoesNotExist):
+            Status.objects.get(pk=self.status1Id)
+
+    def testDeleteOtherUserStatus(self):
+        print "DeleteOtherUserStatus"
+        client = Client()
+
+        Status.objects.get(pk=self.status1Id)
+
+        response = client.post(reverse('deleteStatusAPI'), {
+            'userid': self.user2.id,
+            'statusid': self.status1Id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertFalse(response['success'])
+
+        Status.objects.get(pk=self.status1Id)
+
+
 class getStatusesTest(TestCase):
     # TODO: create a test for testing that the location is present in the status
     def setUp(self):
@@ -292,7 +348,6 @@ class GetMyStatusesTest(TestCase):
         })
 
         response = json.loads(response.content)
-        print response
         self.assertTrue(response['success'])
 
         status1Found = False

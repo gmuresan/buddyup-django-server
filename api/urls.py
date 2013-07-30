@@ -5,8 +5,9 @@ urlpatterns = patterns('',
                        url(r'^facebookregister/$', facebookRegister, {}, 'facebookRegisterAPI'),
 
                        url(r'^poststatus/$', postStatus, {}, 'postStatusAPI'),
-                       url(r'getstatuses/$', getStatuses, {}, 'getStatusesAPI'),
-                       url(r'getmystatuses/$', getMyStatuses, {}, 'getMyStatusesAPI'),
+                       url(r'^deletestatus/$', deleteStatus, {}, 'deleteStatusAPI'),
+                       url(r'^getstatuses/$', getStatuses, {}, 'getStatusesAPI'),
+                       url(r'^getmystatuses/$', getMyStatuses, {}, 'getMyStatusesAPI'),
                        url(r'^poke/$', poke, {}, 'pokeAPI'),
 
                        url(r'^createchat/$', createChat, {}, 'createChatAPI'),
