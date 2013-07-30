@@ -8,13 +8,11 @@ from django.http import HttpResponse
 from django.utils.datetime_safe import datetime
 import facebook
 import pytz
+from api.helpers import createStatusJsonObject, DATETIME_FORMAT
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
 from userprofile.models import UserProfile, Group, Feedback
-
-
-DATETIME_FORMAT = '%m-%d-%Y %H:%M'  # 06-01-2013 13:12
 
 
 def errorResponse(error, response=None):
@@ -227,23 +225,32 @@ def getStatuses(request):
             if not inGroup:
                 continue
 
-        statusData = dict()
-        statusData['statusid'] = status.id
-        statusData['userid'] = status.user_id
-        statusData['text'] = status.text
-        statusData['datecreated'] = status.date.strftime(DATETIME_FORMAT)
-        statusData['dateexpires'] = status.expires.strftime(DATETIME_FORMAT)
+        statusData = createStatusJsonObject(status)
+        statusesData.append(statusData)
 
-        if status.location:
-            location = dict()
-            location['lat'] = status.location.lat
-            location['lng'] = status.location.lng
-            location['address'] = status.location.address
-            location['city'] = status.location.city
-            location['state'] = status.location.state
-            location['venue'] = status.location.venue
-            statusData['location'] = location
+    response['success'] = True
+    response['statuses'] = statusesData
 
+    return HttpResponse(json.dumps(response))
+
+
+def getMyStatuses(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+
+    now = datetime.utcnow()
+
+    try:
+        user = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    statuses = Status.objects.filter(user=user, expires__gt=now)
+
+    statusesData = []
+    for status in statuses:
+        statusData = createStatusJsonObject(status)
         statusesData.append(statusData)
 
     response['success'] = True

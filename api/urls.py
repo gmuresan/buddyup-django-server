@@ -6,6 +6,7 @@ urlpatterns = patterns('',
 
                        url(r'^poststatus/$', postStatus, {}, 'postStatusAPI'),
                        url(r'getstatuses/$', getStatuses, {}, 'getStatusesAPI'),
+                       url(r'getmystatuses/$', getMyStatuses, {}, 'getMyStatusesAPI'),
                        url(r'^poke/$', poke, {}, 'pokeAPI'),
 
                        url(r'^createchat/$', createChat, {}, 'createChatAPI'),

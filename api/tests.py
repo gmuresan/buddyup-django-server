@@ -13,11 +13,10 @@ from django.contrib.gis.measure import D
 from django.core.urlresolvers import reverse
 import pytz
 from django.test import TestCase, Client
+from api.helpers import DATETIME_FORMAT
 from chat.models import Conversation
 from status.models import Status, Poke, Location
 from userprofile.models import UserProfile, Group, Feedback
-
-DATETIME_FORMAT = '%m-%d-%Y %H:%M'
 
 
 class FacebookRegisterTest(TestCase):
@@ -30,8 +29,10 @@ class FacebookRegisterTest(TestCase):
         print "Register"
         client = Client()
 
-        response = client.post(reverse('facebookRegisterAPI'), {'fbauthkey': self.authKey,
-                                                                'device': 'android'})
+        response = client.post(reverse('facebookRegisterAPI'), {
+            'fbauthkey': self.authKey,
+            'device': 'android'
+        })
         response = json.loads(response.content)
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
@@ -49,8 +50,10 @@ class FacebookRegisterTest(TestCase):
         user = User.objects.create(username='user1', password='0', email='user1', first_name='first', last_name='last')
         userprofile = UserProfile.objects.create(user=user)
 
-        response = client.post(reverse('facebookRegisterAPI'), {'fbauthkey': self.authKey,
-                                                                'device': 'android'})
+        response = client.post(reverse('facebookRegisterAPI'), {
+            'fbauthkey': self.authKey,
+            'device': 'android'
+        })
         response = json.loads(response.content)
 
         self.assertEqual(response['success'], True)
@@ -62,8 +65,10 @@ class FacebookRegisterTest(TestCase):
         userprofile.friends.add(myProfile)
         userprofile.save()
 
-        response = client.post(reverse('facebookRegisterAPI'), {'fbauthkey': self.authKey,
-                                                                'device': 'android'})
+        response = client.post(reverse('facebookRegisterAPI'), {
+            'fbauthkey': self.authKey,
+            'device': 'android'
+        })
         response = json.loads(response.content)
 
         userprofileFriendData = {'userid': userprofile.id, 'firstname': user.first_name, 'lastname': user.last_name,
@@ -97,14 +102,14 @@ class PostStatusTests(TestCase):
         print "PostNoLocation"
         client = Client()
 
-        response = client.post('/api/poststatus/', {'userid': self.user.id,
-                                                    'expires': self.expires.strftime(DATETIME_FORMAT),
-                                                    'text': self.text
+        response = client.post('/api/poststatus/', {
+            'userid': self.user.id,
+            'expires': self.expires.strftime(DATETIME_FORMAT),
+            'text': self.text
         })
 
         responseObj = json.loads(response.content)
         self.assertEqual(responseObj['success'], True)
-        self.assertEqual(responseObj['statusid'], 1)
         self.assertNotIn('error', responseObj)
 
         status = Status.objects.get(pk=responseObj['statusid'])
@@ -117,10 +122,11 @@ class PostStatusTests(TestCase):
         print "PostWithLocation"
         client = Client()
 
-        response = client.post('/api/poststatus/', {'userid': self.user.id,
-                                                    'expires': self.expires.strftime(DATETIME_FORMAT),
-                                                    'text': self.text,
-                                                    'location': json.dumps(self.location)
+        response = client.post('/api/poststatus/', {
+            'userid': self.user.id,
+            'expires': self.expires.strftime(DATETIME_FORMAT),
+            'text': self.text,
+            'location': json.dumps(self.location)
         })
 
         response = json.loads(response.content)
@@ -163,7 +169,6 @@ class getStatusesTest(TestCase):
         self.status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
                                              location=self.location)
 
-
     def testSingleStatus(self):
         print "SingleStatus"
         client = Client()
@@ -195,11 +200,13 @@ class getStatusesTest(TestCase):
         myLng = -83.507794
         since = datetime.utcnow() - timedelta(hours=1)
 
-        response = client.get(reverse('api.views.getStatuses'), {'userid': self.user2.id,
-                                                                 'since': since.strftime(DATETIME_FORMAT),
-                                                                 'lat': myLat,
-                                                                 'lng': myLng,
-                                                                 'distance': 1})
+        response = client.get(reverse('api.views.getStatuses'), {
+            'userid': self.user2.id,
+            'since': since.strftime(DATETIME_FORMAT),
+            'lat': myLat,
+            'lng': myLng,
+            'distance': 1
+        })
 
         response = json.loads(response.content)
 
@@ -238,7 +245,7 @@ class getStatusesTest(TestCase):
             'lat': self.lat,
             'lng': self.lng
         })
-        print response
+
         response = json.loads(response.content)
 
         self.assertEqual(len(response['statuses']), 2)
@@ -249,6 +256,60 @@ class getStatusesTest(TestCase):
             if status['text'] == group1StatusText:
                 group1StatusFound = True
         self.assertTrue(group1StatusFound)
+
+
+class GetMyStatusesTest(TestCase):
+    def setUp(self):
+        user1 = User.objects.create(username='user1', password='0', email='user1')
+        self.user1 = UserProfile.objects.create(user=user1)
+
+        self.lat = 42.341560
+        self.lng = -83.501783
+        self.address = '46894 spinning wheel'
+        self.city = 'canton'
+        self.state = 'MI'
+        self.venue = "My house"
+        self.expirationDate = datetime.utcnow() + timedelta(hours=1)
+
+        self.location = Location.objects.create(lng=self.lng, lat=self.lat, point=Point(self.lng, self.lat),
+                                                city=self.city, state=self.state, venue=self.venue)
+
+        self.status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out1',
+                                             location=self.location)
+
+        self.status2 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out2',
+                                             location=self.location)
+
+        self.status3 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out3',
+                                             location=self.location)
+
+    def testGetMyStatuses(self):
+        print "GetMyStatuses"
+        client = Client()
+
+        response = client.post(reverse('getMyStatusesAPI'), {
+            'userid': self.user1.id
+        })
+
+        response = json.loads(response.content)
+        print response
+        self.assertTrue(response['success'])
+
+        status1Found = False
+        status2Found = False
+        status3Found = False
+        for status in response['statuses']:
+
+            if status['text'] == self.status1.text:
+                status1Found = True
+            if status['text'] == self.status2.text:
+                status2Found = True
+            if status['text'] == self.status3.text:
+                status3Found = True
+
+        self.assertTrue(status1Found)
+        self.assertTrue(status2Found)
+        self.assertTrue(status3Found)
 
 
 class PokeTest(TestCase):
@@ -266,8 +327,9 @@ class PokeTest(TestCase):
         print "Poke"
         client = Client()
 
-        response = client.post('/api/poke/', {'userid': self.user1.id,
-                                              'friendid': self.user2.id
+        response = client.post('/api/poke/', {
+            'userid': self.user1.id,
+            'friendid': self.user2.id
         })
 
         response = json.loads(response.content)
@@ -280,8 +342,9 @@ class PokeTest(TestCase):
         self.assertEqual(poke.sender, self.user1)
         self.assertEqual(poke.recipient, self.user2)
 
-        response = client.post('/api/poke/', {'userid': self.user1.id,
-                                              'friendid': self.user2.id
+        response = client.post('/api/poke/', {
+            'userid': self.user1.id,
+            'friendid': self.user2.id
         })
 
         response = json.loads(response.content)
@@ -324,8 +387,9 @@ class ConversationTests(TestCase):
         print "CreateConversation"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
 
         response = json.loads(response.content)
@@ -343,8 +407,9 @@ class ConversationTests(TestCase):
         print "CreateConversationWithNonFriend"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.nonFriend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.nonFriend.id
         })
 
         response = json.loads(response.content)
@@ -355,8 +420,9 @@ class ConversationTests(TestCase):
         print "CreateConversationWithBlockedFriend"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.blockedFriend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.blockedFriend.id
         })
 
         response = json.loads(response.content)
@@ -367,8 +433,9 @@ class ConversationTests(TestCase):
         print "ChatInvite"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
 
         response = json.loads(response.content)
@@ -392,16 +459,18 @@ class ConversationTests(TestCase):
         print "ChatInviteNonFriend"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
 
         response = json.loads(response.content)
         chatid = response['chatid']
 
-        response = client.post(reverse('inviteToChatAPI'), {'userid': self.user.id,
-                                                            'friendid': self.nonFriend.id,
-                                                            'chatid': chatid
+        response = client.post(reverse('inviteToChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.nonFriend.id,
+            'chatid': chatid
         })
 
         response = json.loads(response.content)
@@ -412,16 +481,18 @@ class ConversationTests(TestCase):
         print "ChatInviteBlockedFriend"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
 
         response = json.loads(response.content)
         chatid = response['chatid']
 
-        response = client.post(reverse('inviteToChatAPI'), {'userid': self.user.id,
-                                                            'friendid': self.blockedFriend.id,
-                                                            'chatid': chatid
+        response = client.post(reverse('inviteToChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.blockedFriend.id,
+            'chatid': chatid
         })
 
         response = json.loads(response.content)
@@ -432,14 +503,16 @@ class ConversationTests(TestCase):
         print "LeaveChat"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
         response = json.loads(response.content)
         chatid = response['chatid']
 
-        response = client.post(reverse('leaveChatAPI'), {'userid': self.user.id,
-                                                         'chatid': chatid
+        response = client.post(reverse('leaveChatAPI'), {
+            'userid': self.user.id,
+            'chatid': chatid
         })
         response = json.loads(response.content)
 
@@ -455,8 +528,9 @@ class ConversationTests(TestCase):
         print "LeaveInvalidChat"
         client = Client()
 
-        response = client.post(reverse('leaveChatAPI'), {'userid': self.user.id,
-                                                         'chatid': 1
+        response = client.post(reverse('leaveChatAPI'), {
+            'userid': self.user.id,
+            'chatid': 1
         })
         response = json.loads(response.content)
 
@@ -467,18 +541,21 @@ class ConversationTests(TestCase):
         print "LastPersonToLeaveChat"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
         response = json.loads(response.content)
         chatid = response['chatid']
 
-        response = client.post(reverse('leaveChatAPI'), {'userid': self.user.id,
-                                                         'chatid': chatid
+        client.post(reverse('leaveChatAPI'), {
+            'userid': self.user.id,
+            'chatid': chatid
         })
 
-        response = client.post(reverse('leaveChatAPI'), {'userid': self.friend.id,
-                                                         'chatid': chatid
+        client.post(reverse('leaveChatAPI'), {
+            'userid': self.friend.id,
+            'chatid': chatid
         })
 
         convo = Conversation.objects.filter(pk=chatid)
@@ -507,16 +584,18 @@ class ChatMessageTests(TestCase):
         print "SendMessage"
         client = Client()
 
-        response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                          'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
 
         response = json.loads(response.content)
         chatid = response['chatid']
 
-        response = client.post(reverse('sendMessageAPI'), {'userid': self.user.id,
-                                                           'chatid': chatid,
-                                                           'text': 'hello'
+        response = client.post(reverse('sendMessageAPI'), {
+            'userid': self.user.id,
+            'chatid': chatid,
+            'text': 'hello'
         })
         response = json.loads(response.content)
 
@@ -533,22 +612,24 @@ class ChatMessageTests(TestCase):
         print "GetSingleMessage"
         client = Client()
 
-        response = response = client.post(reverse('createChatAPI'), {'userid': self.user.id,
-                                                                     'friendid': self.friend.id
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
         })
 
         response = json.loads(response.content)
         chatid = response['chatid']
 
-        response = client.post(reverse('sendMessageAPI'), {'userid': self.user.id,
-                                                           'chatid': chatid,
-                                                           'text': 'hello'
+        client.post(reverse('sendMessageAPI'), {
+            'userid': self.user.id,
+            'chatid': chatid,
+            'text': 'hello'
         })
-        response = json.loads(response.content)
 
         since = datetime.utcnow() - timedelta(hours=1)
-        response = client.post(reverse('getMessagesAPI'), {'userid': self.friend.id,
-                                                           'since': since.strftime(DATETIME_FORMAT)
+        response = client.post(reverse('getMessagesAPI'), {
+            'userid': self.friend.id,
+            'since': since.strftime(DATETIME_FORMAT)
         })
 
         response = json.loads(response.content)
@@ -608,7 +689,7 @@ class GroupTests(TestCase):
         client = Client()
         groupName = "group1"
 
-        response = client.post(reverse('createGroupAPI'), {
+        client.post(reverse('createGroupAPI'), {
             'userid': self.user.id,
             'groupname': groupName
         })
@@ -739,7 +820,7 @@ class GroupTests(TestCase):
         response = json.loads(response.content)
         groupid = response['groupid']
 
-        response = client.post(reverse('addGroupMemberAPI'), {
+        client.post(reverse('addGroupMemberAPI'), {
             'userid': self.user.id,
             'friendid': self.friend.id,
             'groupid': groupid
@@ -774,19 +855,19 @@ class GroupTests(TestCase):
         response = json.loads(response.content)
         groupid = response['groupid']
 
-        response = client.post(reverse('addGroupMemberAPI'), {
+        client.post(reverse('addGroupMemberAPI'), {
             'userid': self.user.id,
             'friendid': self.friend.id,
             'groupid': groupid
         })
 
-        response = client.post(reverse('addGroupMemberAPI'), {
+        client.post(reverse('addGroupMemberAPI'), {
             'userid': self.user.id,
             'friendid': self.friend2.id,
             'groupid': groupid
         })
 
-        response = client.post(reverse('removeGroupMemberAPI'), {
+        client.post(reverse('removeGroupMemberAPI'), {
             'userid': self.user.id,
             'friendid': self.friend.id,
             'groupid': groupid
@@ -970,7 +1051,7 @@ class FriendsListTests(TestCase):
 
         client = Client()
 
-        response = client.post(reverse('blockFriendAPI'), {
+        client.post(reverse('blockFriendAPI'), {
             'userid': self.user.id,
             'friendid': self.friend.id
         })
@@ -994,7 +1075,7 @@ class FriendsListTests(TestCase):
 
         client = Client()
 
-        response = client.post(reverse("unblockFriendAPI"), {
+        client.post(reverse("unblockFriendAPI"), {
             'userid': self.user.id,
             'friendid': self.friend.id
         })
