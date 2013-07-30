@@ -4,6 +4,9 @@ from django.contrib.gis.db import models as geomodels
 
 
 class Status(geomodels.Model):
+    class Meta:
+        ordering = ['-date']
+
     def __unicode__(self):
         username = self.user.user.username
         return "{0} - {1}".format(username, self.text)
