@@ -56,7 +56,9 @@ def getNewStatusesJsonResponse(userProfile, since, point, distance=5):
     now = datetime.utcnow().replace(tzinfo=pytz.utc)
     friends = userProfile.getUnblockedFriends()
 
-    statuses = Status.objects.filter(user__in=friends, expires__gt=now)
+    # TODO: add expires date filter to status query
+    #statuses = Status.objects.filter(user__in=friends, expires__gt=now)
+    statuses = Status.objects.filter(user__in=friends)
 
     if since is not None:
         since = datetime.strptime(since, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
