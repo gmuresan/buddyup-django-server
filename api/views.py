@@ -8,7 +8,8 @@ from django.http import HttpResponse
 from django.utils.datetime_safe import datetime
 import facebook
 import pytz
-from api.helpers import createStatusJsonObject, DATETIME_FORMAT
+from api.FacebookProfile import FacebookProfile
+from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, getMyStatusesJsonResponse, getMyGroupsJsonResponse
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
@@ -24,6 +25,60 @@ def errorResponse(error, response=None):
     return HttpResponse(json.dumps(response))
 
 
+def facebookLogin(request):
+    response = dict()
+
+    device = request.REQUEST['device']
+    facebookAuthKey = request.REQUEST['fbauthkey']
+
+    if device != 'ios' and device != 'android':
+        return errorResponse('Invalid device: ' + device)
+
+    try:
+        facebookProfile = FacebookProfile.getFacebookUserFromAuthKey(facebookAuthKey, device)
+        userProfile = facebookProfile.userProfile
+    except facebook.GraphAPIError:
+        return errorResponse("Invalid Facebook AUTH Key")
+
+    response['friends'] = []
+
+    facebookFriends = facebookProfile.getFacebookFriends()
+
+    blockedFriends = userProfile.blockedFriends.all()
+    for friend in facebookFriends:
+        blocked = False
+        if friend in blockedFriends:
+            blocked = True
+
+        friendData = createFriendJsonObject(friend, blocked)
+        response['friends'].append(friendData)
+
+    # Check all buddyup friends and add them if they weren't already included in facebook friends check
+    friends = userProfile.friends.all()
+    for friend in friends:
+        if friend not in facebookFriends:
+            blocked = False
+            if friend in blockedFriends:
+                blocked = True
+
+            friendData = createFriendJsonObject(friend, blocked)
+            response['friends'].append(friendData)
+
+    statusesResponse = getNewStatusesJsonResponse(userProfile, None, None)
+    myStatusesResponse = getMyStatusesJsonResponse(userProfile)
+    groupsData = getMyGroupsJsonResponse(userProfile)
+
+    response['success'] = True
+    response['firstname'] = userProfile.user.first_name
+    response['lastname'] = userProfile.user.last_name
+    response['userid'] = userProfile.id
+    response['statuses'] = statusesResponse
+    response['groups'] = groupsData
+    response['mystatuses'] = myStatusesResponse
+
+    return HttpResponse(json.dumps(response))
+
+
 def facebookRegister(request):
     response = dict()
 
@@ -34,68 +89,34 @@ def facebookRegister(request):
         return errorResponse('Invalid device: ' + device)
 
     try:
-        graph = facebook.GraphAPI(facebookAuthKey)
-        profile = graph.get_object("me")
+        facebookProfile = FacebookProfile.getFacebookUserFromAuthKey(facebookAuthKey, device)
+        userProfile = facebookProfile.userProfile
     except facebook.GraphAPIError:
         return errorResponse("Invalid Facebook AUTH Key")
 
-    facebookId = profile['id']
-
-    try:
-        userProfile = UserProfile.objects.get(facebookUID=facebookId)
-    except UserProfile.DoesNotExist:
-        user = User(username=profile['email'], email=profile['email'], first_name=profile['first_name'],
-                    last_name=profile['last_name'],
-                    password=0)
-        user.save()
-
-        userProfile = UserProfile(facebookUID=facebookId, user=user)
-        userProfile.save()
-
     response['friends'] = []
-    appFriends = graph.request("me/friends", {'fields': 'installed'})
 
-    friendIds = []
-    # Check all facebook friends to see if they are a buddyup friend
-    for appFriend in appFriends['data']:
+    facebookFriends = facebookProfile.getFacebookFriends()
 
-        if 'installed' in appFriend and appFriend['installed'] is True:
-            friendFBID = appFriend['id']
+    blockedFriends = userProfile.blockedFriends.all()
+    for friend in facebookFriends:
+        blocked = False
+        if friend in blockedFriends:
+            blocked = True
 
-            try:
-                friendProfile = UserProfile.objects.get(facebookUID=friendFBID)
-
-                # Add the user to the friends list if they arent a friend already
-                if friendProfile not in userProfile.friends.all():
-                    userProfile.friends.add(friendProfile)
-                    userProfile.save()
-                if userProfile not in friendProfile.friends.all():
-                    friendProfile.friends.add(userProfile)
-                    friendProfile.save()
-
-                friendData = {'userid': friendProfile.id, 'firstname': friendProfile.user.first_name,
-                              'lastname': friendProfile.user.last_name, 'blocked': False, 'facebookid': friendFBID}
-
-                if friendProfile in userProfile.blockedFriends.all():
-                    friendData['blocked'] = True
-
-                response['friends'].append(friendData)
-                friendIds.append(friendProfile.id)
-
-            except UserProfile.DoesNotExist:
-                pass
+        friendData = createFriendJsonObject(friend, blocked)
+        response['friends'].append(friendData)
 
     # Check all buddyup friends and add them if they weren't already included in facebook friends check
-    for friend in userProfile.friends.all():
-        if friend.id not in friendIds:
-            friendData = {'userid': friend.id, 'firstname': friend.user.first_name,
-                          'lastname': friend.user.last_name, 'blocked': False, 'facebookid': friend.facebookUID}
+    friends = userProfile.friends.all()
+    for friend in friends:
+        if friend not in facebookFriends:
+            blocked = False
+            if friend in blockedFriends:
+                blocked = True
 
-            if friend in userProfile.blockedFriends.all():
-                friendData['blocked'] = True
-
+            friendData = createFriendJsonObject(friend, blocked)
             response['friends'].append(friendData)
-            friendIds.append(friend.id)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name
@@ -226,33 +247,7 @@ def getStatuses(request):
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User Id')
 
-    now = datetime.utcnow().replace(tzinfo=pytz.utc)
-    friends = userprofile.getUnblockedFriends()
-
-    if since is not None:
-        since = datetime.strptime(since, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
-        statuses = Status.objects.filter(user__in=friends, date__gt=since, expires__gt=now,
-                                         location__point__distance_lte=(point, D(mi=int(distance))))
-    else:
-        statuses = Status.objects.filter(user__in=friends, location__point__distance_lte=(point, D(mi=int(distance))))
-
-    statusesData = []
-    for status in statuses:
-
-        # If the status is only broadcast to certain groups,
-        # Check if the current user is in one of those groups
-        if status.groups.count():
-            inGroup = False
-            for group in status.groups.all():
-                if userprofile in group.members.all():
-                    inGroup = True
-                    break
-
-            if not inGroup:
-                continue
-
-        statusData = createStatusJsonObject(status)
-        statusesData.append(statusData)
+    statusesData = getNewStatusesJsonResponse(userprofile, since, point, distance)
 
     response['success'] = True
     response['statuses'] = statusesData
@@ -265,19 +260,12 @@ def getMyStatuses(request):
 
     userid = request.REQUEST['userid']
 
-    now = datetime.utcnow().replace(tzinfo=pytz.utc)
-
     try:
         user = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    statuses = Status.objects.filter(user=user, expires__gt=now)
-
-    statusesData = []
-    for status in statuses:
-        statusData = createStatusJsonObject(status)
-        statusesData.append(statusData)
+    statusesData = getMyStatusesJsonResponse(user)
 
     response['success'] = True
     response['statuses'] = statusesData
@@ -707,18 +695,7 @@ def getGroups(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    groups = userProfile.groups.all()
-    groupsData = list()
-
-    for group in groups:
-        groupData = dict()
-
-        groupData['groupname'] = group.name
-        groupData['groupid'] = group.id
-
-        memberIds = group.members.values_list('id', flat=True)
-        groupData['userids'] = map(int, memberIds)
-        groupsData.append(groupData)
+    groupsData = getMyGroupsJsonResponse(userProfile)
 
     response['success'] = True
     response['groups'] = groupsData
@@ -740,12 +717,11 @@ def getFriends(request):
     friendsData = list()
 
     for friend in userProfile.friends.all():
-        friendData = dict()
-        friendData['userid'] = friend.id
-        friendData['firstname'] = friend.user.first_name
-        friendData['lastname'] = friend.user.last_name
-        friendData['blocked'] = friend in blockedFriends
-        friendData['facebookid'] = friend.facebookUID
+        blocked = False
+        if friend in blockedFriends:
+            blocked = True
+
+        friendData = createFriendJsonObject(friend, blocked)
 
         friendsData.append(friendData)
 

@@ -21,7 +21,7 @@ from userprofile.models import UserProfile, Group, Feedback
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACEdEose0cBAG6Q3ZB8x2PdEZB1xNIpkfo8Hn3LBQEUP30k1X1xye3rlTUAEFHO2yaiyLGxivASlqwlla89wSajRD6H2Ngh9XMND1HoIdJ4RsWUFs2KYZBohElZBCGP2ofm3R97fsLv9IAxyKQFWsBKMpEdKnQZD'
+        self.authKey = 'CAACBZAKw2g0ABAOEARgblvzOm7K1piKYaubKZCLN1aWemNww5RDMTVUd6YSfPRegDYqf9GqZCr2y8SrLnCJC2alNizPEkg7BOzEFGA2RqrrGrZArZBIy9KeSnEqWSs40RuNZA5XeNuq3UMIMjwCTLDEprEZCTzyyxBTvzUEHun6cQZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -71,10 +71,62 @@ class FacebookRegisterTest(TestCase):
         })
         response = json.loads(response.content)
 
-        userprofileFriendData = {'userid': userprofile.id, 'firstname': user.first_name, 'lastname': user.last_name,
-                                 'blocked': False}
+        userprofileFriendData = {u'userid': userprofile.id, u'firstname': user.first_name, u'lastname': user.last_name,
+                                 u'blocked': False}
         self.assertNotEqual(len(response['friends']), 0)
-        self.assertIn(userprofileFriendData, response['friends'])
+        for key, val in userprofileFriendData.items():
+            self.assertEqual(val, userprofileFriendData[key])
+
+    def testFacebookLoginWithAllData(self):
+        print "FacebookLoginWithAllData"
+        client = Client()
+
+        response = client.post(reverse('facebookLoginAPI'), {
+            'fbauthkey': self.authKey,
+            'device': 'android'
+        })
+        response = json.loads(response.content)
+
+        userid = response['userid']
+        userProfile = UserProfile.objects.get(pk=userid)
+
+        friend = User.objects.create(username='friend', password='0', email='friend')
+        friendProfile = UserProfile.objects.create(user=friend)
+
+        userProfile.friends.add(friendProfile)
+        friendProfile.friends.add(userProfile)
+
+        group = Group.objects.create(name='group1', user=userProfile)
+        group.members.add(friendProfile)
+        group.save()
+
+        lat = 42.341560
+        lng = -83.501783
+        address = '46894 spinning wheel'
+        city = 'canton'
+        state = 'MI'
+        venue = "My house"
+        expirationDate = datetime.utcnow() + timedelta(hours=1)
+
+        location = Location.objects.create(lng=lng, lat=lat, point=Point(lng, lat), city=city, state=state, venue=venue,
+                                           address=address)
+
+        friendStatus = Status.objects.create(user=friendProfile, expires=expirationDate, text='Hang out1',
+                                             location=location)
+
+        myStatus = Status.objects.create(user=userProfile, expires=expirationDate, text='mystatus', location=location)
+
+        response = client.post(reverse('facebookLoginAPI'), {
+            'fbauthkey': self.authKey,
+            'device': 'android'
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(response['statuses'][0]['statusid'], friendStatus.id)
+        self.assertEqual(response['groups'][0]['groupid'], group.id)
+        self.assertEqual(response['mystatuses'][0]['statusid'], myStatus.id)
+        self.assertEqual(response['friends'][0]['userid'], friendProfile.id)
 
 
 class PostStatusTests(TestCase):
