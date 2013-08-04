@@ -109,3 +109,43 @@ def getMyGroupsJsonResponse(userProfile):
         groupsData.append(groupData)
 
     return groupsData
+
+
+def getNewMessagesJsonResponse(userProfile, since):
+
+    conversations = userProfile.conversations.all()
+
+    if since is not None:
+        conversations = conversations.filter(lastActivity__gt=since)
+
+    messages = []
+    for convo in conversations:
+        msgs = convo.messages.filter(created__gt=since)
+        msgs.latest('created')
+        for msg in msgs:
+            messages.append(msg)
+
+    messagesData = []
+    for message in messages:
+        messageData = dict()
+        messageData['messageid'] = message.id
+        messageData['chatid'] = message.conversation.id
+        messageData['date'] = message.created.strftime(DATETIME_FORMAT)
+        messageData['text'] = message.text
+        messageData['userid'] = message.user.id
+
+        messagesData.append(messageData)
+
+    return messagesData
+
+
+
+
+
+
+
+
+
+
+
+

@@ -9,7 +9,7 @@ from django.utils.datetime_safe import datetime
 import facebook
 import pytz
 from api.FacebookProfile import FacebookProfile
-from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, getMyStatusesJsonResponse, getMyGroupsJsonResponse
+from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewMessagesJsonResponse
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
@@ -67,6 +67,7 @@ def facebookLogin(request):
     statusesResponse = getNewStatusesJsonResponse(userProfile, None, None)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
+    chatMessagesData = getNewMessagesJsonResponse(userProfile, None)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name
@@ -75,6 +76,7 @@ def facebookLogin(request):
     response['statuses'] = statusesResponse
     response['groups'] = groupsData
     response['mystatuses'] = myStatusesResponse
+    response['messages'] = chatMessagesData
 
     return HttpResponse(json.dumps(response))
 
@@ -461,25 +463,7 @@ def getMessages(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    conversations = userProfile.conversations.filter(lastActivity__gt=since)
-
-    messages = []
-    for convo in conversations:
-        msgs = convo.messages.filter(created__gt=since)
-        msgs.latest('created')
-        for msg in msgs:
-            messages.append(msg)
-
-    messagesData = []
-    for message in messages:
-        messageData = dict()
-        messageData['messageid'] = message.id
-        messageData['chatid'] = message.conversation.id
-        messageData['date'] = message.created.strftime(DATETIME_FORMAT)
-        messageData['text'] = message.text
-        messageData['userid'] = message.user.id
-
-        messagesData.append(messageData)
+    messagesData = getNewMessagesJsonResponse(userProfile, since)
 
     response['success'] = True
     response['messages'] = messagesData
