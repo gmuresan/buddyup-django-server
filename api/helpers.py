@@ -111,7 +111,7 @@ def getMyGroupsJsonResponse(userProfile):
     return groupsData
 
 
-def getNewMessagesJsonResponse(userProfile, since):
+def getNewMessagesJsonResponse(userProfile, since=None):
 
     conversations = userProfile.conversations.all()
 

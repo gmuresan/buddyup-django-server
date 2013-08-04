@@ -67,7 +67,7 @@ def facebookLogin(request):
     statusesResponse = getNewStatusesJsonResponse(userProfile, None, None)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
-    chatMessagesData = getNewMessagesJsonResponse(userProfile, None)
+    chatMessagesData = getNewMessagesJsonResponse(userProfile)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name

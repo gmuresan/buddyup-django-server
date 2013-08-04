@@ -21,7 +21,7 @@ from userprofile.models import UserProfile, Group, Feedback
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAOEARgblvzOm7K1piKYaubKZCLN1aWemNww5RDMTVUd6YSfPRegDYqf9GqZCr2y8SrLnCJC2alNizPEkg7BOzEFGA2RqrrGrZArZBIy9KeSnEqWSs40RuNZA5XeNuq3UMIMjwCTLDEprEZCTzyyxBTvzUEHun6cQZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAC533EjzwGCBrbdo7jr3y4sAZAQ6ZBYFR9mzZCwm8QdyZBEyZCLHnMKZCswHpW067oAf14lFAGMRAxLuz5I5MNQraOIWr6YZByuJS1nWh9mg8fFtpPXltubbMW67G8YKx3sG4xZC8z9vngaxgv0XDMfeVA9xraVzZCQZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -121,6 +121,7 @@ class FacebookRegisterTest(TestCase):
             'fbauthkey': self.authKey,
             'device': 'android'
         })
+
         response = json.loads(response.content)
 
         self.assertTrue(response['success'])
