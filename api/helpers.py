@@ -123,7 +123,6 @@ def getNewMessagesJsonResponse(userProfile, since=None):
         msgs = convo.messages.all()
         if since is not None:
             msgs = msgs.filter(created__gt=since)
-        msgs.latest('created')
         for msg in msgs:
             messages.append(msg)
 
