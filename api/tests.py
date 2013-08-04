@@ -87,6 +87,7 @@ class FacebookRegisterTest(TestCase):
         })
         response = json.loads(response.content)
 
+        self.assertTrue(response['success'])
         userid = response['userid']
         userProfile = UserProfile.objects.get(pk=userid)
 
