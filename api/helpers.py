@@ -120,7 +120,9 @@ def getNewMessagesJsonResponse(userProfile, since=None):
 
     messages = []
     for convo in conversations:
-        msgs = convo.messages.filter(created__gt=since)
+        msgs = convo.messages.all()
+        if since is not None:
+            msgs = msgs.filter(created__gt=since)
         msgs.latest('created')
         for msg in msgs:
             messages.append(msg)
