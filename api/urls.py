@@ -29,6 +29,8 @@ urlpatterns = patterns('',
                        url(r'^blockfriend/$', blockFriend, {}, 'blockFriendAPI'),
                        url(r'^unblockfriend/$', unblockFriend, {}, 'unblockFriendAPI'),
 
-                       url(r'^submitfeedback/$', submitFeedback, {}, 'submitFeedbackAPI')
+                       url(r'^submitfeedback/$', submitFeedback, {}, 'submitFeedbackAPI'),
+
+                       url(r'^getnewdata/$', getNewData, {}, 'getNewDataAPI')
 
 )

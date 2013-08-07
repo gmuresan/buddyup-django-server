@@ -40,6 +40,7 @@ def createFriendJsonObject(friend, blocked):
 
     return friendData
 
+
 def createGroupJsonObject(group):
     groupData = dict()
 
@@ -61,10 +62,13 @@ def getNewStatusesJsonResponse(userProfile, since, point, distance=5):
     statuses = Status.objects.filter(user__in=friends)
 
     if since is not None:
-        since = datetime.strptime(since, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
         statuses = statuses.filter(date__gt=since)
     if point is not None:
         statuses = statuses.filter(location__point__distance_lte=(point, D(mi=int(distance))))
+
+    statuses = list(statuses)
+    userProfile.lastGetStatusTime = datetime.utcnow()
+    userProfile.save()
 
     statusesData = []
     for status in statuses:
@@ -117,6 +121,10 @@ def getNewMessagesJsonResponse(userProfile, since=None):
 
     if since is not None:
         conversations = conversations.filter(lastActivity__gt=since)
+
+    conversations = list(conversations)
+    userProfile.lastGetMessagesTime = datetime.utcnow()
+    userProfile.save()
 
     messages = []
     for convo in conversations:

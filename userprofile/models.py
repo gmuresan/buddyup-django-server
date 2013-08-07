@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from buddyup import settings
 from django.contrib.auth.models import User
@@ -13,6 +14,10 @@ class UserProfile(models.Model):
     friends = models.ManyToManyField("self", related_name='myFriends', null=True, blank=True)
     blockedFriends = models.ManyToManyField("self", related_name="blocked", null=True, blank=True)
     device = models.CharField(max_length=10, default='ios')
+
+    lastGetStatusTime = models.DateTimeField(auto_now_add=True, default=datetime.now)
+    lastGetMessagesTime = models.DateTimeField(auto_now_add=True, default=datetime.now)
+    lastGetNewDataTime = models.DateTimeField(auto_now_add=True, default=datetime.now)
 
     def getUnblockedFriends(self):
         blocked = self.blockedFriends.values_list('pk', flat=True)

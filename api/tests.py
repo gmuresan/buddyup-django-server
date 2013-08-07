@@ -1,9 +1,4 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
 
-Replace this with more appropriate tests for your application.
-"""
 from compiler.ast import name
 from datetime import datetime, timedelta
 import json
@@ -14,7 +9,7 @@ from django.core.urlresolvers import reverse
 import pytz
 from django.test import TestCase, Client
 from api.helpers import DATETIME_FORMAT
-from chat.models import Conversation
+from chat.models import Conversation, Message
 from status.models import Status, Poke, Location
 from userprofile.models import UserProfile, Group, Feedback
 
@@ -285,10 +280,8 @@ class getStatusesTest(TestCase):
 
         myLat = 42.321620
         myLng = -83.507794
-        since = datetime.utcnow() - timedelta(hours=1)
 
         response = client.get(reverse('api.views.getStatuses'), {'userid': self.user2.id,
-                                                                 'since': since.strftime(DATETIME_FORMAT),
                                                                  'lat': myLat,
                                                                  'lng': myLng})
         response = json.loads(response.content)
@@ -308,11 +301,9 @@ class getStatusesTest(TestCase):
 
         myLat = 42.321620
         myLng = -83.507794
-        since = datetime.utcnow() - timedelta(hours=1)
 
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
-            'since': since.strftime(DATETIME_FORMAT),
             'lat': myLat,
             'lng': myLng,
             'distance': 1
@@ -347,11 +338,8 @@ class getStatusesTest(TestCase):
 
         client = Client()
 
-        since = datetime.utcnow() - timedelta(hours=1)
-
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
-            'since': since.strftime(DATETIME_FORMAT),
             'lat': self.lat,
             'lng': self.lng
         })
@@ -735,10 +723,8 @@ class ChatMessageTests(TestCase):
             'text': 'hello'
         })
 
-        since = datetime.utcnow() - timedelta(hours=1)
         response = client.post(reverse('getMessagesAPI'), {
             'userid': self.friend.id,
-            'since': since.strftime(DATETIME_FORMAT)
         })
 
         response = json.loads(response.content)
@@ -1223,5 +1209,54 @@ class FeedbackTests(TestCase):
         feedback = self.user.submittedFeedback.latest('id')
 
         self.assertEqual(feedback.text, text)
+
+
+class GetNewDataTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+        friend = User.objects.create(username='friend', password='0', email='friend')
+        self.friend = UserProfile.objects.create(user=friend)
+
+        self.user.friends.add(self.friend)
+        self.friend.friends.add(self.user)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.user.friends.add(self.friend2)
+        self.friend2.friends.add(self.user)
+
+        self.convo = Conversation.objects.create()
+        self.convo.members.add(self.user)
+        self.convo.members.add(self.friend)
+        self.convo.save()
+
+        self.message = Message.objects.create(user=self.user, conversation=self.convo, text="text")
+
+    def testGetNewData(self):
+        print "GetNewData"
+
+        client = Client()
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.user.id,
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['messages']), 1)
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.user.id,
+            'all': False
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['messages']), 0)
 
 
