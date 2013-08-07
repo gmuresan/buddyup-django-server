@@ -74,6 +74,7 @@ def facebookLogin(request):
     response['firstname'] = userProfile.user.first_name
     response['lastname'] = userProfile.user.last_name
     response['userid'] = userProfile.id
+    response['facebookid'] = userProfile.facebookUID
     response['statuses'] = statusesResponse
     response['groups'] = groupsData
     response['mystatuses'] = myStatusesResponse
