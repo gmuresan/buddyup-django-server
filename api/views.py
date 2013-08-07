@@ -455,6 +455,7 @@ def sendMessage(request):
         return errorResponse("User is not a member of this chat")
 
     Message.objects.create(user=userProfile, conversation=convo, text=text)
+    convo.save(force_update=True)
 
     response['success'] = True
 
