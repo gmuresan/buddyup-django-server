@@ -65,10 +65,10 @@ def facebookLogin(request):
             friendData = createFriendJsonObject(friend, blocked)
             response['friends'].append(friendData)
 
-    statusesResponse = getNewStatusesJsonResponse(userProfile, None, None)
+    statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None, None)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
-    chatMessagesData = getNewMessagesJsonResponse(userProfile)
+    chatMessagesData, newSince = getNewMessagesJsonResponse(userProfile)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name
@@ -79,6 +79,7 @@ def facebookLogin(request):
     response['groups'] = groupsData
     response['mystatuses'] = myStatusesResponse
     response['messages'] = chatMessagesData
+    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
 
     return HttpResponse(json.dumps(response))
 
@@ -244,24 +245,19 @@ def getStatuses(request):
     lng = request.REQUEST['lng']
     distance = request.REQUEST.get('distance', 5)
     point = Point(float(lng), float(lat))
-    all = request.REQUEST.get('all', None)
-    if all and all[0].upper() == 'T':
-        all = True
-    else:
-        all = False
+    since = request.REQUEST.get('since', None)
+    if since:
+        since = datetime.strptime(since, DATETIME_FORMAT)
 
     try:
         userprofile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User Id')
 
-    since = None
-    if not all:
-        since = userprofile.lastGetStatusTime
-
-    statusesData = getNewStatusesJsonResponse(userprofile, since, point, distance)
+    statusesData, newSince = getNewStatusesJsonResponse(userprofile, since, point, distance)
 
     response['success'] = True
+    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
     response['statuses'] = statusesData
 
     return HttpResponse(json.dumps(response))
@@ -466,24 +462,19 @@ def getMessages(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    all = request.REQUEST.get('all', None)
-    if all and all[0].upper() == 'T':
-        all = True
-    else:
-        all = False
+    since = request.REQUEST.get('since', None)
+    if since:
+        since = datetime.strptime(since, DATETIME_FORMAT)
 
     try:
         userProfile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    since = None
-    if not all:
-        since = userProfile.lastGetMessagesTime
-
-    messagesData = getNewMessagesJsonResponse(userProfile, since)
+    messagesData, newSince = getNewMessagesJsonResponse(userProfile, since)
 
     response['success'] = True
+    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
     response['messages'] = messagesData
 
     return HttpResponse(json.dumps(response))
@@ -810,24 +801,19 @@ def getNewData(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    all = request.REQUEST.get('all', None)
-    if all and all[0].upper() == 'T':
-        all = True
-    else:
-        all = False
+    since = request.REQUEST.get('since')
+    if since:
+        since = datetime.strptime(since, DATETIME_FORMAT)
 
     try:
         userProfile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    since = None
-    if not all:
-        since = userProfile.lastGetMessagesTime
-
-    messages = getNewMessagesJsonResponse(userProfile, since)
+    messages, newSince = getNewMessagesJsonResponse(userProfile, since)
 
     response['messages'] = messages
+    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
     response['success'] = True
 
     return HttpResponse(json.dumps(response))

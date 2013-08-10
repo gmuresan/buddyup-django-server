@@ -6,7 +6,7 @@ import pytz
 from status.models import Status
 from userprofile.models import UserProfile
 
-DATETIME_FORMAT = '%m-%d-%Y %H:%M'  # 06-01-2013 13:12
+DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S.%f'  # 06-01-2013 13:12
 
 
 def createStatusJsonObject(status):
@@ -67,8 +67,7 @@ def getNewStatusesJsonResponse(userProfile, since, point, distance=5):
         statuses = statuses.filter(location__point__distance_lte=(point, D(mi=int(distance))))
 
     statuses = list(statuses)
-    userProfile.lastGetStatusTime = datetime.utcnow()
-    userProfile.save()
+    newSince = datetime.utcnow()
 
     statusesData = []
     for status in statuses:
@@ -88,7 +87,7 @@ def getNewStatusesJsonResponse(userProfile, since, point, distance=5):
         statusData = createStatusJsonObject(status)
         statusesData.append(statusData)
 
-    return statusesData
+    return statusesData, newSince
 
 
 def getMyStatusesJsonResponse(userProfile):
@@ -123,8 +122,7 @@ def getNewMessagesJsonResponse(userProfile, since=None):
         conversations = conversations.filter(lastActivity__gt=since)
 
     conversations = list(conversations)
-    userProfile.lastGetMessagesTime = datetime.utcnow()
-    userProfile.save()
+    newSince = datetime.utcnow()
 
     messages = []
     for convo in conversations:
@@ -145,7 +143,7 @@ def getNewMessagesJsonResponse(userProfile, since=None):
 
         messagesData.append(messageData)
 
-    return messagesData
+    return messagesData, newSince
 
 
 

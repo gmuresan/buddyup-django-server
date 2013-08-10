@@ -16,7 +16,7 @@ from userprofile.models import UserProfile, Group, Feedback
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAC533EjzwGCBrbdo7jr3y4sAZAQ6ZBYFR9mzZCwm8QdyZBEyZCLHnMKZCswHpW067oAf14lFAGMRAxLuz5I5MNQraOIWr6YZByuJS1nWh9mg8fFtpPXltubbMW67G8YKx3sG4xZC8z9vngaxgv0XDMfeVA9xraVzZCQZDZD'
+        self.authKey = 'CAACEdEose0cBAJ27ZATDgbREmoIf0Cp5ZC2Nh4PJa6QcjjytTh1ce9hyq1ZBjFkEQXCuuGlKhj2GHgdprBqzukEDZCPLI0dJsl0S27DI2PnFAbZB3aJBCRJmQY0LOh1Bz6i4DWbQ62fO8E6bBi3YxkZAGriaQNwXsX8B0PyHGE3wZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -280,10 +280,15 @@ class getStatusesTest(TestCase):
 
         myLat = 42.321620
         myLng = -83.507794
+        since = datetime.utcnow() - timedelta(hours=1)
 
-        response = client.get(reverse('api.views.getStatuses'), {'userid': self.user2.id,
-                                                                 'lat': myLat,
-                                                                 'lng': myLng})
+        response = client.get(reverse('api.views.getStatuses'), {
+            'userid': self.user2.id,
+            'since': since.strftime(DATETIME_FORMAT),
+            'lat': myLat,
+            'lng': myLng
+        })
+
         response = json.loads(response.content)
 
         self.assertEqual(response['success'], True)
@@ -301,9 +306,11 @@ class getStatusesTest(TestCase):
 
         myLat = 42.321620
         myLng = -83.507794
+        since = datetime.utcnow() - timedelta(hours=1)
 
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
+            'since': since.strftime(DATETIME_FORMAT),
             'lat': myLat,
             'lng': myLng,
             'distance': 1
@@ -338,8 +345,11 @@ class getStatusesTest(TestCase):
 
         client = Client()
 
+        since = datetime.utcnow() - timedelta(hours=1)
+
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
+            'since': since.strftime(DATETIME_FORMAT),
             'lat': self.lat,
             'lng': self.lng
         })
@@ -723,8 +733,11 @@ class ChatMessageTests(TestCase):
             'text': 'hello'
         })
 
+        since = datetime.utcnow() - timedelta(hours=1)
+
         response = client.post(reverse('getMessagesAPI'), {
             'userid': self.friend.id,
+            'since': since.strftime(DATETIME_FORMAT)
         })
 
         response = json.loads(response.content)
@@ -1251,6 +1264,7 @@ class GetNewDataTests(TestCase):
 
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.user.id,
+            'since': response['newsince'],
             'all': False
         })
 
