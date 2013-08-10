@@ -10,7 +10,7 @@ import facebook
 import pytz
 from api.FacebookProfile import FacebookProfile
 from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
-    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewMessagesJsonResponse
+    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewMessagesJsonResponse, MICROSECOND_DATETIME_FORMAT
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
@@ -79,7 +79,7 @@ def facebookLogin(request):
     response['groups'] = groupsData
     response['mystatuses'] = myStatusesResponse
     response['messages'] = chatMessagesData
-    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
+    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
 
     return HttpResponse(json.dumps(response))
 
@@ -247,7 +247,7 @@ def getStatuses(request):
     point = Point(float(lng), float(lat))
     since = request.REQUEST.get('since', None)
     if since:
-        since = datetime.strptime(since, DATETIME_FORMAT)
+        since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
         userprofile = UserProfile.objects.get(pk=userid)
@@ -257,7 +257,7 @@ def getStatuses(request):
     statusesData, newSince = getNewStatusesJsonResponse(userprofile, since, point, distance)
 
     response['success'] = True
-    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
+    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['statuses'] = statusesData
 
     return HttpResponse(json.dumps(response))
@@ -464,7 +464,7 @@ def getMessages(request):
     userid = request.REQUEST['userid']
     since = request.REQUEST.get('since', None)
     if since:
-        since = datetime.strptime(since, DATETIME_FORMAT)
+        since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
         userProfile = UserProfile.objects.get(pk=userid)
@@ -474,7 +474,7 @@ def getMessages(request):
     messagesData, newSince = getNewMessagesJsonResponse(userProfile, since)
 
     response['success'] = True
-    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
+    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['messages'] = messagesData
 
     return HttpResponse(json.dumps(response))
@@ -803,7 +803,7 @@ def getNewData(request):
     userid = request.REQUEST['userid']
     since = request.REQUEST.get('since')
     if since:
-        since = datetime.strptime(since, DATETIME_FORMAT)
+        since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
         userProfile = UserProfile.objects.get(pk=userid)
@@ -813,7 +813,7 @@ def getNewData(request):
     messages, newSince = getNewMessagesJsonResponse(userProfile, since)
 
     response['messages'] = messages
-    response['newsince'] = newSince.strftime(DATETIME_FORMAT)
+    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['success'] = True
 
     return HttpResponse(json.dumps(response))

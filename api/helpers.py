@@ -6,7 +6,8 @@ import pytz
 from status.models import Status
 from userprofile.models import UserProfile
 
-DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S.%f'  # 06-01-2013 13:12
+DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
+MICROSECOND_DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S.%f'
 
 
 def createStatusJsonObject(status):

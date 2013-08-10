@@ -8,7 +8,7 @@ from django.contrib.gis.measure import D
 from django.core.urlresolvers import reverse
 import pytz
 from django.test import TestCase, Client
-from api.helpers import DATETIME_FORMAT
+from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
 from chat.models import Conversation, Message
 from status.models import Status, Poke, Location
 from userprofile.models import UserProfile, Group, Feedback
@@ -284,7 +284,7 @@ class getStatusesTest(TestCase):
 
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
-            'since': since.strftime(DATETIME_FORMAT),
+            'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
             'lat': myLat,
             'lng': myLng
         })
@@ -310,7 +310,7 @@ class getStatusesTest(TestCase):
 
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
-            'since': since.strftime(DATETIME_FORMAT),
+            'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
             'lat': myLat,
             'lng': myLng,
             'distance': 1
@@ -349,7 +349,7 @@ class getStatusesTest(TestCase):
 
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
-            'since': since.strftime(DATETIME_FORMAT),
+            'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
             'lat': self.lat,
             'lng': self.lng
         })
@@ -737,7 +737,7 @@ class ChatMessageTests(TestCase):
 
         response = client.post(reverse('getMessagesAPI'), {
             'userid': self.friend.id,
-            'since': since.strftime(DATETIME_FORMAT)
+            'since': since.strftime(MICROSECOND_DATETIME_FORMAT)
         })
 
         response = json.loads(response.content)
