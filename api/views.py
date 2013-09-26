@@ -696,6 +696,47 @@ def getGroups(request):
     return HttpResponse(json.dumps(response))
 
 
+def setGroupMembers(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    groupid = request.REQUEST['groupid']
+    friendids = request.REQUEST.get('friendids', [])
+    friendids = json.loads(friendids)
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    try:
+        group = Group.objects.get(pk=groupid)
+    except Group.DoesNotExist:
+        return errorResponse("Invalid group id")
+
+    if group.user != userProfile:
+        return errorResponse("User does not own that group")
+
+    userFriends = userProfile.friends.all()
+    group.members.clear()
+    for friendid in friendids:
+        try:
+            friend = UserProfile.objects.get(pk=friendid)
+        except User.DoesNotExist:
+            return errorResponse("Friend does not exist")
+
+        if friend not in userFriends:
+            return errorResponse("User is not a friend")
+
+        group.members.add(friend)
+
+    group.save()
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
 def getFriends(request):
     response = dict()
 

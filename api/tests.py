@@ -1111,6 +1111,49 @@ class GroupTests(TestCase):
         self.assertTrue(self.friend not in group2.members.all())
         self.assertTrue(self.friend not in group3.members.all())
 
+    def testSetGroupMembers(self):
+        print "SetGroupMembers"
+        client = Client()
+
+        groupName1 = "group1"
+        groupName2 = "group2"
+
+        group1 = Group.objects.create(user=self.user, name=groupName1)
+        group2 = Group.objects.create(user=self.user, name=groupName2)
+
+        group1.members.add(self.friend)
+        group2.members.add(self.friend)
+        group2.members.add(self.friend2)
+
+        group1.save()
+        group2.save()
+
+        members1 = [self.friend.id, self.friend2.id]
+        members2 = []
+
+        response = client.post(reverse('setGroupMembersAPI'), {
+            'userid': self.user.id,
+            'groupid': group1.id,
+            'friendids': json.dumps(members1)
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        self.assertTrue(self.friend in group1.members.all())
+        self.assertTrue(self.friend2 in group1.members.all())
+
+        response = client.post(reverse('setGroupMembersAPI'), {
+            'userid': self.user.id,
+            'groupid': group2.id,
+            'friendids': json.dumps(members2)
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertTrue(self.friend not in group2.members.all())
+        self.assertTrue(self.friend2 not in group2.members.all())
+
 
 class FriendsListTests(TestCase):
     def setUp(self):

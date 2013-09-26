@@ -24,6 +24,7 @@ urlpatterns = patterns('',
                        url(r'^removegroupmember/$', removeGroupMember, {}, 'removeGroupMemberAPI'),
                        url(r'^getgroups/$', getGroups, {}, 'getGroupsAPI'),
                        url(r'^setgroups/$', setGroups, {}, 'setGroupsAPI'),
+                       url(r'^setgroupmembers/$', setGroupMembers, {}, 'setGroupMembersAPI'),
 
                        url(r'^getfriends/$', getFriends, {}, 'getFriendsAPI'),
                        url(r'^blockfriend/$', blockFriend, {}, 'blockFriendAPI'),
