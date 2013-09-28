@@ -148,7 +148,7 @@ def postStatus(request):
     try:
         userprofile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
-        return errorResponse(response, "User Id not valid")
+        return errorResponse("User Id not valid")
 
     try:
         status = Status.objects.get(pk=statusid)
@@ -189,17 +189,18 @@ def postStatus(request):
 
     status.save()
 
+    print groupids
     if groupids:
         groups = []
-        for id in groupids:
+        for groupid in groupids:
             try:
-                group = Group.objects.get(pk=id)
+                group = Group.objects.get(pk=groupid)
                 status.groups.add(group)
             except Group.DoesNotExist:
-                return errorResponse(response, "Group does not exist: " + id)
+                return errorResponse("Group does not exist: " + str(groupid))
 
-            if group.user is not userprofile:
-                return errorResponse(response, "Group does not belong to this user: " + id)
+            if group.user != userprofile:
+                return errorResponse("Group does not belong to this user: " + str(groupid))
     else:
         status.groups.clear()
 

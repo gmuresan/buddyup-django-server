@@ -2,6 +2,7 @@
 from compiler.ast import name
 from datetime import datetime, timedelta
 import json
+import pdb
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
@@ -134,6 +135,21 @@ class PostStatusTests(TestCase):
         user1 = User.objects.create(username='user1', password='0', email='user1')
         self.user = UserProfile.objects.create(user=user1)
 
+        friend1 = User.objects.create(username='friend1', password='0', email='friend1')
+        self.friend1 = UserProfile.objects.create(user=friend1)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.group1 = Group.objects.create(name="group1", user=self.user)
+        self.group1.members.add(self.friend1)
+        self.group1.members.add(self.friend2)
+        self.group1.save()
+
+        self.group2 = Group.objects.create(name="group2", user=self.user)
+        self.group2.members.add(self.friend1)
+        self.group2.save()
+
         self.text = "Hangout at my house"
 
         self.expires = self.utc.localize(datetime(2013, 5, 1))
@@ -151,7 +167,7 @@ class PostStatusTests(TestCase):
         print "PostNoLocation"
         client = Client()
 
-        response = client.post('/api/poststatus/', {
+        response = client.post(reverse('postStatusAPI'), {
             'userid': self.user.id,
             'expires': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text
@@ -171,7 +187,7 @@ class PostStatusTests(TestCase):
         print "PostWithLocation"
         client = Client()
 
-        response = client.post('/api/poststatus/', {
+        response = client.post(reverse('postStatusAPI'), {
             'userid': self.user.id,
             'expires': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text,
@@ -188,6 +204,29 @@ class PostStatusTests(TestCase):
         self.assertEqual(status.location.state, self.location['state'])
         self.assertEqual(status.location.address, self.location['address'])
         self.assertEqual(status.location.venue, self.location['venue'])
+
+    def testPostWithGroups(self):
+        print "PostWithGroups"
+        client = Client()
+
+        groupids = [self.group1.id, self.group2.id]
+
+        response = client.post(reverse('postStatusAPI'), {
+            'userid': self.user.id,
+            'expires': self.expires.strftime(DATETIME_FORMAT),
+            'text': self.text,
+            'location': json.dumps(self.location),
+            "groupids": json.dumps(groupids)
+        })
+
+        response = json.loads(response.content)
+
+        status = Status.objects.get(pk=response['statusid'])
+
+        self.assertTrue(response['success'])
+
+        self.assertIn(self.group1, status.groups.all())
+        self.assertIn(self.group1, status.groups.all())
 
 
 class deleteStatusTest(TestCase):
