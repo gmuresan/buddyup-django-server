@@ -189,7 +189,6 @@ def postStatus(request):
 
     status.save()
 
-    print groupids
     if groupids:
         groups = []
         for groupid in groupids:

@@ -94,7 +94,7 @@ def getNewStatusesJsonResponse(userProfile, since, point, distance=5):
 def getMyStatusesJsonResponse(userProfile):
 
     now = datetime.utcnow().replace(tzinfo=pytz.utc)
-    myStatuses = Status.objects.filter(user=userProfile, expires__gt=now)
+    myStatuses = Status.objects.filter(user=userProfile)
 
     myStatusesData = []
     for status in myStatuses:
