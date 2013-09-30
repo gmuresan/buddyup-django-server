@@ -19,6 +19,9 @@ class Conversation(models.Model):
 
 class Message(models.Model):
 
+    class Meta:
+        ordering = ['-created']
+
     def __unicode__(self):
         return self.text
 

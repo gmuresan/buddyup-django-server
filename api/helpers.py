@@ -1,4 +1,5 @@
 from datetime import datetime
+import pdb
 from django.contrib.auth.models import User
 from django.contrib.gis.measure import D
 import facebook
@@ -145,15 +146,5 @@ def getNewMessagesJsonResponse(userProfile, since=None):
         messagesData.append(messageData)
 
     return messagesData, newSince
-
-
-
-
-
-
-
-
-
-
 
 
