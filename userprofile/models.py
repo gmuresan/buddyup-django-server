@@ -19,6 +19,10 @@ class UserProfile(models.Model):
         blocked = self.blockedFriends.values_list('pk', flat=True)
         return self.friends.exclude(pk__in=list(blocked))
 
+    def getActiveStatuses(self):
+        now = datetime.utcnow()
+        return self.statuses.filter(expires__gt=now)
+
 
 class Group(models.Model):
     def __unicode__(self):

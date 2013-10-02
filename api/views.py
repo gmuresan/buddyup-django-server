@@ -860,3 +860,52 @@ def getNewData(request):
     return HttpResponse(json.dumps(response))
 
 
+def cancelStatus(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    statusid = request.REQUEST['statusid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+        status = Status.objects.get(pk=statusid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+    except Status.DoesNotExist:
+        return errorResponse("Invalid statusid")
+
+    if status.user != userProfile:
+        return errorResponse("User does not own this status")
+
+    now = datetime.utcnow()
+
+    if status.expires > now:
+        status.expires = now
+        status.save()
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def goOffline(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("User does not exist")
+
+    activeStatuses = userProfile.getActiveStatuses()
+
+    now = datetime.utcnow()
+    for status in activeStatuses:
+        status.expires = now
+        status.save()
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+

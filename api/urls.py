@@ -9,6 +9,8 @@ urlpatterns = patterns('',
                        url(r'^deletestatus/$', deleteStatus, {}, 'deleteStatusAPI'),
                        url(r'^getstatuses/$', getStatuses, {}, 'getStatusesAPI'),
                        url(r'^getmystatuses/$', getMyStatuses, {}, 'getMyStatusesAPI'),
+                       url(r'^gooffline/$', goOffline, {}, 'goOfflineAPI'),
+                       url(r'^cancelstatus/$', cancelStatus, {}, 'cancelStatusAPI'),
                        url(r'^poke/$', poke, {}, 'pokeAPI'),
 
                        url(r'^createchat/$', createChat, {}, 'createChatAPI'),

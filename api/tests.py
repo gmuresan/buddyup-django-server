@@ -17,7 +17,7 @@ from userprofile.models import UserProfile, Group, Feedback
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAInAKGYBXEvtJROZBORZAeb0FlWliZAhS0NvlKISYNHB1q4bTKgx4xH4bz7L0DTYOf2V8VaV128sD4ZAdXsRn478BwLf7cDqKiTbuJwQA9JnevUc9wvEVZCbEQrC5TmwGCKscekgU7SHD2hQjG0t7biDljr2B2ULK9idLeDJ1QpvOnP1A2Ev4eFkvZB4uf7gZDZD'
+        self.authKey = 'CAACBZAKw2g0ABACP2abTGmnN4cgTePjTcYNrOk0zIO6TSsRrolISI156NhGRZBnvx4Ea4KXxZCMWxF4Eq99fAB1Y7zOsO0QKBOlPGQMj07CPxsdANKYFjiS40xCh8HPfZBmK12GtVB0vMvwTaPRrX91Qw4ZAXfo0m2aHONnrkCtI3TNAPZC99tNnD5tNi5q0hwXW6H1XkKtAZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -251,6 +251,10 @@ class deleteStatusTest(TestCase):
                                              location=self.location)
         self.status1Id = self.status1.id
 
+        self.status2 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
+                                             location=self.location)
+        self.status2Id = self.status2.id
+
     def testDeleteStatus(self):
         print "DeleteStatus"
         client = Client()
@@ -283,6 +287,63 @@ class deleteStatusTest(TestCase):
         self.assertFalse(response['success'])
 
         Status.objects.get(pk=self.status1Id)
+
+    def testGoOffline(self):
+        print "GoOffline"
+        client = Client()
+
+        response = client.post(reverse('goOfflineAPI'), {
+            'userid': self.user1.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        status1 = Status.objects.get(pk=self.status1Id)
+        status2 = Status.objects.get(pk=self.status2Id)
+
+        now = datetime.utcnow()
+
+        self.assertTrue(status1.expires < now)
+        self.assertTrue(status2.expires < now)
+
+    def testCancelStatus(self):
+        print "CancelStatus"
+        client = Client()
+
+        response = client.post(reverse('cancelStatusAPI'), {
+            'userid': self.user1.id,
+            'statusid': self.status1Id
+        })
+        response = json.loads(response.content)
+
+        status1 = Status.objects.get(pk=self.status1Id)
+        status2 = Status.objects.get(pk=self.status2Id)
+        now = datetime.utcnow()
+
+        self.assertTrue(response['success'])
+        self.assertTrue(status1.expires < now)
+        self.assertFalse(status2.expires < now)
+
+    def testCancelOtherUserStatus(self):
+        print "CancelOtherUserStatus"
+        client = Client()
+
+        Status.objects.get(pk=self.status1Id)
+
+        response = client.post(reverse('cancelStatusAPI'), {
+            'userid': self.user2.id,
+            'statusid': self.status1Id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertFalse(response['success'])
+
+        status = Status.objects.get(pk=self.status1Id)
+
+        now = datetime.utcnow()
+        self.assertFalse(status.expires < now)
 
 
 class getStatusesTest(TestCase):
