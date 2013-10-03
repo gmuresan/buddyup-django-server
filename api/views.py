@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+import pdb
 
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
@@ -319,30 +320,37 @@ def createChat(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    friendid = request.REQUEST['friendid']
-
     try:
         userProfile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User ID is not valid")
 
+    friendids = request.REQUEST.get('friendid')
+    if not friendids:
+        friendids = request.REQUEST.get('friendids')
+
     try:
-        friendProfile = UserProfile.objects.get(pk=friendid)
-    except UserProfile.DoesNotExist:
-        return errorResponse("Friend ID is not valid")
-
-    if friendProfile not in userProfile.getUnblockedFriends():
-        return errorResponse("That user is not your friend")
-
-    if userProfile not in friendProfile.getUnblockedFriends():
-        return errorResponse("You are not that user's friend")
-
-    if userProfile in friendProfile.blockedFriends.all():
-        return errorResponse("That user has blocked you")
+        friendids = int(friendids)
+        friendids = [friendids, ]
+    except:
+        friendids = json.loads(friendids)
 
     conversation = Conversation.objects.create()
+
+    for friendid in friendids:
+
+        try:
+            friendProfile = UserProfile.objects.get(pk=friendid)
+        except UserProfile.DoesNotExist:
+            return errorResponse("Friend ID is not valid")
+
+        if friendProfile not in userProfile.friends.all():
+            return errorResponse("That user is not your friend")
+
+        if not userProfile in friendProfile.blockedFriends.all():
+            conversation.members.add(friendProfile)
+
     conversation.members.add(userProfile)
-    conversation.members.add(friendProfile)
 
     #TODO: Send push notification to friend that was invited to chat
 
@@ -356,41 +364,50 @@ def inviteToChat(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    friendid = request.REQUEST['friendid']
-    chatid = request.REQUEST['chatid']
-
     try:
         userProfile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User ID is not valid")
 
+    friendids = request.REQUEST.get('friendid')
+    if not friendids:
+        friendids = request.REQUEST.get('friendids')
+
     try:
-        friendProfile = UserProfile.objects.get(pk=friendid)
-    except UserProfile.DoesNotExist:
-        return errorResponse("Friend ID is not valid")
+        friendids = int(friendids)
+        friendids = [friendids, ]
+    except:
+        friendids = json.loads(friendids)
 
-    if friendProfile not in userProfile.getUnblockedFriends():
-        return errorResponse("That user is not your friend")
-
-    if userProfile not in friendProfile.getUnblockedFriends():
-        return errorResponse("You are not that user's friend")
-
-    if userProfile in friendProfile.blockedFriends.all():
-        return errorResponse("That user has blocked you")
+    chatid = request.REQUEST['chatid']
 
     try:
         conversation = Conversation.objects.get(pk=chatid)
     except Conversation.DoesNotExist:
         return errorResponse("Chat id does not exist")
 
-    members = conversation.members.all()
-    if userProfile not in members:
-        return errorResponse("You are not part of this conversation")
+    for friendid in friendids:
+        try:
+            friendProfile = UserProfile.objects.get(pk=friendid)
+        except UserProfile.DoesNotExist:
+            return errorResponse("Friend ID is not valid")
 
-    if friendProfile in members:
-        return errorResponse("Friend is already a member of this chat")
+        if friendProfile not in userProfile.getUnblockedFriends():
+            return errorResponse("That user is not your friend")
 
-    conversation.members.add(friendProfile)
+        if userProfile not in friendProfile.getUnblockedFriends():
+            return errorResponse("You are not that user's friend")
+
+        if userProfile in friendProfile.blockedFriends.all():
+            return errorResponse("That user has blocked you")
+
+        members = conversation.members.all()
+        if userProfile not in members:
+            return errorResponse("You are not part of this conversation")
+
+        if not friendProfile in members:
+            conversation.members.add(friendProfile)
+
     conversation.save()
 
     #TODO: Send push notification to friend that he was invited to chat

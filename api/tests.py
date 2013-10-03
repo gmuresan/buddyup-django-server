@@ -577,6 +577,12 @@ class ConversationTests(TestCase):
         self.user.friends.add(self.friend2)
         self.friend2.friends.add(self.user)
 
+        friend3 = User.objects.create(username='friend3', password='0', email='friend3')
+        self.friend3 = UserProfile.objects.create(user=friend3)
+
+        self.user.friends.add(self.friend3)
+        self.friend3.friends.add(self.user)
+
         nonFriend = User.objects.create(username='nonFriend', password='0', email='nonFriend')
         self.nonFriend = UserProfile.objects.create(user=nonFriend)
 
@@ -610,6 +616,28 @@ class ConversationTests(TestCase):
         self.assertTrue(self.user in members)
         self.assertTrue(self.friend in members)
 
+    def testCreateConversationWithMultipleFriends(self):
+        print "CreateConversationWithMultipleFriends"
+        client = Client()
+
+        friendids = [self.friend.id, self.friend2.id]
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': json.dumps(friendids)
+        })
+
+        response = json.loads(response.content)
+        chatid = response['chatid']
+
+        self.assertEqual(response['success'], True)
+        self.assertNotIn('error', response)
+
+        conversation = Conversation.objects.get(pk=chatid)
+        members = conversation.members.all()
+        self.assertTrue(self.user in members)
+        self.assertTrue(self.friend in members)
+        self.assertTrue(self.friend2 in members)
+
     def testCreateConverationWithNonFriend(self):
         print "CreateConversationWithNonFriend"
         client = Client()
@@ -633,8 +661,14 @@ class ConversationTests(TestCase):
         })
 
         response = json.loads(response.content)
-        self.assertEqual(response['success'], False)
-        self.assertIn('error', response)
+        self.assertEqual(response['success'], True)
+
+        chatid = response['chatid']
+
+        chat = Conversation.objects.get(pk=chatid)
+
+        self.assertEqual(len(chat.members.all()), 1)
+        self.assertNotIn(self.blockedFriend, chat.members.all())
 
     def testChatInvite(self):
         print "ChatInvite"
@@ -661,6 +695,34 @@ class ConversationTests(TestCase):
         self.assertTrue(self.user in members)
         self.assertTrue(self.friend in members)
         self.assertTrue(self.friend2 in members)
+
+    def testChatInvite(self):
+        print "ChatInvite"
+        client = Client()
+
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
+        })
+
+        response = json.loads(response.content)
+        chatid = response['chatid']
+
+        friendids = [self.friend2.id, self.friend3.id]
+        response = client.post(reverse('inviteToChatAPI'), {'userid': self.user.id,
+                                                            'friendids': json.dumps(friendids),
+                                                            'chatid': chatid})
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+        self.assertNotIn('error', response)
+
+        conversation = Conversation.objects.get(pk=chatid)
+        members = conversation.members.all()
+        self.assertTrue(self.user in members)
+        self.assertTrue(self.friend in members)
+        self.assertTrue(self.friend2 in members)
+        self.assertIn(self.friend3, members)
 
     def testChatInviteNonFriend(self):
         print "ChatInviteNonFriend"
