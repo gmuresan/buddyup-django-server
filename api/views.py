@@ -342,15 +342,18 @@ def createChat(request):
         try:
             friendProfile = UserProfile.objects.get(pk=friendid)
         except UserProfile.DoesNotExist:
+            conversation.delete()
             return errorResponse("Friend ID is not valid")
 
         if friendProfile not in userProfile.friends.all():
+            conversation.delete()
             return errorResponse("That user is not your friend")
 
         if not userProfile in friendProfile.blockedFriends.all():
             conversation.members.add(friendProfile)
 
     conversation.members.add(userProfile)
+    conversation.save()
 
     #TODO: Send push notification to friend that was invited to chat
 

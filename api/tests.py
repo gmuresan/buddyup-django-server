@@ -696,8 +696,8 @@ class ConversationTests(TestCase):
         self.assertTrue(self.friend in members)
         self.assertTrue(self.friend2 in members)
 
-    def testChatInvite(self):
-        print "ChatInvite"
+    def testMutlipleFriendChatInvite(self):
+        print "MultipleFriendChatInvite"
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
