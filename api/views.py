@@ -11,7 +11,7 @@ import facebook
 import pytz
 from api.FacebookProfile import FacebookProfile
 from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
-    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewMessagesJsonResponse, MICROSECOND_DATETIME_FORMAT
+    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
@@ -69,7 +69,7 @@ def facebookLogin(request):
     statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None, None)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
-    chatMessagesData, newSince = getNewMessagesJsonResponse(userProfile)
+    chatData, newSince = getNewChatsData(userProfile)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name
@@ -79,7 +79,7 @@ def facebookLogin(request):
     response['statuses'] = statusesResponse
     response['groups'] = groupsData
     response['mystatuses'] = myStatusesResponse
-    response['messages'] = chatMessagesData
+    response['chats'] = chatData
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
 
     return HttpResponse(json.dumps(response))
@@ -491,11 +491,11 @@ def getMessages(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    messagesData, newSince = getNewMessagesJsonResponse(userProfile, since)
+    chatData, newSince = getNewChatsData(userProfile, since)
 
     response['success'] = True
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
-    response['messages'] = messagesData
+    response['chats'] = chatData
 
     return HttpResponse(json.dumps(response))
 
@@ -871,9 +871,9 @@ def getNewData(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    messages, newSince = getNewMessagesJsonResponse(userProfile, since)
+    chats, newSince = getNewChatsData(userProfile, since)
 
-    response['messages'] = messages
+    response['chats'] = chats
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['success'] = True
 

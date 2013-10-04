@@ -116,7 +116,7 @@ def getMyGroupsJsonResponse(userProfile):
     return groupsData
 
 
-def getNewMessagesJsonResponse(userProfile, since=None):
+def getNewChatsData(userProfile, since=None):
 
     conversations = userProfile.conversations.all()
 
@@ -126,25 +126,41 @@ def getNewMessagesJsonResponse(userProfile, since=None):
     conversations = list(conversations)
     newSince = datetime.utcnow()
 
-    messages = []
+    chats = []
     for convo in conversations:
+
+        membersData = []
+        members = convo.members.all()
+        for member in members:
+            memberData = dict()
+            memberData['userid'] = member.id
+            memberData['facebookid'] = member.facebookUID
+            memberData['firstname'] = member.user.first_name
+            memberData['lastname'] = member.user.last_name
+            membersData.append(memberData)
+
         msgs = convo.messages.all()
         if since is not None:
             msgs = msgs.filter(created__gt=since)
-        for msg in msgs:
-            messages.append(msg)
 
-    messagesData = []
-    for message in messages:
-        messageData = dict()
-        messageData['messageid'] = message.id
-        messageData['chatid'] = message.conversation.id
-        messageData['date'] = message.created.strftime(DATETIME_FORMAT)
-        messageData['text'] = message.text
-        messageData['userid'] = message.user.id
+        messagesData = []
+        for message in msgs:
+            messageData = dict()
+            messageData['messageid'] = message.id
+            messageData['date'] = message.created.strftime(DATETIME_FORMAT)
+            messageData['text'] = message.text
+            messageData['userid'] = message.user.id
 
-        messagesData.append(messageData)
+            messagesData.append(messageData)
 
-    return messagesData, newSince
+        chatData = dict()
+        chatData['chatid'] = convo.id
+        chatData['lastactivity'] = convo.lastActivity.strftime(DATETIME_FORMAT)
+        chatData['messages'] = messagesData
+        chatData['members'] = membersData
+
+        chats.append(chatData)
+
+    return chats, newSince
 
 

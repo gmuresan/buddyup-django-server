@@ -17,7 +17,7 @@ from userprofile.models import UserProfile, Group, Feedback
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABACP2abTGmnN4cgTePjTcYNrOk0zIO6TSsRrolISI156NhGRZBnvx4Ea4KXxZCMWxF4Eq99fAB1Y7zOsO0QKBOlPGQMj07CPxsdANKYFjiS40xCh8HPfZBmK12GtVB0vMvwTaPRrX91Qw4ZAXfo0m2aHONnrkCtI3TNAPZC99tNnD5tNi5q0hwXW6H1XkKtAZDZD'
+        self.authKey = 'CAACEdEose0cBABGOloMQJcZAYYEo2ZA8S7xv2mliHSUgCbCtT1yEnVQJOE4qvtpOZBe5UAnAt2t9JtlQFMb5PKGq1MNrObQtGSFaxi08iamiFaLQ6yHcGjZAba7rY42np7bNmmTI053we9qR2JZCGewTifXZCuLGZAU5DVCIktTlDFC0wMrRvr13Gi26VJCh2G1IAvsexvdzwZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -125,6 +125,7 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(response['groups'][0]['groupid'], group.id)
         self.assertEqual(response['mystatuses'][0]['statusid'], myStatus.id)
         self.assertEqual(response['friends'][0]['userid'], friendProfile.id)
+        self.assertIn('chats', response)
 
 
 class PostStatusTests(TestCase):
@@ -904,18 +905,20 @@ class ChatMessageTests(TestCase):
 
         response = json.loads(response.content)
 
-        self.assertEqual(len(response['messages']), 1)
+        self.assertEqual(len(response['chats']), 1)
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
 
         convo = Conversation.objects.get(pk=chatid)
         convoMessage = convo.messages.latest('created')
 
-        message = response['messages'][0]
-        self.assertEqual(message['messageid'], convoMessage.id)
-        self.assertEqual(message['chatid'], convo.id)
-        self.assertEqual(message['text'], convoMessage.text)
-        self.assertEqual(message['userid'], convoMessage.user.id)
+        chatResponse = response['chats'][0]
+        messageResponse = chatResponse['messages'][0]
+
+        self.assertEqual(messageResponse['messageid'], convoMessage.id)
+        self.assertEqual(chatResponse['chatid'], convo.id)
+        self.assertEqual(messageResponse['text'], convoMessage.text)
+        self.assertEqual(messageResponse['userid'], convoMessage.user.id)
 
 
 class GroupTests(TestCase):
@@ -1465,7 +1468,7 @@ class GetNewDataTests(TestCase):
         response = json.loads(response.content)
 
         self.assertTrue(response['success'])
-        self.assertEqual(len(response['messages']), 1)
+        self.assertEqual(len(response['chats'][0]['messages']), 1)
 
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.user.id,
@@ -1475,7 +1478,8 @@ class GetNewDataTests(TestCase):
 
         response = json.loads(response.content)
 
+
         self.assertTrue(response['success'])
-        self.assertEqual(len(response['messages']), 0)
+        self.assertEqual(len(response['chats']), 0)
 
 
