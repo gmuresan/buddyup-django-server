@@ -17,7 +17,7 @@ from userprofile.models import UserProfile, Group, Feedback
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACEdEose0cBABGOloMQJcZAYYEo2ZA8S7xv2mliHSUgCbCtT1yEnVQJOE4qvtpOZBe5UAnAt2t9JtlQFMb5PKGq1MNrObQtGSFaxi08iamiFaLQ6yHcGjZAba7rY42np7bNmmTI053we9qR2JZCGewTifXZCuLGZAU5DVCIktTlDFC0wMrRvr13Gi26VJCh2G1IAvsexvdzwZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAF5d2GPrfKoKWmvY3w5RUqj405euuuZB0iHysgSGZAXZCojHGDqm8m2sl0PbK0bL7duvYaZAwZAbRADPXFzX2GN0LlVM5Ttjj9l8rkh55eqxb9Hh27B00XFa3PoLrsVFUxDfcdjYDzYTf0NWgbsp5tvqZBkJNxZATclqtjjau44spKWhp9qlSQDZAPZAjcFMjFAZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 

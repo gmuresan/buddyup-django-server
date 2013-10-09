@@ -66,7 +66,7 @@ def facebookLogin(request):
             friendData = createFriendJsonObject(friend, blocked)
             response['friends'].append(friendData)
 
-    statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None, None)
+    statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
     chatData, newSince = getNewChatsData(userProfile)
