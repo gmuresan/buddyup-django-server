@@ -386,8 +386,6 @@ class getStatusesTest(TestCase):
         response = client.get(reverse('api.views.getStatuses'), {
             'userid': self.user2.id,
             'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
-            'lat': myLat,
-            'lng': myLng
         })
 
         response = json.loads(response.content)
@@ -400,28 +398,6 @@ class getStatusesTest(TestCase):
 
         statusDate = response['statuses'][0]['datecreated']
         self.assertEqual(statusDate, self.status1.date.strftime(DATETIME_FORMAT))
-
-    def testSingleStatusOutOfRange(self):
-        print "SingleStatusOutOfRange"
-        client = Client()
-
-        myLat = 42.321620
-        myLng = -83.507794
-        since = datetime.utcnow() - timedelta(hours=1)
-
-        response = client.get(reverse('api.views.getStatuses'), {
-            'userid': self.user2.id,
-            'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
-            'lat': myLat,
-            'lng': myLng,
-            'distance': 1
-        })
-
-        response = json.loads(response.content)
-
-        self.assertEqual(response['success'], True)
-        self.assertEqual(len(response['statuses']), 0)
-        self.assertNotIn('error', response)
 
     def testGetStatusesWithGroups(self):
         print "GetStatusesWithGroups"

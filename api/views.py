@@ -242,11 +242,8 @@ def getStatuses(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    lat = request.REQUEST['lat']
-    lng = request.REQUEST['lng']
-    distance = request.REQUEST.get('distance', 5)
-    point = Point(float(lng), float(lat))
     since = request.REQUEST.get('since', None)
+
     if since:
         since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
@@ -255,7 +252,7 @@ def getStatuses(request):
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User Id')
 
-    statusesData, newSince = getNewStatusesJsonResponse(userprofile, since, point, distance)
+    statusesData, newSince = getNewStatusesJsonResponse(userprofile, since)
 
     response['success'] = True
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)

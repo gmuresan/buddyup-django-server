@@ -55,7 +55,7 @@ def createGroupJsonObject(group):
     return groupData
 
 
-def getNewStatusesJsonResponse(userProfile, since, point, distance=5):
+def getNewStatusesJsonResponse(userProfile, since):
     now = datetime.utcnow().replace(tzinfo=pytz.utc)
     friends = userProfile.getUnblockedFriends()
 
@@ -65,8 +65,6 @@ def getNewStatusesJsonResponse(userProfile, since, point, distance=5):
 
     if since is not None:
         statuses = statuses.filter(date__gt=since)
-    if point is not None:
-        statuses = statuses.filter(location__point__distance_lte=(point, D(mi=int(distance))))
 
     statuses = list(statuses)
     newSince = datetime.utcnow()
