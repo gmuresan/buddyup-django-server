@@ -543,12 +543,6 @@ class PokeTest(TestCase):
         response = json.loads(response.content)
 
         self.assertEqual(response['success'], True)
-        self.assertIsNotNone(response['pokeid'])
-
-        poke = Poke.objects.get(pk=response['pokeid'])
-
-        self.assertEqual(poke.sender, self.user1)
-        self.assertEqual(poke.recipient, self.user2)
 
         response = client.post('/api/poke/', {
             'userid': self.user1.id,
@@ -1473,13 +1467,48 @@ class GetNewDataTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.user.id,
             'since': response['newsince'],
-            'all': False
         })
 
         response = json.loads(response.content)
 
-
         self.assertTrue(response['success'])
         self.assertEqual(len(response['chats']), 0)
 
+    def testGetPokes(self):
+        print "GetPokes"
 
+        client = Client()
+
+        response = client.post(reverse('pokeAPI'), {
+            'userid': self.friend.id,
+            'friendid': self.user.id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.user.id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        pokes = response['pokes']
+        poke1 = pokes[0]
+
+        self.assertEqual(poke1['userid'], self.friend.id)
+
+        newSince = response['newsince']
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid':self.user.id,
+            'since':newSince
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['pokes']), 0)

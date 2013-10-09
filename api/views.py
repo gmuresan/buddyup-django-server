@@ -11,7 +11,7 @@ import facebook
 import pytz
 from api.FacebookProfile import FacebookProfile
 from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
-    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT
+    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT, getNewPokesData
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
@@ -311,7 +311,6 @@ def poke(request):
     # TODO: need to send push notification to target user
 
     response['success'] = True
-    response['pokeid'] = poke.id
 
     return HttpResponse(json.dumps(response))
 
@@ -871,11 +870,13 @@ def getNewData(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
+    pokes = getNewPokesData(userProfile, since)
     chats, newSince = getNewChatsData(userProfile, since)
 
     response['chats'] = chats
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['success'] = True
+    response['pokes'] = pokes
 
     return HttpResponse(json.dumps(response))
 

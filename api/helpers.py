@@ -164,3 +164,19 @@ def getNewChatsData(userProfile, since=None):
     return chats, newSince
 
 
+def getNewPokesData(userProfile, since):
+
+    pokes = userProfile.receivedPokes.all()
+
+    if since is not None:
+        pokes = pokes.filter(created__gt=since)
+
+    pokesData = []
+    for poke in pokes:
+        pokeData = dict()
+
+        pokeData['userid'] = poke.sender.id
+        pokesData.append(pokeData)
+
+    return pokesData
+
