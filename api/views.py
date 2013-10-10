@@ -11,7 +11,7 @@ import facebook
 import pytz
 from api.FacebookProfile import FacebookProfile
 from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
-    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT, getNewPokesData
+    getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT, getNewPokesData, getSettingsData
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
@@ -70,6 +70,7 @@ def facebookLogin(request):
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
     chatData, newSince = getNewChatsData(userProfile)
+    settings = getSettingsData(userProfile)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name
@@ -81,10 +82,12 @@ def facebookLogin(request):
     response['mystatuses'] = myStatusesResponse
     response['chats'] = chatData
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
+    response['settings'] = settings
 
     return HttpResponse(json.dumps(response))
 
 
+### OBSOLETE ###
 def facebookRegister(request):
     response = dict()
 

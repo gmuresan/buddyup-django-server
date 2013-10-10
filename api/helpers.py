@@ -175,3 +175,14 @@ def getNewPokesData(userProfile, since):
 
     return pokesData
 
+
+def getSettingsData(userProfile):
+
+    settings = userProfile.settings.all()
+
+    settingsData = dict()
+    for setting in settings:
+        settingsData[setting.key] = setting.value
+
+    return settingsData
+

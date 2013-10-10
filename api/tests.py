@@ -127,6 +127,46 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(response['friends'][0]['userid'], friendProfile.id)
         self.assertIn('chats', response)
 
+    def testGetSettingsOnLogin(self):
+        print "FacebookLoginWithSettings"
+        client = Client()
+
+        response = client.post(reverse('facebookLoginAPI'), {
+            'fbauthkey': self.authKey,
+            'device': 'android'
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        user = UserProfile.objects.get(pk=response['userid'])
+
+        client.post(reverse('setSettingAPI'), {
+            'userid': user.id,
+            'key': 'key1',
+            'value': 'value1'
+        })
+
+        client.post(reverse('setSettingAPI'), {
+            'userid': user.id,
+            'key': 'key2',
+            'value': 'value2'
+        })
+
+        response = client.post(reverse('facebookLoginAPI'), {
+            'fbauthkey': self.authKey,
+            'device': 'android'
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['settings']), 2)
+        setting1 = response['settings']['key1']
+        setting2 = response['settings']['key2']
+
+        self.assertEqual(setting1, 'value1')
+        self.assertEqual(setting2, 'value2')
+
 
 class PostStatusTests(TestCase):
     def setUp(self):
