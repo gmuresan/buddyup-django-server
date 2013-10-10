@@ -34,6 +34,8 @@ urlpatterns = patterns('',
 
                        url(r'^submitfeedback/$', submitFeedback, {}, 'submitFeedbackAPI'),
 
-                       url(r'^getnewdata/$', getNewData, {}, 'getNewDataAPI')
+                       url(r'^getnewdata/$', getNewData, {}, 'getNewDataAPI'),
 
+                       url(r'^setsetting/$', setSetting, {}, 'setSettingAPI'),
+                       url(r'^getsetting/$', getSetting, {}, 'getSettingAPI'),
 )

@@ -12,7 +12,7 @@ from django.test import TestCase, Client
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
 from chat.models import Conversation, Message
 from status.models import Status, Poke, Location
-from userprofile.models import UserProfile, Group, Feedback
+from userprofile.models import UserProfile, Group, Feedback, Setting
 
 
 class FacebookRegisterTest(TestCase):
@@ -1488,3 +1488,70 @@ class GetNewDataTests(TestCase):
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['pokes']), 0)
+
+
+class GetNewDataTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+        self.setting1 = Setting.objects.create(user=self.user, value="value1", key="key1")
+
+    def testSetSetting(self):
+        print "SetSetting"
+
+        client = Client()
+
+        response = client.post(reverse('setSettingAPI'), {
+            'userid': self.user.id,
+            'key': 'key2',
+            'value': 'value2'
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        setting2 = self.user.settings.get(key='key2')
+        self.assertEqual(setting2.value, 'value2')
+
+        response = client.post(reverse('setSettingAPI'), {
+            'userid': self.user.id,
+            'key': 'key2',
+            'value': 'value3'
+        })
+        response = json.loads(response.content)
+
+        setting2 = self.user.settings.get(key='key2')
+        self.assertTrue(response['success'])
+        self.assertEqual(setting2.value, 'value3')
+
+
+    def testGetSetting(self):
+        print "GetSetting"
+
+        client = Client()
+
+        response = client.post(reverse('getSettingAPI'), {
+            'userid': self.user.id,
+            'key': self.setting1.key
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(self.setting1.value, response['value'])
+
+    def testGetBlankSetting(self):
+        print "GetBlankSetting"
+
+        client = Client()
+
+        response = client.post(reverse('getSettingAPI'), {
+            'userid': self.user.id,
+            'key': 'nokey'
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual('', response['value'])

@@ -38,3 +38,15 @@ class Feedback(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
 
+
+class Setting(models.Model):
+    user = models.ForeignKey(UserProfile, related_name='settings')
+    key = models.CharField(max_length=20)
+    value = models.CharField(max_length=255)
+
+
+
+
+
+
+

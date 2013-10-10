@@ -15,7 +15,7 @@ from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJ
 
 from chat.models import Conversation, Message
 from status.models import Status, Location, Poke
-from userprofile.models import UserProfile, Group, Feedback
+from userprofile.models import UserProfile, Group, Feedback, Setting
 
 
 def errorResponse(error, response=None):
@@ -927,3 +927,49 @@ def goOffline(request):
 
     return HttpResponse(json.dumps(response))
 
+
+def setSetting(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    key = request.REQUEST['key']
+    value = request.REQUEST['value']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("User does not exist")
+
+    try:
+        setting = userProfile.settings.get(key=key)
+        setting.value = value
+        setting.save()
+    except Setting.DoesNotExist:
+        Setting.objects.create(user=userProfile, value=value, key=key)
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def getSetting(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    key = request.REQUEST['key']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("User does not exist")
+
+    try:
+        setting = userProfile.settings.get(key=key)
+        value = setting.value
+    except Setting.DoesNotExist:
+        value = ''
+
+    response['success'] = True
+    response['value'] = value
+
+    return HttpResponse(json.dumps(response))
