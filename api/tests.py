@@ -1475,7 +1475,7 @@ class GetNewDataTests(TestCase):
         pokes = response['pokes']
         poke1 = pokes[0]
 
-        self.assertEqual(poke1['userid'], self.friend.id)
+        self.assertEqual(poke1, self.friend.id)
 
         newSince = response['newsince']
 

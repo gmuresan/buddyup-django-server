@@ -171,10 +171,7 @@ def getNewPokesData(userProfile, since):
 
     pokesData = []
     for poke in pokes:
-        pokeData = dict()
-
-        pokeData['userid'] = poke.sender.id
-        pokesData.append(pokeData)
+        pokesData.append(poke.sender.id)
 
     return pokesData
 
