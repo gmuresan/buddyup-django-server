@@ -887,6 +887,8 @@ class ChatMessageTests(TestCase):
         self.assertEqual(message.user, self.user)
         self.assertEqual(message.text, 'hello')
         self.assertEqual(message.conversation, convo)
+        self.assertIn('chats', response)
+        self.assertIn('newsince', response)
 
     def testGetSingleMessage(self):
         print "GetSingleMessage"

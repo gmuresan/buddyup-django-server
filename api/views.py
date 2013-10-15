@@ -455,6 +455,9 @@ def sendMessage(request):
     userid = request.REQUEST['userid']
     chatid = request.REQUEST['chatid']
     text = request.REQUEST['text']
+    since = request.REQUEST.get('since', None)
+    if since:
+        since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
         userProfile = UserProfile.objects.get(pk=userid)
@@ -472,6 +475,10 @@ def sendMessage(request):
     Message.objects.create(user=userProfile, conversation=convo, text=text)
     convo.save(force_update=True)
 
+    chatData, newSince = getNewChatsData(userProfile, since)
+
+    response['chats'] = chatData
+    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['success'] = True
 
     return HttpResponse(json.dumps(response))
