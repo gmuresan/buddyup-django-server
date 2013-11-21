@@ -19,10 +19,14 @@ class FacebookProfile:
         try:
             userProfile = UserProfile.objects.get(facebookUID=facebookId)
         except UserProfile.DoesNotExist:
-            user = User(username=profile['email'], email=profile['email'], first_name=profile['first_name'],
-                        last_name=profile['last_name'],
-                        password=0)
-            user.save()
+            try:
+                user = User.objects.get(username=profile['email'])
+            except User.DoesNotExist:
+                user = User(username=profile['email'], email=profile['email'], first_name=profile['first_name'],
+                            last_name=profile['last_name'],
+                            password=0)
+
+                user.save()
 
             userProfile = UserProfile(facebookUID=facebookId, user=user, device=device)
             userProfile.save()
