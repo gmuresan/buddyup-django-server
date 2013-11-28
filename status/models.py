@@ -1,3 +1,4 @@
+import pdb
 from django.db import models
 from userprofile.models import UserProfile, Group
 from django.contrib.gis.db import models as geomodels
@@ -20,6 +21,15 @@ class Status(geomodels.Model):
     groups = geomodels.ManyToManyField(Group, related_name='receivedStatuses', null=True, blank=True)
 
     objects = geomodels.GeoManager()
+
+    def getStatusAudienceUsers(self):
+        statusGroups = []
+        for group in self.groups.all():
+            statusGroups.append(group)
+
+        users = UserProfile.objects.filter(groupsIn__in=statusGroups)
+
+        return users
 
 
 class Location(geomodels.Model):

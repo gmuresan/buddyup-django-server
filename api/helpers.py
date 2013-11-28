@@ -1,9 +1,12 @@
 from datetime import datetime
 import pdb
+import urllib
+import urllib2
 from django.contrib.auth.models import User
 from django.contrib.gis.measure import D
 import facebook
 import pytz
+from buddyup import settings
 from status.models import Status
 from userprofile.models import UserProfile
 
@@ -186,3 +189,13 @@ def getSettingsData(userProfile):
 
     return settingsData
 
+
+def getFacebookAppAccessToken():
+    response = urllib2.urlopen("https://graph.facebook.com/" + 'oauth/access_token' + "?" +
+                               urllib.urlencode({'client_id': settings.FACEBOOK_APP_ID,
+                                                 'client_secret': settings.FACEBOOK_APP_SECRET,
+                                                 'grant_type': 'client_credentials'}), None)
+
+    accessToken = str(response.read()).split('=')[1]
+
+    return accessToken

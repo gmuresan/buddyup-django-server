@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, url
+from api.facebookGraphObjects import fbObjectStatus
 from api.views import *
 
 urlpatterns = patterns('',
@@ -38,4 +39,9 @@ urlpatterns = patterns('',
 
                        url(r'^setsetting/$', setSetting, {}, 'setSettingAPI'),
                        url(r'^getsetting/$', getSetting, {}, 'getSettingAPI'),
+
+
+                       url(r'^fb_object/status/(\d+)/$', fbObjectStatus, {}, 'fbObjectStatus'),
+
+
 )

@@ -144,6 +144,8 @@ def postStatus(request):
     expires = request.REQUEST['expires']
     locationData = request.REQUEST.get('location', '{}')
     statusid = request.REQUEST.get('statusid', 0)
+    accessToken = request.REQUEST.get('accesstoken', None)
+    shareOnFacebook = request.REQUEST.get('facebookshare', False)
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
@@ -208,6 +210,10 @@ def postStatus(request):
         status.groups.clear()
 
     status.save()
+
+    if shareOnFacebook:
+        if accessToken is not None:
+            FacebookProfile.shareStatus(accessToken, status)
 
     response['success'] = True
     response['statusid'] = status.id

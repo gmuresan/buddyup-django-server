@@ -1,4 +1,3 @@
-
 from compiler.ast import name
 from datetime import datetime, timedelta
 import json
@@ -7,12 +6,28 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.core.urlresolvers import reverse
+import facebook
 import pytz
 from django.test import TestCase, Client
+from api import helpers
+from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
+from buddyup import settings
 from chat.models import Conversation, Message
 from status.models import Status, Poke, Location
 from userprofile.models import UserProfile, Group, Feedback, Setting
+
+FB_TEST_USER_1_ID = "100007243621022"
+FB_TEST_USER_2_ID = "100007247311000"
+FB_TEST_USER_3_ID = "100007237111164"
+FB_TEST_USER_4_ID = "100007225201630"
+
+
+def performFacebookRegister(accessToken):
+    client = Client()
+
+    fb = FacebookProfile.getFacebookUserFromAuthKey(accessToken, 'android')
+    return fb.userProfile
 
 
 class FacebookRegisterTest(TestCase):
@@ -268,6 +283,74 @@ class PostStatusTests(TestCase):
 
         self.assertIn(self.group1, status.groups.all())
         self.assertIn(self.group1, status.groups.all())
+
+
+class facebookShareStatusTests(TestCase):
+    def setUp(self):
+        fb = facebook.GraphAPI()
+        appAccessToken = helpers.getFacebookAppAccessToken()
+        testUsers = fb.request(settings.FACEBOOK_APP_ID + '/accounts/test-users', {'access_token': str(appAccessToken), })
+        testUsers = testUsers['data']
+        for user in testUsers:
+
+            if user['id'] == FB_TEST_USER_1_ID:
+                self.accessTokenUser = user['access_token']
+                continue
+
+            if user['id'] == FB_TEST_USER_2_ID:
+                self.accessTokenFriend1 = user['access_token']
+                continue
+
+            if user['id'] == FB_TEST_USER_3_ID:
+                self.accessTokenFriend2 = user['access_token']
+                continue
+
+            if user['id'] == FB_TEST_USER_4_ID:
+                self.accessTokenFriend3 = user['access_token']
+                continue
+
+        self.user = performFacebookRegister(self.accessTokenUser)
+        self.friend1 = performFacebookRegister(self.accessTokenFriend1)
+        self.friend2 = performFacebookRegister(self.accessTokenFriend2)
+        self.friend3 = performFacebookRegister(self.accessTokenFriend3)
+
+        self.group = Group.objects.create(user=self.user, name="group1")
+        self.group.members.add(self.friend1)
+        self.group.members.add(self.friend2)
+        self.group.save()
+
+    def testShareStatusOnFacebook(self):
+        client = Client()
+
+        text = "Hangout at my house"
+
+        expires = pytz.timezone("UTC").localize(datetime(2013, 5, 1))
+
+        lng = 42.341560
+        lat = -83.501783
+        address = '46894 spinning wheel'
+        city = 'canton'
+        state = 'MI'
+        venue = "My house"
+        location = {'lat': lat, 'lng': lng, 'address': address, 'state': state,
+                    'city': city, 'venue': venue}
+
+        response = client.post(reverse('postStatusAPI'), {
+            'userid': self.user.id,
+            'expires': expires.strftime(DATETIME_FORMAT),
+            'text': text,
+            'groupids': json.dumps([self.group.id]),
+            'location': json.dumps(location)
+        })
+
+        response = json.loads(response.content)
+
+        statusId = response['statusid']
+        status = Status.objects.get(pk=statusId)
+
+        fbProfile = FacebookProfile(self.accessTokenUser, self.accessTokenUser)
+        response = fbProfile.shareStatus(self.user, status)
+        print response
 
 
 class deleteStatusTest(TestCase):
@@ -1369,7 +1452,8 @@ class FriendsListTests(TestCase):
         friend1 = {'userid': self.friend.id, 'firstname': self.friend.user.first_name,
                    'lastname': self.friend.user.last_name, 'blocked': False, 'facebookid': self.friend.facebookUID}
         friend2 = {'userid': self.friend2.id, 'firstname': self.friend2.user.first_name,
-                   'lastname': self.friend2.user.last_name, 'blocked': False, 'facebookid': self.friend2.facebookUID}
+                   'lastname': self.friend2.user.last_name, 'blocked': False,
+                   'facebookid': self.friend2.facebookUID}
 
         self.assertIn(friend1, friends)
         self.assertIn(friend2, friends)
@@ -1522,8 +1606,8 @@ class GetNewDataTests(TestCase):
         newSince = response['newsince']
 
         response = client.post(reverse('getNewDataAPI'), {
-            'userid':self.user.id,
-            'since':newSince
+            'userid': self.user.id,
+            'since': newSince
         })
 
         response = json.loads(response.content)
