@@ -13,7 +13,7 @@ class FacebookProfile:
         self.userProfile = userProfile
         self.graph = facebook.GraphAPI(facebookAuthKey)
 
-    def shareStatus(self, facebookAccessToken, status):
+    def shareStatus(self, status):
         userIds = status.getStatusAudienceUsers().values_list('facebookUID', flat='true')
 
         endTime = status.expires.strftime(FACEBOOK_DATETIME_FORMAT)

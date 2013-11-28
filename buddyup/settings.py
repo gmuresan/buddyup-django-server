@@ -1,4 +1,6 @@
+import os
 
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 FACEBOOK_APP_ID = '142269385966400'
 FACEBOOK_APP_SECRET = 'fe9ae4f096756dfd59e5ed2d5225e552'
@@ -129,6 +131,7 @@ ROOT_URLCONF = 'buddyup.urls'
 WSGI_APPLICATION = 'buddyup.wsgi.application'
 
 TEMPLATE_DIRS = (
+    os.path.join(PROJECT_ROOT, "templates"),
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
