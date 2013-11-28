@@ -1,6 +1,6 @@
 import os
 
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__), '..')
 
 FACEBOOK_APP_ID = '142269385966400'
 FACEBOOK_APP_SECRET = 'fe9ae4f096756dfd59e5ed2d5225e552'
