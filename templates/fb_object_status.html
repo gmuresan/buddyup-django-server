@@ -2,7 +2,7 @@
     <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# buddyupapp: http://ogp.me/ns/fb/buddyupapp#">
         <meta property="fb:app_id"                     content="{{ fbAppId }}" />
         <meta property="og:type"                       content="buddyupapp:buddyup_status" />
-        <meta property="og:url"                        content="{{ request.path }}" />
+        <meta property="og:url"                        content="{{ current_url }}" />
         <meta property="og:title"                      content="{{ status.text }}" />
         <meta property="og:image"                      content="https://fbstatic-a.akamaihd.net/images/devsite/attachment_blank.png" />
         <meta property="buddyupapp:location:latitude"  content="{{ status.location.lat }}" />
