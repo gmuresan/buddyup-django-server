@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 import facebook
 from userprofile.models import UserProfile
 
-FACEBOOK_DATETIME_FORMAT = " %Y-%m-%dT%H:%M"
+FACEBOOK_DATETIME_FORMAT = "%Y-%m-%dT%H:%M"
 
 
 class FacebookProfile:
