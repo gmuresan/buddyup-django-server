@@ -196,16 +196,8 @@ def postStatus(request):
     status.save()
 
     if groupids:
-        groups = []
-        for groupid in groupids:
-            try:
-                group = Group.objects.get(pk=groupid)
-                status.groups.add(group)
-            except Group.DoesNotExist:
-                return errorResponse("Group does not exist: " + str(groupid))
-
-            if group.user != userprofile:
-                return errorResponse("Group does not belong to this user: " + str(groupid))
+        groups = Group.objects.filter(id__in=groupids)
+        status.groups.add(*groups)
     else:
         status.groups.clear()
 
@@ -213,7 +205,8 @@ def postStatus(request):
 
     if shareOnFacebook:
         if accessToken is not None:
-            FacebookProfile.shareStatus(accessToken, status)
+            fbProfile = FacebookProfile(userprofile, accessToken)
+            fbProfile.shareStatus(status, request)
 
     response['success'] = True
     response['statusid'] = status.id

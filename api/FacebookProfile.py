@@ -13,17 +13,22 @@ class FacebookProfile:
         self.userProfile = userProfile
         self.graph = facebook.GraphAPI(facebookAuthKey)
 
-    def shareStatus(self, status, request):
+    def shareStatus(self, status, request=None):
         endTime = status.expires.strftime(FACEBOOK_DATETIME_FORMAT)
 
-        params = {'buddyup_status': request.build_absolute_uri(reverse('fbObjectStatus', args=(status.id,))),
-                  'end_time': endTime}
+        params = {'end_time': endTime}
 
-        if len(status.groups.objects.all()) > 0:
+        if request is not None:
+            params['buddyup_status'] = request.build_absolute_uri(reverse('fbObjectStatus', args=(status.id,)))
+        else:
+            params['buddyup_status'] = 'http://www.buddyup.mobi/api/fb_object/status/228/'
+
+        if len(status.groups.all()) > 0:
             userIds = status.getStatusAudienceUsers().values_list('facebookUID', flat='true')
-            params['privacy'] = {'value': 'CUSTOM', 'allow': userIds}
+            facebookIds = ",".join(userIds)
+            params['privacy'] = {'value': 'CUSTOM', 'allow': facebookIds.encode("utf-8")}
 
-        response = self.graph.request("me/buddyupapp:want", None, params)
+        response = self.graph.request("me/buddyupapp:post", None, params)
 
         return response
 

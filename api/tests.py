@@ -324,7 +324,8 @@ class facebookShareStatusTests(TestCase):
 
         text = "Hangout at my house"
 
-        expires = pytz.timezone("UTC").localize(datetime(2013, 5, 1))
+        expires = datetime.now(pytz.timezone("UTC"))
+        expires = expires + timedelta(hours=1)
 
         lng = 42.341560
         lat = -83.501783
