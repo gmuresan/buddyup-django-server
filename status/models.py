@@ -23,12 +23,7 @@ class Status(geomodels.Model):
     objects = geomodels.GeoManager()
 
     def getStatusAudienceUsers(self):
-        statusGroups = []
-        for group in self.groups.all():
-            statusGroups.append(group)
-
-        users = UserProfile.objects.filter(groupsIn__in=statusGroups)
-
+        users = UserProfile.objects.filter(groupsIn__in=self.groups.all())
         return users
 
 

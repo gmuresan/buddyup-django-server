@@ -347,7 +347,7 @@ class facebookShareStatusTests(TestCase):
 
         statusId = response['statusid']
         status = Status.objects.get(pk=statusId)
-        pdb.set_trace()
+
         fbProfile = FacebookProfile(self.user, self.accessTokenUser)
         response = fbProfile.shareStatus(status)
         print response
