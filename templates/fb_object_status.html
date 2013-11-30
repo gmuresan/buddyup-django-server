@@ -2,7 +2,7 @@
     <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# buddyupapp: http://ogp.me/ns/fb/buddyupapp#">
         <meta property="fb:app_id"                     content="{{ fbAppId }}" />
         <meta property="og:type"                       content="buddyupapp:buddyup_status" />
-        <!--meta property="og:url"                        content="http://www.yahoo.com" --/>
+        <!--meta property="og:url"                        content="http://www.yahoo.com" /-->
         <meta property="og:title"                      content="{{ userprofile.user.first_name }} wants to {{ status.text }}" />
         {% if status.location.venue %}
             <meta property="og:description"            content="{{ status.location.venue }},
