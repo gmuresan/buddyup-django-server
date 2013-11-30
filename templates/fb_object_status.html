@@ -2,12 +2,11 @@
     <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# buddyupapp: http://ogp.me/ns/fb/buddyupapp#">
         <meta property="fb:app_id"                     content="{{ fbAppId }}" />
         <meta property="og:type"                       content="buddyupapp:buddyup_status" />
-        <!--meta property="og:url"                        content="{{ current_url }}" /-->
+        <meta property="og:url"                        content="www.yahoo.com" >
         <meta property="og:title"                      content="{{ status.text }}" />
-        <meta property="og:noun"                       content="BuddyUp Noun" />
         <!--meta property="og:image"                      content="https://fbstatic-a.akamaihd.net/images/devsite/attachment_blank.png" /-->
-        <meta property="place:location:latitude"  content="{{ status.location.lat }}" />
-        <meta property="place:location:longitude" content="{{ status.location.lng }}" />
+        <meta property="buddyupapp:location:latitude"  content="{{ status.location.lat }}" />
+        <meta property="buddyupapp:location:longitude" content="{{ status.location.lng }}" />
     </head>
 
     <body>

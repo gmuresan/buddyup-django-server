@@ -13,13 +13,14 @@ class FacebookProfile:
         self.userProfile = userProfile
         self.graph = facebook.GraphAPI(facebookAuthKey)
 
-    def shareStatus(self, status):
+    def shareStatus(self, status, request):
         userIds = status.getStatusAudienceUsers().values_list('facebookUID', flat='true')
 
         endTime = status.expires.strftime(FACEBOOK_DATETIME_FORMAT)
         pdb.set_trace()
         response = self.graph.request("me/buddyupapp:want",
-                                      {'buddyup_status': reverse('fbObjectStatus', args=(status.id,)),
+                                      {'buddyup_status': request.build_absolute_uri(
+                                          reverse('fbObjectStatus', args=(status.id,))),
                                        'privacy': {'value': 'CUSTOM', 'allow': userIds},
                                        'end_time': endTime})
         a = 1
