@@ -3,7 +3,7 @@
         <meta property="fb:app_id"                     content="{{ fbAppId }}" />
         <meta property="og:type"                       content="buddyupapp:buddyup_status" />
         <meta property="og:url"                        content="www.yahoo.com" >
-        <meta property="og:title"                      content="{{ status.text }}" />
+        <meta property="og:title"                      content="{{ userprofile.user.first_name }} wants to {{ status.text }}" />
         <!--meta property="og:image"                      content="https://fbstatic-a.akamaihd.net/images/devsite/attachment_blank.png" /-->
         <meta property="buddyupapp:location:latitude"  content="{{ status.location.lat }}" />
         <meta property="buddyupapp:location:longitude" content="{{ status.location.lng }}" />

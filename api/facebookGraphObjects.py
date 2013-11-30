@@ -10,4 +10,4 @@ def fbObjectStatus(request, statusId):
     fbAppId = settings.FACEBOOK_APP_ID
 
     return render_to_response('fb_object_status.html',
-                              {'status': status, 'fbAppId': fbAppId, 'current_url': request.build_absolute_uri()})
+                              {'status': status, 'fbAppId': fbAppId, 'userprofile': status.user, 'current_url': request.build_absolute_uri()})
