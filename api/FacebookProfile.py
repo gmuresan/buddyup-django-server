@@ -16,7 +16,7 @@ class FacebookProfile:
     def shareStatus(self, status, request=None):
         endTime = status.expires.strftime(FACEBOOK_DATETIME_FORMAT)
 
-        params = {'end_time': endTime, 'explicitly_shared': True}
+        params = {'end_time': endTime, 'explicitly_shared': "true"}
 
         if request is not None:
             params['buddyup_status'] = request.build_absolute_uri(reverse('fbObjectStatus', args=(status.id,)))
