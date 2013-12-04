@@ -351,7 +351,6 @@ class facebookShareStatusTests(TestCase):
 
         fbProfile = FacebookProfile(self.user, self.accessTokenUser)
         response = fbProfile.shareStatus(status)
-        print response
 
 
 class deleteStatusTest(TestCase):
