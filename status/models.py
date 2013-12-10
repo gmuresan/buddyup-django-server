@@ -53,6 +53,10 @@ class Location(geomodels.Model):
 
 
 class Poke(models.Model):
+
+    class Meta:
+        get_latest_by = "created"
+
     sender = models.ForeignKey(UserProfile, related_name='sentPokes')
     recipient = models.ForeignKey(UserProfile, related_name='receivedPokes')
     created = models.DateTimeField(auto_now_add=True)

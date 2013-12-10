@@ -11,7 +11,7 @@ import pytz
 from django.test import TestCase, Client
 from api import helpers
 from api.FacebookProfile import FacebookProfile
-from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
+from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
 from buddyup import settings
 from chat.models import Conversation, Message
 from status.models import Status, Poke, Location
@@ -32,7 +32,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAF5d2GPrfKoKWmvY3w5RUqj405euuuZB0iHysgSGZAXZCojHGDqm8m2sl0PbK0bL7duvYaZAwZAbRADPXFzX2GN0LlVM5Ttjj9l8rkh55eqxb9Hh27B00XFa3PoLrsVFUxDfcdjYDzYTf0NWgbsp5tvqZBkJNxZATclqtjjau44spKWhp9qlSQDZAPZAjcFMjFAZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAHcOswbM9vj5ypA4867DAj0p0VZC1wNAjMEHCc8uIYEojyqX09eTeOhDsFl7pOA5EXy1syrJriAIGwvtu9YXUHBxe7XdH5BMIKs8xZAcW2GvZAIAsZBx4FxH1RJSNtL1Nfb13nUAZCqycGz7z1wSzyZA71Ff1HZANxGED73pt0aem4rIVFf5ZBQEu0WxBjX3XgZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -40,7 +40,7 @@ class FacebookRegisterTest(TestCase):
         print "Register"
         client = Client()
 
-        response = client.post(reverse('facebookRegisterAPI'), {
+        response = client.post(reverse('facebookLoginAPI'), {
             'fbauthkey': self.authKey,
             'device': 'android'
         })
@@ -61,7 +61,7 @@ class FacebookRegisterTest(TestCase):
         user = User.objects.create(username='user1', password='0', email='user1', first_name='first', last_name='last')
         userprofile = UserProfile.objects.create(user=user)
 
-        response = client.post(reverse('facebookRegisterAPI'), {
+        response = client.post(reverse('facebookLoginAPI'), {
             'fbauthkey': self.authKey,
             'device': 'android'
         })
@@ -76,7 +76,7 @@ class FacebookRegisterTest(TestCase):
         userprofile.friends.add(myProfile)
         userprofile.save()
 
-        response = client.post(reverse('facebookRegisterAPI'), {
+        response = client.post(reverse('facebookLoginAPI'), {
             'fbauthkey': self.authKey,
             'device': 'android'
         })
@@ -683,6 +683,26 @@ class PokeTest(TestCase):
         self.assertEqual(response['success'], False)
         self.assertIsNotNone(response['error'])
 
+    def testPokeInLogin(self):
+        print "PokeInLogin"
+        client = Client()
+
+        response = client.post('/api/poke/', {
+            'userid': self.user1.id,
+            'friendid': self.user2.id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+
+        friendObj = createFriendJsonObject(self.user2, False, self.user1)
+
+        pokeTime = friendObj['lastpoketime']
+        lastPoke = Poke.objects.filter(sender=self.user1, recipient=self.user2).latest()
+        lastPokeTime = lastPoke.created.strftime(DATETIME_FORMAT)
+
+        self.assertEqual(lastPokeTime, pokeTime)
 
 class ConversationTests(TestCase):
     def setUp(self):

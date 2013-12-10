@@ -52,7 +52,7 @@ def facebookLogin(request):
         if friend in blockedFriends:
             blocked = True
 
-        friendData = createFriendJsonObject(friend, blocked)
+        friendData = createFriendJsonObject(friend, blocked, userProfile)
         response['friends'].append(friendData)
 
     # Check all buddyup friends and add them if they weren't already included in facebook friends check
@@ -63,7 +63,7 @@ def facebookLogin(request):
             if friend in blockedFriends:
                 blocked = True
 
-            friendData = createFriendJsonObject(friend, blocked)
+            friendData = createFriendJsonObject(friend, blocked, userProfile)
             response['friends'].append(friendData)
 
     statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None)
@@ -83,54 +83,6 @@ def facebookLogin(request):
     response['chats'] = chatData
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['settings'] = settings
-
-    return HttpResponse(json.dumps(response))
-
-
-### OBSOLETE ###
-def facebookRegister(request):
-    response = dict()
-
-    device = request.REQUEST['device']
-    facebookAuthKey = request.REQUEST['fbauthkey']
-
-    if device != 'ios' and device != 'android':
-        return errorResponse('Invalid device: ' + device)
-
-    try:
-        facebookProfile = FacebookProfile.getFacebookUserFromAuthKey(facebookAuthKey, device)
-        userProfile = facebookProfile.userProfile
-    except facebook.GraphAPIError:
-        return errorResponse("Invalid Facebook AUTH Key")
-
-    response['friends'] = []
-
-    facebookFriends = facebookProfile.getFacebookFriends()
-
-    blockedFriends = userProfile.blockedFriends.all()
-    for friend in facebookFriends:
-        blocked = False
-        if friend in blockedFriends:
-            blocked = True
-
-        friendData = createFriendJsonObject(friend, blocked)
-        response['friends'].append(friendData)
-
-    # Check all buddyup friends and add them if they weren't already included in facebook friends check
-    friends = userProfile.friends.all()
-    for friend in friends:
-        if friend not in facebookFriends:
-            blocked = False
-            if friend in blockedFriends:
-                blocked = True
-
-            friendData = createFriendJsonObject(friend, blocked)
-            response['friends'].append(friendData)
-
-    response['success'] = True
-    response['firstname'] = userProfile.user.first_name
-    response['lastname'] = userProfile.user.last_name
-    response['userid'] = userProfile.id
 
     return HttpResponse(json.dumps(response))
 
@@ -780,7 +732,7 @@ def getFriends(request):
         if friend in blockedFriends:
             blocked = True
 
-        friendData = createFriendJsonObject(friend, blocked)
+        friendData = createFriendJsonObject(friend, blocked, userProfile)
 
         friendsData.append(friendData)
 

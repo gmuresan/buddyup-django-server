@@ -3,7 +3,6 @@ from api.facebookGraphObjects import fbObjectStatus
 from api.views import *
 
 urlpatterns = patterns('',
-                       url(r'^facebookregister/$', facebookRegister, {}, 'facebookRegisterAPI'),
                        url(r'^facebooklogin/$', facebookLogin, {}, 'facebookLoginAPI'),
 
                        url(r'^poststatus/$', postStatus, {}, 'postStatusAPI'),

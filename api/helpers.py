@@ -7,7 +7,7 @@ from django.contrib.gis.measure import D
 import facebook
 import pytz
 from buddyup import settings
-from status.models import Status
+from status.models import Status, Poke
 from userprofile.models import UserProfile
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
@@ -36,12 +36,18 @@ def createStatusJsonObject(status):
     return statusData
 
 
-def createFriendJsonObject(friend, blocked):
+def createFriendJsonObject(friend, blocked, user):
     friendData = {'userid': friend.id, 'firstname': friend.user.first_name,
                   'lastname': friend.user.last_name, 'blocked': False, 'facebookid': friend.facebookUID}
 
     if blocked:
         friendData['blocked'] = True
+
+    lastPoke = Poke.objects.filter(sender=user, recipient=friend)
+    if lastPoke:
+        lastPoke = lastPoke.latest()
+        lastPokeTime = lastPoke.created.strftime(DATETIME_FORMAT)
+        friendData['lastpoketime'] = lastPokeTime
 
     return friendData
 
