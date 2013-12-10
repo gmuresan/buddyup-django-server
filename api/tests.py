@@ -469,6 +469,36 @@ class deleteStatusTest(TestCase):
         now = datetime.utcnow()
         self.assertFalse(status.expires < now)
 
+    def testDeleteStatus(self):
+        print "DeleteStatus"
+        client = Client()
+
+        response = client.post(reverse('deleteStatusAPI'), {
+            'userid': self.user1.id,
+            'statusid': self.status1Id
+        })
+
+        response = json.loads(response.content)
+
+        with self.assertRaises(Status.DoesNotExist):
+            Status.objects.get(pk=self.status1Id)
+
+        self.assertTrue(response['success'])
+
+    def testDeleteOtherUserStatus(self):
+        print "DeleteOtherUserStatus"
+        client = Client()
+
+        response = client.post(reverse('cancelStatusAPI'), {
+            'userid': self.user2.id,
+            'statusid': self.status1Id
+        })
+
+        response = json.loads(response.content)
+
+        self.assertFalse(response['success'])
+
+        status = Status.objects.get(pk=self.status1Id)
 
 class getStatusesTest(TestCase):
     # TODO: create a test for testing that the location is present in the status

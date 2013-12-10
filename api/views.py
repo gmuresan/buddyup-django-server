@@ -887,6 +887,30 @@ def getNewData(request):
     return HttpResponse(json.dumps(response))
 
 
+def deleteStatus(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    statusid = request.REQUEST['statusid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+        status = Status.objects.get(pk=statusid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+    except Status.DoesNotExist:
+        return errorResponse("Invalid statusid")
+
+    if status.user == userProfile:
+        status.delete()
+        response['success'] = True
+    else :
+        response['success'] = False
+        response['error'] = "Can not delete another user's status"
+
+    return HttpResponse(json.dumps(response))
+
+
 def cancelStatus(request):
     response = dict()
 
