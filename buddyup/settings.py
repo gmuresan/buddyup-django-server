@@ -1,4 +1,5 @@
 import os
+import pdb
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -189,5 +190,5 @@ LOGGING = {
 
 try:
     from local_settings import *
-except ImportError, e:
+except ImportError:
     pass
