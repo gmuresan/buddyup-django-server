@@ -189,9 +189,9 @@ LOGGING = {
     }
 }
 
-from local_settings import *
 
-#try:
 
-#except ImportError as e:
- #   print e
+try:
+    from local_settings import *
+except ImportError as e:
+    print e
