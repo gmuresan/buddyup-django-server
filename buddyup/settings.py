@@ -1,5 +1,6 @@
 import os
 import pdb
+import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -188,7 +189,9 @@ LOGGING = {
     }
 }
 
-try:
-    from local_settings import *
-except ImportError:
-    pass
+from local_settings import *
+
+#try:
+
+#except ImportError as e:
+ #   print e

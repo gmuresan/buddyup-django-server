@@ -1,4 +1,5 @@
 import pdb
+import datetime
 from django.db import models
 from userprofile.models import UserProfile, Group
 from django.contrib.gis.db import models as geomodels
@@ -14,7 +15,8 @@ class Status(geomodels.Model):
 
     user = geomodels.ForeignKey(UserProfile, related_name='statuses')
     date = geomodels.DateTimeField(auto_now=True, db_index=True)
-    expires = geomodels.DateTimeField(db_index=True)
+    expires = geomodels.DateTimeField(db_index=True, null=True, blank=True)
+    starts = geomodels.DateTimeField(db_index=True, default=datetime.datetime.now)
     text = geomodels.CharField(max_length=100, db_index=True)
 
     location = geomodels.ForeignKey('Location', related_name='statuses', null=True, blank=True)

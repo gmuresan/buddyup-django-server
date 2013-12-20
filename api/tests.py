@@ -32,7 +32,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAHcOswbM9vj5ypA4867DAj0p0VZC1wNAjMEHCc8uIYEojyqX09eTeOhDsFl7pOA5EXy1syrJriAIGwvtu9YXUHBxe7XdH5BMIKs8xZAcW2GvZAIAsZBx4FxH1RJSNtL1Nfb13nUAZCqycGz7z1wSzyZA71Ff1HZANxGED73pt0aem4rIVFf5ZBQEu0WxBjX3XgZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAMISiWayAovHQJL27dka6eGFg0FkyQQ0fMY3WZCD11jyjQcfOVBRCd6pzvBAJhOiHZC6wWfujZCOnnr1sVf0hcrddLvEYOgJqUtYIWJ96F4ZCE0FHO4uPyASCD2MNw9LH0nrgPjgnpdlfVhBpr1nFGlgKTGABF3LMyuxcwZAE7TkJZCf0T2ZCBu9tCwHCmQBQZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -284,6 +284,25 @@ class PostStatusTests(TestCase):
         self.assertIn(self.group1, status.groups.all())
         self.assertIn(self.group1, status.groups.all())
 
+    def testPostWithStartTime(self):
+        print "PostWithStartTime"
+        client = Client()
+
+        response = client.post(reverse('postStatusAPI'), {
+            'userid': self.user.id,
+            'starts': self.expires.strftime(DATETIME_FORMAT),
+            'text': self.text,
+            'location': json.dumps(self.location)
+        })
+
+        response = json.loads(response.content)
+
+        status = Status.objects.get(pk=response['statusid'])
+
+        self.assertTrue(response['success'])
+
+        self.assertEqual(self.expires.strftime(DATETIME_FORMAT), status.starts.strftime(DATETIME_FORMAT))
+
 
 class facebookShareStatusTests(TestCase):
     def setUp(self):
@@ -521,12 +540,13 @@ class getStatusesTest(TestCase):
         self.city = 'canton'
         self.state = 'MI'
         self.venue = "My house"
-        self.expirationDate = datetime.utcnow() + timedelta(hours=1)
+        self.expirationDate = datetime.utcnow() + timedelta(hours=2)
+        self.startDate = datetime.utcnow() + timedelta(hours=1)
 
         self.location = Location.objects.create(lng=self.lng, lat=self.lat, point=Point(self.lng, self.lat),
                                                 city=self.city, state=self.state, venue=self.venue)
         self.status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
-                                             location=self.location)
+                                             location=self.location, starts=self.startDate)
 
     def testSingleStatus(self):
         print "SingleStatus"
@@ -548,6 +568,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(len(response['statuses']), 1)
         self.assertEqual(response['statuses'][0]['text'], self.status1.text)
         self.assertEqual(response['statuses'][0]['dateexpires'], self.expirationDate.strftime(DATETIME_FORMAT))
+        self.assertEqual(response['statuses'][0]['datestarts'], self.startDate.strftime(DATETIME_FORMAT))
 
         statusDate = response['statuses'][0]['datecreated']
         self.assertEqual(statusDate, self.status1.date.strftime(DATETIME_FORMAT))

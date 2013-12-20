@@ -1,14 +1,9 @@
 from datetime import datetime
-import pdb
 import urllib
 import urllib2
-from django.contrib.auth.models import User
-from django.contrib.gis.measure import D
-import facebook
 import pytz
 from buddyup import settings
 from status.models import Status, Poke
-from userprofile.models import UserProfile
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 MICROSECOND_DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S.%f'
@@ -22,6 +17,7 @@ def createStatusJsonObject(status):
     statusData['text'] = status.text
     statusData['datecreated'] = status.date.strftime(DATETIME_FORMAT)
     statusData['dateexpires'] = status.expires.strftime(DATETIME_FORMAT)
+    statusData['datestarts'] = status.starts.strftime(DATETIME_FORMAT)
 
     if status.location:
         location = dict()
@@ -65,7 +61,6 @@ def createGroupJsonObject(group):
 
 
 def getNewStatusesJsonResponse(userProfile, since):
-    now = datetime.utcnow().replace(tzinfo=pytz.utc)
     friends = userProfile.getUnblockedFriends()
 
     # TODO: add expires date filter to status query
@@ -101,7 +96,6 @@ def getNewStatusesJsonResponse(userProfile, since):
 
 def getMyStatusesJsonResponse(userProfile):
 
-    now = datetime.utcnow().replace(tzinfo=pytz.utc)
     myStatuses = userProfile.statuses.filter(user=userProfile).order_by('-expires')
 
     myStatusesData = []

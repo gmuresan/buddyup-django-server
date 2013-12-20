@@ -93,7 +93,8 @@ def postStatus(request):
     text = request.REQUEST['text']
     userid = request.REQUEST['userid']
     groupids = request.REQUEST.get('groupids', '[]')
-    expires = request.REQUEST['expires']
+    expires = request.REQUEST.get('expires', None)
+    starts = request.REQUEST.get('starts', None)
     locationData = request.REQUEST.get('location', '{}')
     statusid = request.REQUEST.get('statusid', 0)
     accessToken = request.REQUEST.get('accesstoken', None)
@@ -101,7 +102,15 @@ def postStatus(request):
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
-    expires = datetime.strptime(expires, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
+    if expires:
+        expires = datetime.strptime(expires, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
+    else:
+        expires = datetime.utcnow() + timedelta(hours=8)
+
+    if starts:
+        starts = datetime.strptime(starts, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
+    else:
+        starts = datetime.utcnow()
 
     try:
         userprofile = UserProfile.objects.get(pk=userid)
@@ -111,7 +120,7 @@ def postStatus(request):
     try:
         status = Status.objects.get(pk=statusid)
     except Status.DoesNotExist:
-        status = Status(expires=expires, text=text, user=userprofile)
+        status = Status(expires=expires, text=text, user=userprofile, starts=starts)
 
     if locationData:
         lat = locationData.get('lat', None)
