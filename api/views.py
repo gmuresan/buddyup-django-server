@@ -12,8 +12,10 @@ import pytz
 from api.FacebookProfile import FacebookProfile
 from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
     getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT, getNewPokesData, getSettingsData
+from api.push_notifcations import sendChatNotifications
 
 from chat.models import Conversation, Message
+from push_notifications.models import APNSDevice
 from status.models import Status, Location, Poke
 from userprofile.models import UserProfile, Group, Feedback, Setting
 
@@ -432,7 +434,7 @@ def sendMessage(request):
     if userProfile not in convo.members.all():
         return errorResponse("User is not a member of this chat")
 
-    Message.objects.create(user=userProfile, conversation=convo, text=text)
+    message = Message.objects.create(user=userProfile, conversation=convo, text=text)
     convo.save(force_update=True)
 
     chatData, newSince = getNewChatsData(userProfile, since)
@@ -440,6 +442,8 @@ def sendMessage(request):
     response['chats'] = chatData
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['success'] = True
+
+    sendChatNotifications(message)
 
     return HttpResponse(json.dumps(response))
 
@@ -967,3 +971,22 @@ def getSetting(request):
     response['value'] = value
 
     return HttpResponse(json.dumps(response))
+
+
+def registerForPushNotifications(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    token = request.REQUEST['token']
+    platform = request.REQUEST['platform']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("User does not exist")
+
+    if platform == 'ios':
+        try:
+            iosDevice = APNSDevice.objects.get(user=userProfile)
+        except APNSDevice.DoesNotExist:
+            iosDevice = APNSDevice.objects.create()

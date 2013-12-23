@@ -12,8 +12,10 @@ from django.test import TestCase, Client
 from api import helpers
 from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
+from api.push_notifcations import sendChatNotificationsSynchronous
 from buddyup import settings
 from chat.models import Conversation, Message
+from push_notifications.models import GCMDevice, APNSDevice
 from status.models import Status, Poke, Location
 from userprofile.models import UserProfile, Group, Feedback, Setting
 
@@ -308,7 +310,8 @@ class facebookShareStatusTests(TestCase):
     def setUp(self):
         fb = facebook.GraphAPI()
         appAccessToken = helpers.getFacebookAppAccessToken()
-        testUsers = fb.request(settings.FACEBOOK_APP_ID + '/accounts/test-users', {'access_token': str(appAccessToken), })
+        testUsers = fb.request(settings.FACEBOOK_APP_ID + '/accounts/test-users',
+                               {'access_token': str(appAccessToken), })
         testUsers = testUsers['data']
         for user in testUsers:
 
@@ -519,6 +522,7 @@ class deleteStatusTest(TestCase):
 
         status = Status.objects.get(pk=self.status1Id)
 
+
 class getStatusesTest(TestCase):
     # TODO: create a test for testing that the location is present in the status
     def setUp(self):
@@ -724,6 +728,7 @@ class PokeTest(TestCase):
         lastPokeTime = lastPoke.created.strftime(DATETIME_FORMAT)
 
         self.assertEqual(lastPokeTime, pokeTime)
+
 
 class ConversationTests(TestCase):
     def setUp(self):
@@ -1752,3 +1757,46 @@ class GetNewDataTests(TestCase):
 
         self.assertTrue(response['success'])
         self.assertEqual('', response['value'])
+
+
+class GetNewDataTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+        friend = User.objects.create(username='friend', password='0', email='friend')
+        self.friend = UserProfile.objects.create(user=friend)
+
+        self.user.friends.add(self.friend)
+        self.friend.friends.add(self.user)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.user.friends.add(self.friend2)
+        self.friend2.friends.add(self.user)
+
+        friend3 = User.objects.create(username='friend3', password='0', email='friend3')
+        self.friend3 = UserProfile.objects.create(user=friend3)
+
+        self.user.friends.add(self.friend3)
+        self.friend3.friends.add(self.user)
+
+        self.convo = Conversation.objects.create()
+        self.convo.members.add(self.user, self.friend, self.friend2, self.friend3)
+
+        self.message = Message.objects.create(user=self.user, text='Hello', conversation=self.convo)
+        self.convo.save()
+
+        self.friend1Device = APNSDevice.objects.create(user=self.friend,
+                                                       registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
+
+        pass
+
+    def testSimplePush(self):
+        print "Simple Push Notification"
+
+        androidResponse, iosReponse = sendChatNotificationsSynchronous(self.message)
+
+        print androidResponse
+        print iosReponse
