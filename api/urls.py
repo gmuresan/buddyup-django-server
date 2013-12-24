@@ -40,6 +40,8 @@ urlpatterns = patterns('',
                        url(r'^setsetting/$', setSetting, {}, 'setSettingAPI'),
                        url(r'^getsetting/$', getSetting, {}, 'getSettingAPI'),
 
+                       url(r'^registernotifications', registerForPushNotifications, {}, 'registerPushNotificationsAPI'),
+
 
                        url(r'^fb_object/status/(\d+)/$', fbObjectStatus, {}, 'fbObjectStatus'),
 

@@ -15,7 +15,7 @@ from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJ
 from api.push_notifcations import sendChatNotifications
 
 from chat.models import Conversation, Message
-from push_notifications.models import APNSDevice
+from push_notifications.models import APNSDevice, GCMDevice
 from status.models import Status, Location, Poke
 from userprofile.models import UserProfile, Group, Feedback, Setting
 
@@ -987,6 +987,18 @@ def registerForPushNotifications(request):
 
     if platform == 'ios':
         try:
-            iosDevice = APNSDevice.objects.get(user=userProfile)
+            device = APNSDevice.objects.get(user=userProfile, registration_id=token)
         except APNSDevice.DoesNotExist:
-            iosDevice = APNSDevice.objects.create()
+            device = APNSDevice.objects.create(user=userProfile, registration_id=token)
+    elif platform == 'android':
+        try:
+            device = GCMDevice.objects.get(user=userProfile, registration_id=token)
+        except GCMDevice.DoesNotExist:
+            device = GCMDevice.objects.create(user=userProfile, registration_id=token)
+    else:
+        return errorResponse("platform must be ios or android")
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+

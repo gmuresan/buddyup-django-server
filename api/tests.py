@@ -1791,6 +1791,8 @@ class GetNewDataTests(TestCase):
         self.friend1Device = APNSDevice.objects.create(user=self.friend,
                                                        registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
 
+        self.friend2Device = GCMDevice.objects.create(user=self.friend2, registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
+
         pass
 
     def testSimplePush(self):
@@ -1798,5 +1800,33 @@ class GetNewDataTests(TestCase):
 
         androidResponse, iosReponse = sendChatNotificationsSynchronous(self.message)
 
-        print androidResponse
-        print iosReponse
+    def testRegisterToken(self):
+        print "Resgister Push Notification Token"
+        client = Client()
+
+        iosToken = 'asfafqwf1f13f1f'
+        androidToken = 'asff1fh881f9h1fh1ifh'
+
+        response = client.post(reverse('registerPushNotificationsAPI'), {
+            'userid': self.friend.id,
+            'token': iosToken,
+            'platform': 'ios'
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        response = client.post(reverse('registerPushNotificationsAPI'), {
+            'userid': self.friend.id,
+            'token': androidToken,
+            'platform': 'android'
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        androidDevice = GCMDevice.objects.get(user=self.friend, registration_id=androidToken)
+        iosDevice = APNSDevice.objects.get(user=self.friend, registration_id=iosToken)
+
