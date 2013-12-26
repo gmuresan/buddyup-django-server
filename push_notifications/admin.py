@@ -42,12 +42,12 @@ class DeviceAdmin(admin.ModelAdmin):
             for device in queryset:
                 userProfile = device.user
 
-                conversations = Conversation.objects.filter(members=userProfile)
+                conversations = Conversation.objects.filter(members__in=[userProfile,])
 
                 if conversations:
                     conversation = conversations[0]
                     for member in conversation.members.all():
-                        if member is not userProfile:
+                        if member.id != userProfile.id:
                             friendProfile = member
                             break
 
