@@ -1,18 +1,16 @@
 import json
 from datetime import timedelta
-import pdb
 
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import D
 from django.http import HttpResponse
 from django.utils.datetime_safe import datetime
 import facebook
 import pytz
 from api.FacebookProfile import FacebookProfile
-from api.helpers import createStatusJsonObject, DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
+from api.helpers import DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
     getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT, getNewPokesData, getSettingsData
-from api.push_notifcations import sendChatNotifications
+from push_notifications.notifcations import sendChatNotifications
 
 from chat.models import Conversation, Message
 from push_notifications.models import APNSDevice, GCMDevice

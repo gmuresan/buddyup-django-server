@@ -1,10 +1,7 @@
-from compiler.ast import name
 from datetime import datetime, timedelta
 import json
-import pdb
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
-from django.contrib.gis.measure import D
 from django.core.urlresolvers import reverse
 import facebook
 import pytz
@@ -12,12 +9,12 @@ from django.test import TestCase, Client
 from api import helpers
 from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
-from api.push_notifcations import sendChatNotificationsSynchronous
+from push_notifications.notifcations import sendChatNotificationsSynchronous
 from buddyup import settings
 from chat.models import Conversation, Message
 from push_notifications.models import GCMDevice, APNSDevice
 from status.models import Status, Poke, Location
-from userprofile.models import UserProfile, Group, Feedback, Setting
+from userprofile.models import UserProfile, Group, Setting
 
 FB_TEST_USER_1_ID = "100007243621022"
 FB_TEST_USER_2_ID = "100007247311000"
