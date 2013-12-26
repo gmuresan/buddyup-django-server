@@ -1,5 +1,9 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
+from api import *
+
+from buddyup import settings
+from chat.models import Conversation, Message
 from .models import APNSDevice, GCMDevice
 
 
@@ -32,6 +36,29 @@ class DeviceAdmin(admin.ModelAdmin):
         self.message_user(request, _("All messages were sent: %s" % (r)))
 
     send_bulk_message.short_description = _("Send test message in bulk")
+
+    def sendTestChatNotification(self, request, queryset):
+        if settings.DEBUG:
+            for device in queryset:
+                userProfile = device.user
+
+                conversation = Conversation.objects.filter(members_in=userProfile).first()
+
+                if conversation:
+                    for member in conversation.members.all():
+                        if member is not userProfile:
+                            friendProfile = member
+                            break
+
+                    message = Message.objects.create(conversation=conversation, userProfile=friendProfile,
+                                                     text="Test Chat Message")
+                    sendChatNotifications(message)
+
+            self.message_user(request, _("Notifications sent"))
+        else:
+            self.message_user(request, _("Must be in DEBUG mode to use this"))
+
+    sendTestChatNotification.short_description = _("Send a chat message notification")
 
     def enable(self, request, queryset):
         queryset.update(is_active=True)

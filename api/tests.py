@@ -1791,7 +1791,7 @@ class GetNewDataTests(TestCase):
         self.friend1Device = APNSDevice.objects.create(user=self.friend,
                                                        registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
 
-        self.friend2Device = GCMDevice.objects.create(user=self.friend2, registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
+        self.friend2Device = GCMDevice.objects.create(user=self.friend2, registration_id="APA91bH7XrOXRl4pdORQVM_ISWWr1FrcaAkuCS9BYJMStNqSTdO70wqUc2pAc8ty82jlPaED9m3SX92Oj1CVMKT-qTLNDqXz5M_LQDMOdDJgl2JcQuQEAzddJLpOGvSzu13Xb2sJdbTN90GkFVH3u82j06oJljPr5w")
 
         pass
 
@@ -1799,6 +1799,8 @@ class GetNewDataTests(TestCase):
         print "Simple Push Notification"
 
         androidResponse, iosReponse = sendChatNotificationsSynchronous(self.message)
+        print androidResponse
+        print iosReponse
 
     def testRegisterToken(self):
         print "Resgister Push Notification Token"
