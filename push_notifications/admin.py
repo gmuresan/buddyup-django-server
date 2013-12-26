@@ -42,7 +42,7 @@ class DeviceAdmin(admin.ModelAdmin):
             for device in queryset:
                 userProfile = device.user
 
-                conversation = Conversation.objects.filter(members__in=userProfile).first()
+                conversation = Conversation.objects.filter(members=userProfile).first()
 
                 if conversation:
                     for member in conversation.members.all():
