@@ -1,21 +1,27 @@
+import pdb
 import thread
+from django.contrib.auth.models import User
 from push_notifications.models import GCMDevice, APNSDevice
 
 
 def sendChatNotifications(message):
-    thread.start_new_thread(sendChatNotificationsSynchronous, (message,))
+    thread.start_new_thread(sendChatNotificationsSynchronous, (message, ))
 
 
 def sendChatNotificationsSynchronous(message):
     conversation = message.conversation
-    userProfile = message.user
+    try:
+        userProfile = message.user
 
-    androidDevices = GCMDevice.objects.filter(user__in=conversation.members.exclude(pk=userProfile.pk))
-    iosDevices = APNSDevice.objects.filter(user__in=conversation.members.exclude(pk=userProfile.pk))
+        androidDevices = GCMDevice.objects.filter(user__in=conversation.members.exclude(pk=userProfile.pk))
+        iosDevices = APNSDevice.objects.filter(user__in=conversation.members.exclude(pk=userProfile.pk))
 
-    messageContents = {'message': message.text, 'type': 'chat', 'id': conversation.id}
+        messageContents = userProfile.user.first_name + " " + userProfile.user.last_name + ": " + message.text
+        extra = {'id': conversation.id, 'type': 'chat'}
 
-    androidResponse = androidDevices.send_message(messageContents)
-    iosResponse = iosDevices.send_message(messageContents)
+        androidResponse = androidDevices.send_message(messageContents, extra=extra)
+        iosResponse = iosDevices.send_message(messageContents, extra=extra)
 
-    return androidResponse, iosResponse
+        return androidResponse, iosResponse
+    except User.DoesNotExist:
+        return None, None

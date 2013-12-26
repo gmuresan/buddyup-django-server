@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import json
+import pdb
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
@@ -1001,16 +1002,16 @@ class ConversationTests(TestCase):
 
 class ChatMessageTests(TestCase):
     def setUp(self):
-        user = User.objects.create(username='user', password='0', email='user')
+        user = User.objects.create(username='user', password='0', email='user', first_name="user", last_name="one")
         self.user = UserProfile.objects.create(user=user)
 
-        friend = User.objects.create(username='friend', password='0', email='friend')
+        friend = User.objects.create(username='friend', password='0', email='friend', first_name="user", last_name="two")
         self.friend = UserProfile.objects.create(user=friend)
 
         self.user.friends.add(self.friend)
         self.friend.friends.add(self.user)
 
-        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name="user", last_name="three")
         self.friend2 = UserProfile.objects.create(user=friend2)
 
         self.user.friends.add(self.friend2)
