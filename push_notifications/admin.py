@@ -51,7 +51,7 @@ class DeviceAdmin(admin.ModelAdmin):
                             friendProfile = member
                             break
 
-                    message = Message.objects.create(conversation=conversation, userProfile=friendProfile,
+                    message = Message.objects.create(conversation=conversation, user=friendProfile,
                                                      text="Test Chat Message")
                     sendChatNotifications(message)
 
