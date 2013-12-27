@@ -10,7 +10,7 @@ import pytz
 from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, getNewStatusesJsonResponse, createFriendJsonObject, \
     getMyStatusesJsonResponse, getMyGroupsJsonResponse, getNewChatsData, MICROSECOND_DATETIME_FORMAT, getNewPokesData, getSettingsData
-from push_notifications.notifcations import sendChatNotifications
+from push_notifications.notifcations import sendChatNotifications, sendPokeNotifcation
 
 from chat.models import Conversation, Message
 from push_notifications.models import APNSDevice, GCMDevice
@@ -268,7 +268,7 @@ def poke(request):
         return errorResponse("Already poked user in the last hour")
     poke = Poke.objects.create(sender=user, recipient=targetUser)
 
-    # TODO: need to send push notification to target user
+    sendPokeNotifcation(poke)
 
     response['success'] = True
 

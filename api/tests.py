@@ -10,7 +10,7 @@ from django.test import TestCase, Client
 from api import helpers
 from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
-from push_notifications.notifcations import sendChatNotificationsSynchronous
+from push_notifications.notifcations import sendChatNotificationsSynchronous, sendPokeNotificationSynchronous
 from buddyup import settings
 from chat.models import Conversation, Message
 from push_notifications.models import GCMDevice, APNSDevice
@@ -1690,7 +1690,7 @@ class GetNewDataTests(TestCase):
         self.assertEqual(len(response['pokes']), 0)
 
 
-class GetNewDataTests(TestCase):
+class SettingsTests(TestCase):
     def setUp(self):
         user = User.objects.create(username='user', password='0', email='user')
         self.user = UserProfile.objects.create(user=user)
@@ -1757,7 +1757,7 @@ class GetNewDataTests(TestCase):
         self.assertEqual('', response['value'])
 
 
-class GetNewDataTests(TestCase):
+class PushNotificationTests(TestCase):
     def setUp(self):
         user = User.objects.create(username='user', password='0', email='user')
         self.user = UserProfile.objects.create(user=user)
@@ -1791,14 +1791,21 @@ class GetNewDataTests(TestCase):
 
         self.friend2Device = GCMDevice.objects.create(user=self.friend2, registration_id="APA91bH7XrOXRl4pdORQVM_ISWWr1FrcaAkuCS9BYJMStNqSTdO70wqUc2pAc8ty82jlPaED9m3SX92Oj1CVMKT-qTLNDqXz5M_LQDMOdDJgl2JcQuQEAzddJLpOGvSzu13Xb2sJdbTN90GkFVH3u82j06oJljPr5w")
 
-        pass
+        self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend)
 
-    def testSimplePush(self):
-        print "Simple Push Notification"
+    def testSimpleChatNotification(self):
+        print "Chat Push Notification"
 
-        androidResponse, iosReponse = sendChatNotificationsSynchronous(self.message)
+        androidResponse, iosResponse = sendChatNotificationsSynchronous(self.message)
         print androidResponse
-        print iosReponse
+        print iosResponse
+
+    def testPokeNotification(self):
+        print "Poke Push Notification"
+
+        androidResponse, iosResponse = sendPokeNotificationSynchronous(self.pokeObj)
+        print androidResponse
+        print iosResponse
 
     def testRegisterToken(self):
         print "Resgister Push Notification Token"
