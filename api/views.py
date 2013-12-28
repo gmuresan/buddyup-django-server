@@ -102,15 +102,16 @@ def postStatus(request):
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
-    if expires:
-        expires = datetime.strptime(expires, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
-    else:
-        expires = datetime.utcnow() + timedelta(hours=8)
 
     if starts:
         starts = datetime.strptime(starts, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
     else:
         starts = datetime.utcnow()
+
+    if expires:
+        expires = datetime.strptime(expires, DATETIME_FORMAT).replace(tzinfo=pytz.utc)
+    else:
+        expires = starts + timedelta(hours=8)
 
     try:
         userprofile = UserProfile.objects.get(pk=userid)
