@@ -5,7 +5,7 @@ from push_notifications.models import GCMDevice, APNSDevice
 
 
 def sendPokeNotifcation(pokeObj):
-    thread.start_new_thread(sendPokeNotifcation, (pokeObj, ))
+    thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
 
 
 def sendPokeNotificationSynchronous(pokeObj):
