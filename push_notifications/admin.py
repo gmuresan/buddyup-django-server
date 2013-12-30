@@ -12,7 +12,7 @@ class DeviceAdmin(admin.ModelAdmin):
     list_display = ("__unicode__", "device_id", "user", "active")
     search_fields = ("name", "device_id", "user__username")
     list_filter = ("active", )
-    actions = ("sendTestChatNotification", "send_message", "send_bulk_message", "enable", "disable")
+    actions = ("sendTestPokeNotification", "sendTestChatNotification", "send_message", "send_bulk_message", "enable", "disable")
 
     def send_message(self, request, queryset):
         ret = []
