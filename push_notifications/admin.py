@@ -43,7 +43,7 @@ class DeviceAdmin(admin.ModelAdmin):
             for device in queryset:
                 userProfile = device.user
 
-                friend = userProfile.friends.objects().first()
+                friend = userProfile.friends.first()
 
                 poke = Poke.objects.create(sender=friend, recipient=userProfile)
                 sendPokeNotifcation(poke)
