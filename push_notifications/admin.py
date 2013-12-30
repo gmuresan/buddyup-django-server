@@ -5,6 +5,7 @@ from notifcations import *
 from buddyup import settings
 from chat.models import Conversation, Message
 from .models import APNSDevice, GCMDevice
+from status.models import Poke
 
 
 class DeviceAdmin(admin.ModelAdmin):
@@ -37,12 +38,28 @@ class DeviceAdmin(admin.ModelAdmin):
 
     send_bulk_message.short_description = _("Send test message in bulk")
 
+    def sendTestPokeNotification(self, request, queryset):
+        if settings.DEBUG:
+            for device in queryset:
+                userProfile = device.user
+
+                friend = userProfile.friends.objects().first()
+
+                poke = Poke.objects.create(sender=friend, recipient=userProfile)
+                sendPokeNotifcation(poke)
+
+                self.message_user(request, _("Notifications sent"))
+            else:
+                self.message_user(request, _("Must be in DEBUG mode to use this"))
+
+    sendTestPokeNotification.short_description = _("Send Poke Notification")
+
     def sendTestChatNotification(self, request, queryset):
         if settings.DEBUG:
             for device in queryset:
                 userProfile = device.user
 
-                conversations = Conversation.objects.filter(members__in=[userProfile,])
+                conversations = Conversation.objects.filter(members__in=[userProfile, ])
 
                 if conversations:
                     conversation = conversations[0]
