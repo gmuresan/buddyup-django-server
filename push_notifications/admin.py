@@ -49,8 +49,8 @@ class DeviceAdmin(admin.ModelAdmin):
                 sendPokeNotifcation(poke)
 
                 self.message_user(request, _("Notifications sent"))
-            else:
-                self.message_user(request, _("Must be in DEBUG mode to use this"))
+        else:
+            self.message_user(request, _("Must be in DEBUG mode to use this"))
 
     sendTestPokeNotification.short_description = _("Send Poke Notification")
 
