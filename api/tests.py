@@ -1836,4 +1836,3 @@ class PushNotificationTests(TestCase):
 
         androidDevice = GCMDevice.objects.get(user=self.friend, registration_id=androidToken)
         iosDevice = APNSDevice.objects.get(user=self.friend, registration_id=iosToken)
-

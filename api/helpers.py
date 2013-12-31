@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import urllib
 import urllib2
 import pytz
@@ -143,6 +143,8 @@ def getNewChatsData(userProfile, since=None):
         msgs = convo.messages.all()
         if since is not None:
             msgs = msgs.filter(created__gt=since)
+        else:
+            msgs = msgs.filter(created__gt=(convo.lastActivity - timedelta(days=3)))
 
         messagesData = []
         for message in msgs:
