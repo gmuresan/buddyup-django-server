@@ -4,7 +4,7 @@ import urllib2
 from django.core.management import BaseCommand
 import json
 import facebook
-from api import helpers
+from api_functions import helpers
 from buddyup import settings
 
 PERMISSIONS = "email, publish_actions"

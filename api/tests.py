@@ -32,7 +32,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAMISiWayAovHQJL27dka6eGFg0FkyQQ0fMY3WZCD11jyjQcfOVBRCd6pzvBAJhOiHZC6wWfujZCOnnr1sVf0hcrddLvEYOgJqUtYIWJ96F4ZCE0FHO4uPyASCD2MNw9LH0nrgPjgnpdlfVhBpr1nFGlgKTGABF3LMyuxcwZAE7TkJZCf0T2ZCBu9tCwHCmQBQZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAMBtqezsE5qup9ISxxz2NGZCbzjk8NUcD5riYWzZBnZCItREjW16hToQ8OwwpbLlPNXvEsmnwYmXa5FSf8mhKgYtW4Ck6O7J2bU8W4o1OAzOsUoIX9gdIxIWEToOZBVd9kBlLepagsuSwvZB8vJXG1u8rskycyEuKW6Hd5d5uBDDjPbjj3YZAPma08a2VZCKAZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -558,7 +558,7 @@ class getStatusesTest(TestCase):
         myLng = -83.507794
         since = datetime.utcnow() - timedelta(hours=1)
 
-        response = client.get(reverse('api.views.getStatuses'), {
+        response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user2.id,
             'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
         })
@@ -600,7 +600,7 @@ class getStatusesTest(TestCase):
 
         since = datetime.utcnow() - timedelta(hours=1)
 
-        response = client.get(reverse('api.views.getStatuses'), {
+        response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user2.id,
             'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
             'lat': self.lat,
@@ -687,7 +687,7 @@ class PokeTest(TestCase):
         print "Poke"
         client = Client()
 
-        response = client.post('/api/poke/', {
+        response = client.post(reverse('pokeAPI'), {
             'userid': self.user1.id,
             'friendid': self.user2.id
         })
@@ -696,7 +696,7 @@ class PokeTest(TestCase):
 
         self.assertEqual(response['success'], True)
 
-        response = client.post('/api/poke/', {
+        response = client.post(reverse('pokeAPI'), {
             'userid': self.user1.id,
             'friendid': self.user2.id
         })
@@ -710,7 +710,7 @@ class PokeTest(TestCase):
         print "PokeInLogin"
         client = Client()
 
-        response = client.post('/api/poke/', {
+        response = client.post(reverse('pokeAPI'), {
             'userid': self.user1.id,
             'friendid': self.user2.id
         })
@@ -1794,14 +1794,16 @@ class PushNotificationTests(TestCase):
         self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend2)
 
     def testSimpleChatNotification(self):
-        print "Chat Push Notification"
+        pass
+        #print "Chat Push Notification"
 
-        androidResponse, iosResponse = sendChatNotificationsSynchronous(self.message)
-        print androidResponse
-        print iosResponse
+        #androidResponse, iosResponse = sendChatNotificationsSynchronous(self.message)
+        #print androidResponse
+        #print iosResponse
 
     def testPokeNotification(self):
-        print "Poke Push Notification"
+        pass
+        #print "Poke Push Notification"
 
         #androidResponse, iosResponse = sendPokeNotificationSynchronous(self.pokeObj)
         #print androidResponse
