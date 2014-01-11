@@ -24,6 +24,10 @@ class UserProfile(models.Model):
         return self.statuses.filter(expires__gt=now)
 
 
+class FacebookUser(models.Model):
+    facebookUID = models.CharField(max_length=64, db_index=True)
+
+
 class Group(models.Model):
     def __unicode__(self):
         return self.name + " - " + self.user.user.username

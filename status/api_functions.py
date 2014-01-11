@@ -5,7 +5,7 @@ from api.helpers import *
 from push_notifications.notifications import sendPokeNotifcation, sendStatusMessageNotification
 from status.helpers import getNewStatusMessages
 from status.models import Location, StatusMessage
-from userprofile.models import Group, UserProfile
+from userprofile.models import Group, UserProfile, FacebookUser
 
 
 def deleteStatus(request):
@@ -147,6 +147,9 @@ def postStatus(request):
     accessToken = request.REQUEST.get('accesstoken', None)
     shareOnFacebook = request.REQUEST.get('facebookshare', False)
     statusType = request.REQUEST.get('type', 'other')
+    visibility = request.REQUEST.get('visibility', 'friends')
+    visibilityFriends = request.REQUEST.get('visibilityFriends', '[]')
+    visibilityFbFriends = request.REQUEST.get('visibilityfbfriends', '[]')
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
@@ -166,10 +169,19 @@ def postStatus(request):
     except UserProfile.DoesNotExist:
         return errorResponse("User Id not valid")
 
-    try:
-        status = Status.objects.get(pk=statusid)
-    except Status.DoesNotExist:
-        status = Status(expires=expires, text=text, user=userprofile, starts=starts, statusType=statusType)
+    if statusid:
+        try:
+            status = Status.objects.get(pk=statusid)
+        except Status.DoesNotExist:
+            return errorResponse('status does not exist with that id')
+    else:
+        status = Status(user=userprofile)
+
+    status.expires = expires
+    status.text = text
+    status.starts = starts
+    status.statusType = statusType
+    status.visibility = visibility
 
     if locationData:
         lat = locationData.get('lat', None)
@@ -205,6 +217,29 @@ def postStatus(request):
 
     status.save()
     status.attending.add(userprofile)
+
+    if status.visibility == 'custom':
+        visibilityFriends = json.loads(visibilityFriends)
+        visibilityFbFriends = json.loads(visibilityFbFriends)
+
+        for friendId in visibilityFriends:
+            try:
+                friendProfile = UserProfile.objects.get(pk=friendId)
+                status.friendsVisible.add(friendProfile)
+            except UserProfile.DoesNotExist:
+                pass
+
+        for fbFriendId in visibilityFbFriends:
+            try:
+                friendProfile = UserProfile.objects.get(facebookUID=fbFriendId)
+                status.friendsVisible.add(friendProfile)
+            except UserProfile.DoesNotExist:
+                try:
+                    facebookUser = FacebookUser.objects.get(facebookUID=fbFriendId)
+                except FacebookUser.DoesNotExist:
+                    facebookUser = FacebookUser.objects.create(facebookUID=fbFriendId)
+
+                status.fbFriendsVisible.add(facebookUser)
 
     if groupids:
         groups = Group.objects.filter(id__in=groupids)

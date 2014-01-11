@@ -248,7 +248,7 @@ class StatusMessageTests(TestCase):
         response = client.post(reverse('postStatusMessageAPI'), {
             'userid': self.user.id,
             'statusid': self.status.id,
-            'text':'text',
+            'text': 'text',
             'lastmessageid': messageId
         })
 
@@ -268,14 +268,12 @@ class StatusMessageTests(TestCase):
         })
 
         response = client.post(reverse('getStatusDetailsAPI'), {
-            'statusid':self.status.id
+            'statusid': self.status.id
         })
         response = json.loads(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['messages']), 1)
-
-
 
 
 class PostStatusTests(TestCase):
@@ -344,7 +342,8 @@ class PostStatusTests(TestCase):
             'expires': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text,
             'location': json.dumps(self.location),
-            'type': 'food'
+            'type': 'food',
+            'visibility': 'friendsoffriends'
         })
 
         response = json.loads(response.content)
@@ -371,6 +370,7 @@ class PostStatusTests(TestCase):
             'location': json.dumps(self.location),
             "groupids": json.dumps(groupids),
             'type': 'other',
+            'visibility': 'public'
         })
 
         response = json.loads(response.content)
@@ -390,7 +390,8 @@ class PostStatusTests(TestCase):
             'userid': self.user.id,
             'starts': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text,
-            'location': json.dumps(self.location)
+            'location': json.dumps(self.location),
+            'visibility': 'friends'
         })
 
         response = json.loads(response.content)
@@ -400,6 +401,27 @@ class PostStatusTests(TestCase):
         self.assertTrue(response['success'])
 
         self.assertEqual(self.expires.strftime(DATETIME_FORMAT), status.starts.strftime(DATETIME_FORMAT))
+
+    def testPostCustomVisibility(self):
+        print "Post Status Custom Visibility"
+        client = Client()
+
+        friends = [self.friend1.id, self.friend2.id]
+        fbfriends = ['asfafafsafs', '1u989h108f1f']
+
+        response = client.post(reverse('postStatusAPI'), {
+            'userid': self.user.id,
+            'starts': self.expires.strftime(DATETIME_FORMAT),
+            'text': self.text,
+            'location': json.dumps(self.location),
+            'visibility': 'custom',
+            'visiblityfriends': json.dumps(friends),
+            'visibilityfbfriends': json.dumps(fbfriends),
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
 
 
 class facebookShareStatusTests(TestCase):

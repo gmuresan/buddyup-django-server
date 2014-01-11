@@ -2,13 +2,15 @@ import pdb
 import datetime
 from django.db import models
 from chat.models import Message
-from userprofile.models import UserProfile, Group
+from userprofile.models import UserProfile, Group, FacebookUser
 from django.contrib.gis.db import models as geomodels
 
 
 class Status(geomodels.Model):
     STATUS_TYPES = (('food', 'food'), ('drink', 'drink'), ('study', 'study'), ('couch', 'couch'), ('go out', 'go out'),
                     ('show', 'show'), ('sports', 'sports'), ('other', 'other'))
+    VISIBILITY = (('friends', 'friends'), ('public', 'public'), ('friendsoffriends', 'friends of friends'),
+                  ('custom', 'custom'))
 
     class Meta:
         ordering = ['-date']
@@ -25,6 +27,9 @@ class Status(geomodels.Model):
     attending = geomodels.ManyToManyField(UserProfile, related_name="statusesAttending")
     invited = geomodels.ManyToManyField(UserProfile, related_name="statusesInvited")
     statusType = geomodels.CharField(max_length=10, db_index=True, choices=STATUS_TYPES, default='other')
+    visibility = geomodels.CharField(max_length=20, db_index=True, choices=VISIBILITY, default='friends')
+    friendsVisible = geomodels.ManyToManyField(UserProfile, related_name='visibleStatuses')
+    fbFriendsVisible = geomodels.ManyToManyField(FacebookUser, related_name='visibleStatuses')
 
     location = geomodels.ForeignKey('Location', related_name='statuses', null=True, blank=True)
     groups = geomodels.ManyToManyField(Group, related_name='receivedStatuses', null=True, blank=True)
