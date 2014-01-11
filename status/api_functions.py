@@ -202,7 +202,6 @@ def postStatus(request):
 
         status.location = location
 
-
     status.save()
     status.attending.add(userprofile)
 
@@ -251,11 +250,11 @@ def sendStatusMessage(request):
     return HttpResponse(json.dumps(response))
 
 
-def getStatusMessages(request):
+def getStatusDetails(request):
     response = dict()
 
     statusid = request.REQUEST['statusid']
-    lastid = request.REQUEST.get('lastid', None)
+    lastmessageid = request.REQUEST.get('lastid', None)
 
     try:
         status = Status.objects.get(pk=statusid)
@@ -263,8 +262,8 @@ def getStatusMessages(request):
         return errorResponse("Invalid status")
 
     messages = status.messages.all()
-    if lastid:
-        messages = messages.filter(id__gt=lastid)
+    if lastmessageid:
+        messages = messages.filter(id__gt=lastmessageid)
 
     messagesJson = list()
     for message in messages:
@@ -278,5 +277,7 @@ def getStatusMessages(request):
 
     response['success'] = True
     response['messages'] = messagesJson
+    response['attending'] = []
+    response['invited'] = []
 
     return HttpResponse(json.dumps(response))
