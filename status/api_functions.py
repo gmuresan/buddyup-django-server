@@ -2,8 +2,8 @@ from django.contrib.gis.geos import Point
 from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
-from push_notifications.notifcations import sendPokeNotifcation
-from status.models import Location
+from push_notifications.notifications import sendPokeNotifcation, sendStatusMessageNotification
+from status.models import Location, StatusMessage
 from userprofile.models import Group, UserProfile
 
 
@@ -24,7 +24,7 @@ def deleteStatus(request):
     if status.user == userProfile:
         status.delete()
         response['success'] = True
-    else :
+    else:
         response['success'] = False
         response['error'] = "Can not delete another user's status"
 
@@ -57,6 +57,7 @@ def cancelStatus(request):
     response['success'] = True
 
     return HttpResponse(json.dumps(response))
+
 
 def getStatuses(request):
     response = dict()
@@ -131,6 +132,7 @@ def poke(request):
 
     return HttpResponse(json.dumps(response))
 
+
 def postStatus(request):
     response = dict()
 
@@ -143,8 +145,7 @@ def postStatus(request):
     statusid = request.REQUEST.get('statusid', 0)
     accessToken = request.REQUEST.get('accesstoken', None)
     shareOnFacebook = request.REQUEST.get('facebookshare', False)
-    invitedUserIds = request.REQUEST.get('invited', None)
-    type = request.REQUEST.get('type', 'other')
+    statusType = request.REQUEST.get('type', 'other')
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
@@ -167,10 +168,7 @@ def postStatus(request):
     try:
         status = Status.objects.get(pk=statusid)
     except Status.DoesNotExist:
-        status = Status(expires=expires, text=text, user=userprofile, starts=starts, statusType='type')
-
-    if invitedUserIds:
-        invitedUserIds = json.loads(invitedUserIds)
+        status = Status(expires=expires, text=text, user=userprofile, starts=starts, statusType=statusType)
 
     if locationData:
         lat = locationData.get('lat', None)
@@ -204,7 +202,9 @@ def postStatus(request):
 
         status.location = location
 
+
     status.save()
+    status.attending.add(userprofile)
 
     if groupids:
         groups = Group.objects.filter(id__in=groupids)
@@ -221,5 +221,62 @@ def postStatus(request):
 
     response['success'] = True
     response['statusid'] = status.id
+
+    return HttpResponse(json.dumps(response))
+
+
+def sendStatusMessage(request):
+    response = dict()
+
+    text = request.REQUEST['text']
+    userid = request.REQUEST['userid']
+    statusid = request.REQUEST['statusid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse('Invalid User')
+
+    try:
+        status = Status.objects.get(pk=statusid)
+    except Status.DoesNotExist:
+        return errorResponse('Invalid status id')
+
+    message = StatusMessage.objects.create(user=userProfile, text=text, status=status)
+    sendStatusMessageNotification(message)
+
+    response['success'] = True
+    response['id'] = message.id
+
+    return HttpResponse(json.dumps(response))
+
+
+def getStatusMessages(request):
+    response = dict()
+
+    statusid = request.REQUEST['statusid']
+    lastid = request.REQUEST.get('lastid', None)
+
+    try:
+        status = Status.objects.get(pk=statusid)
+    except Status.DoesNotExist:
+        return errorResponse("Invalid status")
+
+    messages = status.messages.all()
+    if lastid:
+        messages = messages.filter(id__gt=lastid)
+
+    messagesJson = list()
+    for message in messages:
+        messageObj = dict()
+        messageObj['id'] = message.id
+        messageObj['userid'] = message.user.id
+        messageObj['text'] = message.text
+        messageObj['date'] = message.date.strftime(DATETIME_FORMAT)
+
+        messagesJson.append(messageObj)
+
+    response['success'] = True
+    response['messages'] = messagesJson
 
     return HttpResponse(json.dumps(response))

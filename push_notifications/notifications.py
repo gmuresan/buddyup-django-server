@@ -1,7 +1,32 @@
 import pdb
 import thread
 from django.contrib.auth.models import User
+from api.helpers import DATETIME_FORMAT
 from push_notifications.models import GCMDevice, APNSDevice
+
+
+def sendStatusMessageNotification(messageObj):
+    thread.start_new_thread(sendStatusMessageNotificationSynchronous, (messageObj, ))
+
+
+def sendStatusMessageNotificationSynchronous(messageObj):
+    try:
+        audience = messageObj.status.attending.exclude(user=messageObj.user)
+
+        messageContents = messageObj.user.user.first_name + " " + messageObj.user.user.last_name + \
+                          "commented on an activity: " + messageObj.text
+        extra = {'id': messageObj.id, 'statusid': messageObj.status.id, 'date': messageObj.date.strftime(DATETIME_FORMAT),
+                 'text': messageObj.text}
+
+        androidDevices = GCMDevice.objects.filter(user__in=audience)
+        iosDevices = APNSDevice.objects.filter(user__in=audience)
+
+        androidResponse = androidDevices.send_message(messageContents, extra=extra)
+        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+
+        return androidResponse, iosResponse
+    except User.DoesNotExist:
+        return None, None
 
 
 def sendPokeNotifcation(pokeObj):

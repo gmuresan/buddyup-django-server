@@ -1,7 +1,7 @@
 from api.helpers import *
 from api.views import *
 from chat.models import Conversation, Message
-from push_notifications.notifcations import sendChatNotifications
+from push_notifications.notifications import sendChatNotifications
 from userprofile.models import *
 
 
@@ -145,6 +145,7 @@ def sendMessage(request):
     chatid = request.REQUEST['chatid']
     text = request.REQUEST['text']
     since = request.REQUEST.get('since', None)
+
     if since:
         since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 

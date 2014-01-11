@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from notifcations import *
+from notifications import *
 
 from buddyup import settings
 from chat.models import Conversation, Message

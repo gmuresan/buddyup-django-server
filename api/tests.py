@@ -10,7 +10,7 @@ from django.test import TestCase, Client
 from api import helpers
 from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
-from push_notifications.notifcations import sendChatNotificationsSynchronous, sendPokeNotificationSynchronous
+from push_notifications.notifications import sendChatNotificationsSynchronous, sendPokeNotificationSynchronous
 from buddyup import settings
 from chat.models import Conversation, Message
 from push_notifications.models import GCMDevice, APNSDevice
@@ -181,6 +181,64 @@ class FacebookRegisterTest(TestCase):
 
         self.assertEqual(setting1, 'value1')
         self.assertEqual(setting2, 'value2')
+
+
+class StatusMessageTests(TestCase):
+    def setUp(self):
+        self.local = pytz.timezone("US/Eastern")
+        self.utc = pytz.timezone("UTC")
+
+        user1 = User.objects.create(username='user1', password='0', email='user1')
+        self.user = UserProfile.objects.create(user=user1)
+
+        friend1 = User.objects.create(username='friend1', password='0', email='friend1')
+        self.friend1 = UserProfile.objects.create(user=friend1)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.group1 = Group.objects.create(name="group1", user=self.user)
+        self.group1.members.add(self.friend1)
+        self.group1.members.add(self.friend2)
+        self.group1.save()
+
+        self.group2 = Group.objects.create(name="group2", user=self.user)
+        self.group2.members.add(self.friend1)
+        self.group2.save()
+
+        self.text = "Hangout at my house"
+
+        self.expires = self.utc.localize(datetime(2013, 5, 1))
+
+        self.lng = 42.341560
+        self.lat = -83.501783
+        self.address = '46894 spinning wheel'
+        self.city = 'canton'
+        self.state = 'MI'
+        self.venue = "My house"
+        self.location = {'lat': self.lat, 'lng': self.lng, 'address': self.address, 'state': self.state,
+                         'city': self.city, 'venue': self.venue}
+
+        self.status = Status.objects.create(user=self.user, text=self.text, expires=self.expires)
+
+    def testPostStatusMessage(self):
+        print "Post Status Message"
+        client = Client()
+
+        response = client.post(reverse('sendStatusMessageAPI'), {
+            'userid': self.user.id,
+            'statusid': self.status.id,
+            'text': self.text
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        messages = self.status.messages.all()
+
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0].text, self.text)
 
 
 class PostStatusTests(TestCase):
