@@ -14,7 +14,7 @@ from push_notifications.notifications import sendChatNotificationsSynchronous, s
 from buddyup import settings
 from chat.models import Conversation, Message
 from push_notifications.models import GCMDevice, APNSDevice
-from status.models import Status, Poke, Location
+from status.models import Status, Poke, Location, StatusMessage
 from userprofile.models import UserProfile, Group, Setting
 
 FB_TEST_USER_1_ID = "100007243621022"
@@ -225,7 +225,7 @@ class StatusMessageTests(TestCase):
         print "Post Status Message"
         client = Client()
 
-        response = client.post(reverse('sendStatusMessageAPI'), {
+        response = client.post(reverse('postStatusMessageAPI'), {
             'userid': self.user.id,
             'statusid': self.status.id,
             'text': self.text
@@ -239,6 +239,43 @@ class StatusMessageTests(TestCase):
 
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].text, self.text)
+        self.assertEqual(len(response['messages']), 1)
+
+        messageId = response['messages'][0]['id']
+
+        message = StatusMessage.objects.create(user=self.friend1, text='text', status=self.status)
+
+        response = client.post(reverse('postStatusMessageAPI'), {
+            'userid': self.user.id,
+            'statusid': self.status.id,
+            'text':'text',
+            'lastmessageid': messageId
+        })
+
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['messages']), 2)
+
+    def testGetStatusDetails(self):
+        print "Get Status Details"
+        client = Client()
+
+        response = client.post(reverse('postStatusMessageAPI'), {
+            'userid': self.user.id,
+            'statusid': self.status.id,
+            'text': self.text
+        })
+
+        response = client.post(reverse('getStatusDetailsAPI'), {
+            'statusid':self.status.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['messages']), 1)
+
+
 
 
 class PostStatusTests(TestCase):

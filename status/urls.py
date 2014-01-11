@@ -12,6 +12,6 @@ urlpatterns = patterns('',
                        url(r'^getstatuses/$', getStatuses, {}, 'getStatusesAPI'),
                        url(r'^getmystatuses/$', getMyStatuses, {}, 'getMyStatusesAPI'),
                        url(r'^getstatusdetails/$', getStatusDetails, {}, 'getStatusDetailsAPI'),
-                       url(r'^poststatusmessage/$', sendStatusMessage, {}, 'sendStatusMessageAPI'),
+                       url(r'^poststatusmessage/$', sendStatusMessage, {}, 'postStatusMessageAPI'),
 
                        )

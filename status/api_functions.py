@@ -3,6 +3,7 @@ from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from push_notifications.notifications import sendPokeNotifcation, sendStatusMessageNotification
+from status.helpers import getNewStatusMessages
 from status.models import Location, StatusMessage
 from userprofile.models import Group, UserProfile
 
@@ -230,6 +231,7 @@ def sendStatusMessage(request):
     text = request.REQUEST['text']
     userid = request.REQUEST['userid']
     statusid = request.REQUEST['statusid']
+    lastMessageId = request.REQUEST.get('lastmessageid', None)
 
     try:
         userProfile = UserProfile.objects.get(pk=userid)
@@ -245,7 +247,7 @@ def sendStatusMessage(request):
     sendStatusMessageNotification(message)
 
     response['success'] = True
-    response['id'] = message.id
+    response['messages'] = getNewStatusMessages(status, lastMessageId)
 
     return HttpResponse(json.dumps(response))
 
@@ -254,26 +256,14 @@ def getStatusDetails(request):
     response = dict()
 
     statusid = request.REQUEST['statusid']
-    lastmessageid = request.REQUEST.get('lastid', None)
+    lastmessageid = request.REQUEST.get('lastmessageid', None)
 
     try:
         status = Status.objects.get(pk=statusid)
     except Status.DoesNotExist:
         return errorResponse("Invalid status")
 
-    messages = status.messages.all()
-    if lastmessageid:
-        messages = messages.filter(id__gt=lastmessageid)
-
-    messagesJson = list()
-    for message in messages:
-        messageObj = dict()
-        messageObj['id'] = message.id
-        messageObj['userid'] = message.user.id
-        messageObj['text'] = message.text
-        messageObj['date'] = message.date.strftime(DATETIME_FORMAT)
-
-        messagesJson.append(messageObj)
+    messagesJson = getNewStatusMessages(status, lastmessageid)
 
     response['success'] = True
     response['messages'] = messagesJson
