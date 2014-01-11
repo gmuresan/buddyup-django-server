@@ -144,6 +144,7 @@ def postStatus(request):
     accessToken = request.REQUEST.get('accesstoken', None)
     shareOnFacebook = request.REQUEST.get('facebookshare', False)
     invitedUserIds = request.REQUEST.get('invited', None)
+    type = request.REQUEST.get('type', 'other')
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
@@ -166,12 +167,10 @@ def postStatus(request):
     try:
         status = Status.objects.get(pk=statusid)
     except Status.DoesNotExist:
-        status = Status(expires=expires, text=text, user=userprofile, starts=starts)
+        status = Status(expires=expires, text=text, user=userprofile, starts=starts, statusType='type')
 
     if invitedUserIds:
         invitedUserIds = json.loads(invitedUserIds)
-
-
 
     if locationData:
         lat = locationData.get('lat', None)

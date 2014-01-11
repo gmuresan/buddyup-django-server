@@ -226,7 +226,8 @@ class PostStatusTests(TestCase):
         response = client.post(reverse('postStatusAPI'), {
             'userid': self.user.id,
             'expires': self.expires.strftime(DATETIME_FORMAT),
-            'text': self.text
+            'text': self.text,
+            'type': 'sports'
         })
 
         responseObj = json.loads(response.content)
@@ -247,7 +248,8 @@ class PostStatusTests(TestCase):
             'userid': self.user.id,
             'expires': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text,
-            'location': json.dumps(self.location)
+            'location': json.dumps(self.location),
+            'type': 'food'
         })
 
         response = json.loads(response.content)
@@ -272,7 +274,8 @@ class PostStatusTests(TestCase):
             'expires': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text,
             'location': json.dumps(self.location),
-            "groupids": json.dumps(groupids)
+            "groupids": json.dumps(groupids),
+            'type': 'other',
         })
 
         response = json.loads(response.content)
@@ -1005,13 +1008,15 @@ class ChatMessageTests(TestCase):
         user = User.objects.create(username='user', password='0', email='user', first_name="user", last_name="one")
         self.user = UserProfile.objects.create(user=user)
 
-        friend = User.objects.create(username='friend', password='0', email='friend', first_name="user", last_name="two")
+        friend = User.objects.create(username='friend', password='0', email='friend', first_name="user",
+                                     last_name="two")
         self.friend = UserProfile.objects.create(user=friend)
 
         self.user.friends.add(self.friend)
         self.friend.friends.add(self.user)
 
-        friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name="user", last_name="three")
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name="user",
+                                      last_name="three")
         self.friend2 = UserProfile.objects.create(user=friend2)
 
         self.user.friends.add(self.friend2)
@@ -1789,7 +1794,8 @@ class PushNotificationTests(TestCase):
         self.friend1Device = APNSDevice.objects.create(user=self.friend,
                                                        registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
 
-        self.friend2Device = GCMDevice.objects.create(user=self.friend2, registration_id="APA91bH7XrOXRl4pdORQVM_ISWWr1FrcaAkuCS9BYJMStNqSTdO70wqUc2pAc8ty82jlPaED9m3SX92Oj1CVMKT-qTLNDqXz5M_LQDMOdDJgl2JcQuQEAzddJLpOGvSzu13Xb2sJdbTN90GkFVH3u82j06oJljPr5w")
+        self.friend2Device = GCMDevice.objects.create(user=self.friend2,
+                                                      registration_id="APA91bH7XrOXRl4pdORQVM_ISWWr1FrcaAkuCS9BYJMStNqSTdO70wqUc2pAc8ty82jlPaED9m3SX92Oj1CVMKT-qTLNDqXz5M_LQDMOdDJgl2JcQuQEAzddJLpOGvSzu13Xb2sJdbTN90GkFVH3u82j06oJljPr5w")
 
         self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend2)
 
@@ -1807,7 +1813,7 @@ class PushNotificationTests(TestCase):
 
         #androidResponse, iosResponse = sendPokeNotificationSynchronous(self.pokeObj)
         #print androidResponse
-       # print iosResponse
+        # print iosResponse
 
     def testRegisterToken(self):
         print "Resgister Push Notification Token"

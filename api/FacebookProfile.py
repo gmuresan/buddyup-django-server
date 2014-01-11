@@ -45,8 +45,7 @@ class FacebookProfile:
                 user = User.objects.get(username=profile['email'])
             except User.DoesNotExist:
                 user = User(username=profile['email'], email=profile['email'], first_name=profile['first_name'],
-                            last_name=profile['last_name'],
-                            password=0)
+                            last_name=profile['last_name'],password=0)
 
                 user.save()
 

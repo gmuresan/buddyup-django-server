@@ -1,11 +1,15 @@
 import pdb
 import datetime
 from django.db import models
+from chat.models import Message
 from userprofile.models import UserProfile, Group
 from django.contrib.gis.db import models as geomodels
 
 
 class Status(geomodels.Model):
+    STATUS_TYPES = (('food', 'food'), ('drink', 'drink'), ('study', 'study'), ('couch', 'couch'), ('go out', 'go out'),
+                    ('show', 'show'), ('sports', 'sports'), ('other', 'other'))
+
     class Meta:
         ordering = ['-date']
 
@@ -18,6 +22,9 @@ class Status(geomodels.Model):
     expires = geomodels.DateTimeField(db_index=True, null=True, blank=True)
     starts = geomodels.DateTimeField(db_index=True, default=datetime.datetime.now)
     text = geomodels.CharField(max_length=100, db_index=True)
+    attending = geomodels.ManyToManyField(UserProfile, related_name="statusesAttending")
+    invited = geomodels.ManyToManyField(UserProfile, related_name="statusesInvited")
+    statusType = geomodels.CharField(max_length=10, db_index=True, choices=STATUS_TYPES, default='other')
 
     location = geomodels.ForeignKey('Location', related_name='statuses', null=True, blank=True)
     groups = geomodels.ManyToManyField(Group, related_name='receivedStatuses', null=True, blank=True)
@@ -25,8 +32,21 @@ class Status(geomodels.Model):
     objects = geomodels.GeoManager()
 
     def getStatusAudienceUsers(self):
-        users = UserProfile.objects.filter(groupsIn__in=self.groups.all())
-        return users
+        if self.groups:
+            users = UserProfile.objects.filter(groupsIn__in=self.groups.all())
+            return users
+        else:
+            return self.user.friends.all()
+
+
+class StatusMessage(geomodels.Model):
+    class Meta:
+        ordering = ['-date']
+
+    user = geomodels.ForeignKey(UserProfile, related_name="statusMessages")
+    date = geomodels.DateTimeField(auto_now_add=True, db_index=True)
+    text = geomodels.TextField()
+    status = geomodels.ForeignKey(Status, related_name="messages")
 
 
 class Location(geomodels.Model):
@@ -55,7 +75,6 @@ class Location(geomodels.Model):
 
 
 class Poke(models.Model):
-
     class Meta:
         get_latest_by = "created"
 
