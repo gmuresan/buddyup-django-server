@@ -32,7 +32,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAMBtqezsE5qup9ISxxz2NGZCbzjk8NUcD5riYWzZBnZCItREjW16hToQ8OwwpbLlPNXvEsmnwYmXa5FSf8mhKgYtW4Ck6O7J2bU8W4o1OAzOsUoIX9gdIxIWEToOZBVd9kBlLepagsuSwvZB8vJXG1u8rskycyEuKW6Hd5d5uBDDjPbjj3YZAPma08a2VZCKAZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAPO0oFdhlR7UHxg1AFvsev4vUkCnZCeKMqhldrEozC2yXv67uh9uobkYV1NdzdOowYJRsNTEZCZBZC2PAxkbwx3gkgMYkfktLbhOaZC8iJ8zoHVLJeZAEIRoaPro8I0qBqm3pCF1ZCtKdZBu0ARfznZArP3KyaB36foeNkiN4h83FGymMtrTZCgwqexWmD2gB9uQZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -158,13 +158,13 @@ class FacebookRegisterTest(TestCase):
 
         client.post(reverse('setSettingAPI'), {
             'userid': user.id,
-            'key': 'key1',
+            'key': 'statusradius',
             'value': 'value1'
         })
 
         client.post(reverse('setSettingAPI'), {
             'userid': user.id,
-            'key': 'key2',
+            'key': 'imboredtext',
             'value': 'value2'
         })
 
@@ -176,8 +176,8 @@ class FacebookRegisterTest(TestCase):
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['settings']), 2)
-        setting1 = response['settings']['key1']
-        setting2 = response['settings']['key2']
+        setting1 = response['settings']['statusradius']
+        setting2 = response['settings']['imboredtext']
 
         self.assertEqual(setting1, 'value1')
         self.assertEqual(setting2, 'value2')

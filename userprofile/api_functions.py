@@ -4,6 +4,7 @@ from api.FacebookProfile import FacebookProfile
 from api.helpers import *
 from api.views import *
 from push_notifications.models import GCMDevice, APNSDevice
+from status.helpers import getNewStatusesJsonResponse, getMyStatusesJsonResponse
 from userprofile.models import UserProfile, Group, Feedback, Setting
 
 
