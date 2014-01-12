@@ -1,35 +1,11 @@
 from datetime import datetime, timedelta
 import urllib
 import urllib2
-import pytz
 from buddyup import settings
-from status.models import Status, Poke
+from status.models import Poke
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 MICROSECOND_DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S.%f'
-
-
-def createStatusJsonObject(status):
-    statusData = dict()
-
-    statusData['statusid'] = status.id
-    statusData['userid'] = status.user_id
-    statusData['text'] = status.text
-    statusData['datecreated'] = status.date.strftime(DATETIME_FORMAT)
-    statusData['dateexpires'] = status.expires.strftime(DATETIME_FORMAT)
-    statusData['datestarts'] = status.starts.strftime(DATETIME_FORMAT)
-
-    if status.location:
-        location = dict()
-        location['lat'] = status.location.lat
-        location['lng'] = status.location.lng
-        location['address'] = status.location.address
-        location['city'] = status.location.city
-        location['state'] = status.location.state
-        location['venue'] = status.location.venue
-        statusData['location'] = location
-
-    return statusData
 
 
 def createFriendJsonObject(friend, blocked, user):
@@ -58,52 +34,6 @@ def createGroupJsonObject(group):
     groupData['userids'] = map(int, memberIds)
 
     return groupData
-
-
-def getNewStatusesJsonResponse(userProfile, since):
-    friends = userProfile.getUnblockedFriends()
-
-    # TODO: add expires date filter to status query
-    #statuses = Status.objects.filter(user__in=friends, expires__gt=now)
-    statuses = Status.objects.filter(user__in=friends)
-
-    if since is not None:
-        statuses = statuses.filter(date__gt=since)
-
-    statuses = list(statuses)
-    newSince = datetime.utcnow()
-
-    statusesData = []
-    for status in statuses:
-
-        # If the status is only broadcast to certain groups,
-        # Check if the current user is in one of those groups
-        if status.groups.count():
-            inGroup = False
-            for group in status.groups.all():
-                if userProfile in group.members.all():
-                    inGroup = True
-                    break
-
-            if not inGroup:
-                continue
-
-        statusData = createStatusJsonObject(status)
-        statusesData.append(statusData)
-
-    return statusesData, newSince
-
-
-def getMyStatusesJsonResponse(userProfile):
-
-    myStatuses = userProfile.statuses.filter(user=userProfile).order_by('-expires')
-
-    myStatusesData = []
-    for status in myStatuses:
-        statusData = createStatusJsonObject(status)
-        myStatusesData.append(statusData)
-
-    return myStatusesData
 
 
 def getMyGroupsJsonResponse(userProfile):

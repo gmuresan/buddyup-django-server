@@ -644,17 +644,28 @@ class deleteStatusTest(TestCase):
 class getStatusesTest(TestCase):
     # TODO: create a test for testing that the location is present in the status
     def setUp(self):
+        # user1 and user2 are friends, user1 and user3 are friends
         user1 = User.objects.create(username='user1', password='0', email='user1')
         self.user1 = UserProfile.objects.create(user=user1)
 
         user2 = User.objects.create(username='user2', password='0', email='user2')
         self.user2 = UserProfile.objects.create(user=user2)
 
+        user3 = User.objects.create(username='user3', password='0', email='user3')
+        self.user3 = UserProfile.objects.create(user=user3)
+
+        user4 = User.objects.create(username='user4', password='0', email='user4')
+        self.user4 = UserProfile.objects.create(user=user4)
+
         self.user1.friends.add(self.user2)
         self.user2.friends.add(self.user1)
 
+        self.user1.friends.add(self.user3)
+        self.user3.friends.add(self.user1)
+
         self.user1.save()
         self.user2.save()
+        self.user3.save()
 
         self.lat = 42.341560
         self.lng = -83.501783
@@ -667,12 +678,14 @@ class getStatusesTest(TestCase):
 
         self.location = Location.objects.create(lng=self.lng, lat=self.lat, point=Point(self.lng, self.lat),
                                                 city=self.city, state=self.state, venue=self.venue)
-        self.status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
-                                             location=self.location, starts=self.startDate)
 
     def testSingleStatus(self):
         print "SingleStatus"
         client = Client()
+
+        status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
+                                        location=self.location, starts=self.startDate,
+                                        visibility=Status.VIS_FRIENDS)
 
         myLat = 42.321620
         myLng = -83.507794
@@ -688,55 +701,133 @@ class getStatusesTest(TestCase):
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
         self.assertEqual(len(response['statuses']), 1)
-        self.assertEqual(response['statuses'][0]['text'], self.status1.text)
+        self.assertEqual(response['statuses'][0]['text'], status1.text)
         self.assertEqual(response['statuses'][0]['dateexpires'], self.expirationDate.strftime(DATETIME_FORMAT))
         self.assertEqual(response['statuses'][0]['datestarts'], self.startDate.strftime(DATETIME_FORMAT))
 
         statusDate = response['statuses'][0]['datecreated']
-        self.assertEqual(statusDate, self.status1.date.strftime(DATETIME_FORMAT))
+        self.assertEqual(statusDate, status1.date.strftime(DATETIME_FORMAT))
 
-    def testGetStatusesWithGroups(self):
-        print "GetStatusesWithGroups"
-
-        group1 = Group.objects.create(name="group1", user=self.user1)
-        group1.members.add(self.user2)
-        group1.save()
-
-        group2 = Group.objects.create(name="group2", user=self.user1)
-
-        group1StatusText = 'group1StatusText'
-        group1Status = Status.objects.create(user=self.user1, expires=self.expirationDate, location=self.location,
-                                             text=group1StatusText)
-        group1Status.groups.add(group1)
-        group1Status.save()
-
-        group2StatusText = "group2StatusText"
-        group2Status = Status.objects.create(user=self.user1, expires=self.expirationDate, location=self.location,
-                                             text=group2StatusText)
-        group2Status.groups.add(group2)
-        group2Status.save()
-
+    def testCustomVisibility(self):
+        print "Get Status Custom Visibility"
         client = Client()
 
-        since = datetime.utcnow() - timedelta(hours=1)
+        status = Status.objects.create(user=self.user1, expires=self.expirationDate, text='text', starts=self.startDate,
+                                       visibility=Status.VIS_CUSTOM)
+        status.friendsVisible.add(self.user2)
 
         response = client.get(reverse('getStatusesAPI'), {
-            'userid': self.user2.id,
-            'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
-            'lat': self.lat,
-            'lng': self.lng
+            'userid': self.user2.id
         })
-
         response = json.loads(response.content)
 
-        self.assertEqual(len(response['statuses']), 2)
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 1)
 
-        group1StatusFound = False
-        for status in response['statuses']:
-            self.assertNotEqual(status['text'], group2StatusText)
-            if status['text'] == group1StatusText:
-                group1StatusFound = True
-        self.assertTrue(group1StatusFound)
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user3.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 0)
+
+    def testFriendsVisibility(self):
+        print "Get Status Friends Visibility"
+        client = Client()
+
+        status = Status.objects.create(user=self.user2, expires=self.expirationDate, text='text', starts=self.startDate,
+                                       visibility=Status.VIS_FRIENDS)
+
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user1.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 1)
+
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user3.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 0)
+
+    def testFriendsOfFriendsVisibility(self):
+        print "Get Status Friends of Friends Visibility"
+        client = Client()
+
+        status = Status.objects.create(user=self.user2, expires=self.expirationDate, text='text', starts=self.startDate,
+                                       visibility=Status.VIS_FRIENDS_OF_FRIENDS)
+
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user1.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 1)
+
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user3.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 1)
+
+    def testPublicVisibility(self):
+        print "Get Status Public Visibility"
+        client = Client()
+
+        status = Status.objects.create(user=self.user4, expires=self.expirationDate, text='text', starts=self.startDate,
+                                       visibility=Status.VIS_PUBLIC, location=self.location)
+
+
+        # location right next to status
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user1.id,
+            'lat': str(self.location.lat + .01),
+            'lng': str(self.location.lng + .01),
+            'radius': 50
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 1)
+
+        #location far away from status
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user1.id,
+            'lat': str(self.location.lat + 20),
+            'lng': str(self.location.lng + 20),
+            'radius': 50
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 0)
+
+        # should not see public statuses if lat and lng are not provided
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user1.id,
+            'radius': 50
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+        self.assertEqual(len(statuses), 0)
 
 
 class GetMyStatusesTest(TestCase):
@@ -1814,10 +1905,13 @@ class GetNewDataTests(TestCase):
 
 class SettingsTests(TestCase):
     def setUp(self):
+        self.key1 = 'statusradius'
+        self.key2 = 'imboredtext'
+
         user = User.objects.create(username='user', password='0', email='user')
         self.user = UserProfile.objects.create(user=user)
 
-        self.setting1 = Setting.objects.create(user=self.user, value="value1", key="key1")
+        self.setting1 = Setting.objects.create(user=self.user, value="value1", key=self.key1)
 
     def testSetSetting(self):
         print "SetSetting"
@@ -1826,24 +1920,24 @@ class SettingsTests(TestCase):
 
         response = client.post(reverse('setSettingAPI'), {
             'userid': self.user.id,
-            'key': 'key2',
+            'key': self.key1,
             'value': 'value2'
         })
         response = json.loads(response.content)
 
         self.assertTrue(response['success'])
 
-        setting2 = self.user.settings.get(key='key2')
-        self.assertEqual(setting2.value, 'value2')
+        setting1 = self.user.settings.get(key=self.key1)
+        self.assertEqual(setting1.value, 'value2')
 
         response = client.post(reverse('setSettingAPI'), {
             'userid': self.user.id,
-            'key': 'key2',
+            'key': self.key2,
             'value': 'value3'
         })
         response = json.loads(response.content)
 
-        setting2 = self.user.settings.get(key='key2')
+        setting2 = self.user.settings.get(key=self.key2)
         self.assertTrue(response['success'])
         self.assertEqual(setting2.value, 'value3')
 

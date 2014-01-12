@@ -478,6 +478,9 @@ def setSetting(request):
     key = request.REQUEST['key']
     value = request.REQUEST['value']
 
+    if key != 'statusradius' and key != 'imboredtext':
+        return errorResponse("unknown key. Must be statusradius or imboredtext")
+
     try:
         userProfile = UserProfile.objects.get(pk=userid)
     except UserProfile.DoesNotExist:

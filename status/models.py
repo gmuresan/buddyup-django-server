@@ -7,10 +7,15 @@ from django.contrib.gis.db import models as geomodels
 
 
 class Status(geomodels.Model):
+    VIS_PUBLIC = 'public'
+    VIS_FRIENDS = 'friends'
+    VIS_FRIENDS_OF_FRIENDS = 'friendsoffriends'
+    VIS_CUSTOM = 'custom'
+
     STATUS_TYPES = (('food', 'food'), ('drink', 'drink'), ('study', 'study'), ('couch', 'couch'), ('go out', 'go out'),
                     ('show', 'show'), ('sports', 'sports'), ('other', 'other'))
-    VISIBILITY = (('friends', 'friends'), ('public', 'public'), ('friendsoffriends', 'friends of friends'),
-                  ('custom', 'custom'))
+    VISIBILITY = ((VIS_FRIENDS, 'friends'), (VIS_PUBLIC, 'public'), (VIS_FRIENDS_OF_FRIENDS, 'friends of friends'),
+                  (VIS_CUSTOM, 'custom'))
 
     class Meta:
         ordering = ['-date']

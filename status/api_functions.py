@@ -1,12 +1,14 @@
 from django.contrib.gis.geos import Point
+import pytz
 from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from push_notifications.notifications import sendPokeNotifcation, sendStatusMessageNotification
-from status.helpers import getNewStatusMessages
-from status.models import Location, StatusMessage
+from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse
+from status.models import Location, StatusMessage, Status
 from userprofile.models import Group, UserProfile, FacebookUser
 
+DEFAULT_GET_STATUS_RADIUS = 50
 
 def deleteStatus(request):
     response = dict()
@@ -64,6 +66,10 @@ def getStatuses(request):
     response = dict()
 
     userid = request.REQUEST['userid']
+    lat = request.REQUEST.get('lat', None)
+    lng = request.REQUEST.get('lng', None)
+    radius = request.REQUEST.get('radius', None)
+
     since = request.REQUEST.get('since', None)
 
     if since:
@@ -74,7 +80,7 @@ def getStatuses(request):
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User Id')
 
-    statusesData, newSince = getNewStatusesJsonResponse(userprofile, since)
+    statusesData, newSince = getNewStatusesJsonResponse(userprofile, since, lat, lng, radius)
 
     response['success'] = True
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
