@@ -4,11 +4,12 @@ from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from push_notifications.notifications import sendPokeNotifcation, sendStatusMessageNotification
-from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse
-from status.models import Location, StatusMessage, Status
+from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson
+from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
 
 DEFAULT_GET_STATUS_RADIUS = 50
+
 
 def deleteStatus(request):
     response = dict()
@@ -190,35 +191,7 @@ def postStatus(request):
     status.visibility = visibility
 
     if locationData:
-        lat = locationData.get('lat', None)
-        lng = locationData.get('lng', None)
-        address = locationData.get('address', None)
-        city = locationData.get('city', None)
-        state = locationData.get('state', None)
-        venue = locationData.get('venue', None)
-
-        loc = Location.objects
-        if lat:
-            loc = loc.filter(lat=lat)
-        if lng:
-            loc = loc.filter(lng=lng)
-        if address:
-            loc = loc.filter(address=address)
-        if city:
-            loc = loc.filter(city=city)
-        if state:
-            loc = loc.filter(state=state)
-        if venue:
-            loc = loc.filter(venue=venue)
-
-        if loc:
-            location = loc[0]
-        else:
-            location = Location(lat=lat, lng=lng, address=address, city=city, state=state, venue=venue)
-            if lat and lng:
-                location.point = Point(lng, lat)
-            location.save()
-
+        location = getLocationObjectFromJson(locationData)
         status.location = location
 
     status.save()
@@ -266,6 +239,78 @@ def postStatus(request):
     return HttpResponse(json.dumps(response))
 
 
+def inviteToStatus(request):
+    response = dict()
+    userid = request.REQUEST['userid']
+    statusId = request.REQUEST['statusid']
+    friends = request.REQUEST.get('friends', '[]')
+    fbFriends = request.REQUEST.get('fbfriends', '[]')
+
+    friends = json.loads(friends)
+    fbFriends = json.loads(fbFriends)
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse('Invalid User')
+
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
+        return errorResponse('Invalid Status')
+
+    if status.user != userProfile:
+        if status.visibility == Status.VIS_FRIENDS or status.visibility == Status.VIS_CUSTOM:
+            return errorResponse("Cant invite people to private events")
+
+    friends = UserProfile.objects.filter(pk__in=friends)
+    status.invited.add(friends)
+
+    for fbFriendId in fbFriends:
+        try:
+            friend = UserProfile.objects.get(facebookUID=fbFriendId)
+            status.invited.add(friend)
+        except UserProfile.DoesNotExist:
+            try:
+                friend = FacebookUser.objects.get(facebookUID=fbFriendId)
+                status.fbInvited.add(friend)
+            except FacebookUser.DoesNotExist:
+                pass
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+def rsvpStatus(request):
+    response = dict()
+
+    userId = request.REQUEST['userid']
+    statusId = request.REQUEST['statusid']
+    attending = request.REQUEST['attending']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userId)
+    except UserProfile.DoesNotExist:
+        return errorResponse('Invalid User')
+
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
+        return errorResponse('Invalid Status')
+
+    if attending == 'true' or attending == 'True':
+        status.attending.add(userProfile)
+    elif attending == 'false' or attending == 'False':
+        status.attending.remove(userProfile)
+    else:
+        return errorResponse("Invalid Attending value. Must be true or false")
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
 def sendStatusMessage(request):
     response = dict()
 
@@ -305,10 +350,63 @@ def getStatusDetails(request):
         return errorResponse("Invalid status")
 
     messagesJson = getNewStatusMessages(status, lastmessageid)
+    locationSuggestions = list()
+    for locationSugg in status.locationSuggestions.all():
+        locationSuggestions.append(createLocationSuggestionJson(locationSugg))
+
+    timeSuggestions = list()
+    for timeSugg in status.timeSuggestions.all():
+        timeSuggestions.append(createTimeSuggestionJson(timeSugg))
+
 
     response['success'] = True
     response['messages'] = messagesJson
-    response['attending'] = []
-    response['invited'] = []
+    response['attending'] = list(status.attending.values_list('id', flat=True))
+    response['fbattending'] = list(status.fbAttending.values_list('facebookUID', flat=True))
+    response['invited'] = list(status.invited.values_list('id', flat=True))
+    response['fbinvited'] = list(status.fbInvited.values_list('facebookUID', flat=True))
+    response['locationsuggestions'] = locationSuggestions
+    response['timesuggestions'] = timeSuggestions
+
 
     return HttpResponse(json.dumps(response))
+
+
+def suggestLocationTime(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+    statusid = request.REQUEST['statusid']
+    suggestionType = request.REQUEST['type']
+    location = request.REQUEST.get('location', None)
+    time = request.REQUEST.get('time', None)
+
+    if suggestionType != 'location' or suggestionType != 'time':
+        return errorResponse('type must be location or time')
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse('Invalid User')
+
+    try:
+        status = Status.objects.get(pk=statusid)
+    except Status.DoesNotExist:
+        return errorResponse('Invalid status id')
+
+    if suggestionType == 'location':
+        location = getLocationObjectFromJson(json.loads(location))
+        locationSuggestion = LocationSuggestion.objects.get_or_create(user=userProfile, status=status,
+                                                                      location=location)
+
+    if suggestionType == 'time':
+        date = datetime.strptime(time, DATETIME_FORMAT)
+        timeSuggestion = TimeSuggestion.objects.get_or_create(user=userProfile, status=status, dateSuggested=time)
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+
+

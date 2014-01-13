@@ -33,8 +33,12 @@ class Status(geomodels.Model):
     invited = geomodels.ManyToManyField(UserProfile, related_name="statusesInvited")
     statusType = geomodels.CharField(max_length=10, db_index=True, choices=STATUS_TYPES, default='other')
     visibility = geomodels.CharField(max_length=20, db_index=True, choices=VISIBILITY, default='friends')
-    friendsVisible = geomodels.ManyToManyField(UserProfile, related_name='visibleStatuses')
-    fbFriendsVisible = geomodels.ManyToManyField(FacebookUser, related_name='visibleStatuses')
+    friendsVisible = geomodels.ManyToManyField(UserProfile, related_name='statusesVisible')
+    fbFriendsVisible = geomodels.ManyToManyField(FacebookUser, related_name='statusesVisible')
+    invited = geomodels.ManyToManyField(UserProfile, related_name='statusesInvited')
+    fbInvited = geomodels.ManyToManyField(FacebookUser, related_name='statusesInvited')
+    attending = geomodels.ManyToManyField(UserProfile, related_name='statusesAttending')
+    fbAttending = geomodels.ManyToManyField(FacebookUser, related_name='statusesAttending')
 
     location = geomodels.ForeignKey('Location', related_name='statuses', null=True, blank=True)
     groups = geomodels.ManyToManyField(Group, related_name='receivedStatuses', null=True, blank=True)
@@ -82,6 +86,26 @@ class Location(geomodels.Model):
             ["address", "city", "state"],
             ["city", "state"]
         ]
+
+
+class LocationSuggestion(models.Model):
+    class Meta:
+        ordering=['-dateCreated']
+
+    status = models.ForeignKey(Status, related_name="locationSuggestions")
+    user = models.ForeignKey(UserProfile, related_name="locationSuggestions")
+    dateCreated = models.DateTimeField(auto_now_add=True)
+    location = models.ForeignKey(Location)
+
+
+class TimeSuggestion(models.Model):
+    class Meta:
+        ordering=['-dateCreated']
+
+    status = models.ForeignKey(Status, related_name="timeSuggestions")
+    user = models.ForeignKey(UserProfile, related_name="timeSuggestions")
+    dateCreated = models.DateTimeField(auto_now_add=True)
+    dateSuggested = models.DateTimeField()
 
 
 class Poke(models.Model):

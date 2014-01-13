@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
 from django.db.models import Q
 from api.helpers import DATETIME_FORMAT
-from status.models import Status
+from status.models import Status, Location
 from userprofile.models import Setting, UserProfile
 
 DEFAULT_STATUS_RADIUS = 50
@@ -90,13 +90,54 @@ def createStatusJsonObject(status):
     statusData['datestarts'] = status.starts.strftime(DATETIME_FORMAT)
 
     if status.location:
-        location = dict()
-        location['lat'] = status.location.lat
-        location['lng'] = status.location.lng
-        location['address'] = status.location.address
-        location['city'] = status.location.city
-        location['state'] = status.location.state
-        location['venue'] = status.location.venue
-        statusData['location'] = location
+        statusData['location'] = createLocationJson(status.location)
 
     return statusData
+
+
+def createLocationJson(locationObj):
+    location = dict()
+    location['lat'] = locationObj.lat
+    location['lng'] = locationObj.lng
+    location['address'] = locationObj.address
+    location['city'] = locationObj.city
+    location['state'] = locationObj.state
+    location['venue'] = locationObj.venue
+
+    return location
+
+
+
+def getLocationObjectFromJson(locationData):
+    lat = locationData.get('lat', None)
+    lng = locationData.get('lng', None)
+    address = locationData.get('address', None)
+    city = locationData.get('city', None)
+    state = locationData.get('state', None)
+    venue = locationData.get('venue', None)
+
+    try:
+        location = Location.objects.get(lat=lat, lng=lng, address=address, city=city, state=state, venue=venue)
+    except Location.DoesNotExist:
+        point = Point(lng, lat)
+        location = Location.objects.create(lat=lat, lng=lng, address=address, city=city, state=state, venue=venue,
+                                           point=point)
+        location.save()
+
+    return location
+
+
+def createTimeSuggestionJson(timeSuggestion):
+    sugg = dict()
+    sugg['userid'] = timeSuggestion.user.id
+    sugg['time'] = timeSuggestion.dateSuggested.strftime(DATETIME_FORMAT)
+
+    return sugg
+
+
+def createLocationSuggestionJson(locSugg):
+    sugg = dict()
+    sugg['userid'] = locSugg.user.id
+    sugg['location'] = createLocationJson(locSugg.location)
+
+    return sugg

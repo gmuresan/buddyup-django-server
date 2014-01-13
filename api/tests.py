@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 import json
-import pdb
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
@@ -10,12 +9,12 @@ from django.test import TestCase, Client
 from api import helpers
 from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
-from push_notifications.notifications import sendChatNotificationsSynchronous, sendPokeNotificationSynchronous
 from buddyup import settings
 from chat.models import Conversation, Message
 from push_notifications.models import GCMDevice, APNSDevice
-from status.models import Status, Poke, Location, StatusMessage
-from userprofile.models import UserProfile, Group, Setting
+from status.helpers import createLocationJson
+from status.models import Status, Poke, Location, StatusMessage, TimeSuggestion, LocationSuggestion
+from userprofile.models import UserProfile, Group, Setting, FacebookUser
 
 FB_TEST_USER_1_ID = "100007243621022"
 FB_TEST_USER_2_ID = "100007247311000"
@@ -32,7 +31,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAPO0oFdhlR7UHxg1AFvsev4vUkCnZCeKMqhldrEozC2yXv67uh9uobkYV1NdzdOowYJRsNTEZCZBZC2PAxkbwx3gkgMYkfktLbhOaZC8iJ8zoHVLJeZAEIRoaPro8I0qBqm3pCF1ZCtKdZBu0ARfznZArP3KyaB36foeNkiN4h83FGymMtrTZCgwqexWmD2gB9uQZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAPO0oFdhlR7UHxg1AFvsev4vUkCnZCeKMqhldrEozC2yXv67uh9uobkYV1NdzdowYJRsNTEZCZBZC2PAxkbwx3gkgMYkfktLbhOaZC8iJ8zoHVLJeZAEIRoaPro8I0qBqm3pCF1ZCtKdZBu0ARfznZArP3KyaB36foeNkiN4h83FGymMtrTZCgwqexWmD2gB9uQZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -219,15 +218,16 @@ class StatusMessageTests(TestCase):
         self.location = {'lat': self.lat, 'lng': self.lng, 'address': self.address, 'state': self.state,
                          'city': self.city, 'venue': self.venue}
 
-        self.status = Status.objects.create(user=self.user, text=self.text, expires=self.expires)
 
     def testPostStatusMessage(self):
         print "Post Status Message"
         client = Client()
 
+        status = Status.objects.create(user=self.user, text=self.text, expires=self.expires)
+
         response = client.post(reverse('postStatusMessageAPI'), {
             'userid': self.user.id,
-            'statusid': self.status.id,
+            'statusid': status.id,
             'text': self.text
         })
 
@@ -235,7 +235,7 @@ class StatusMessageTests(TestCase):
 
         self.assertTrue(response['success'])
 
-        messages = self.status.messages.all()
+        messages = status.messages.all()
 
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].text, self.text)
@@ -243,11 +243,11 @@ class StatusMessageTests(TestCase):
 
         messageId = response['messages'][0]['id']
 
-        message = StatusMessage.objects.create(user=self.friend1, text='text', status=self.status)
+        message = StatusMessage.objects.create(user=self.friend1, text='text', status=status)
 
         response = client.post(reverse('postStatusMessageAPI'), {
             'userid': self.user.id,
-            'statusid': self.status.id,
+            'statusid': status.id,
             'text': 'text',
             'lastmessageid': messageId
         })
@@ -261,19 +261,70 @@ class StatusMessageTests(TestCase):
         print "Get Status Details"
         client = Client()
 
+        fbId1 = "foijf09190fj19j"
+        fbId2 = "asfafafsafsfafs"
+        dateSuggested = datetime.utcnow() + timedelta(hours=2)
+        locationSuggested = Location.objects.create(lat=80.0, lng=70.0, point=Point(70.0, 80.0), city="ann arbor",
+                                                    state="mi", venue="some place")
+
+        status = Status.objects.create(user=self.user, text=self.text, expires=self.expires)
+
+        status.attending.add(self.friend1)
+        status.invited.add(self.friend2)
+        status.invited.add(self.friend1)
+
+        fbUser1 = FacebookUser.objects.create(facebookUID=fbId1)
+        fbUser2 = FacebookUser.objects.create(facebookUID=fbId2)
+
+        status.fbInvited.add(fbUser1)
+        status.fbInvited.add(fbUser2)
+        status.fbAttending.add(fbUser1)
+
+        timeSuggestion = TimeSuggestion.objects.create(user=self.friend2, status=status, dateSuggested=dateSuggested)
+        status.timeSuggestions.add(timeSuggestion)
+        locationSuggestion = LocationSuggestion.objects.create(user=self.friend1, status=status, location=locationSuggested)
+        status.locationSuggestions.add(locationSuggestion)
+
         response = client.post(reverse('postStatusMessageAPI'), {
             'userid': self.user.id,
-            'statusid': self.status.id,
+            'statusid': status.id,
             'text': self.text
         })
 
         response = client.post(reverse('getStatusDetailsAPI'), {
-            'statusid': self.status.id
+            'statusid': status.id
         })
         response = json.loads(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['messages']), 1)
+        message = response['messages'][0]
+        self.assertEqual(message['userid'], self.user.id)
+        self.assertEqual(message['text'], self.text)
+
+        self.assertEqual(len(response['fbinvited']), 2)
+        self.assertEqual(len(response['invited']), 2)
+        self.assertEqual(len(response['attending']), 1)
+        self.assertEqual(len(response['fbattending']), 1)
+        self.assertEqual(len(response['timesuggestions']), 1)
+        self.assertEqual(len(response['locationsuggestions']), 1)
+
+        self.assertIn(fbUser1.facebookUID, response['fbinvited'])
+        self.assertIn(fbUser2.facebookUID, response['fbinvited'])
+        self.assertIn(fbUser1.facebookUID, response['fbattending'])
+        self.assertIn(self.friend2.id, response['invited'])
+        self.assertIn(self.friend1.id, response['invited'])
+        self.assertIn(self.friend1.id, response['attending'])
+
+        timeSugg = response['timesuggestions'][0]
+        locationSugg = response['locationsuggestions'][0]
+
+        self.assertEqual(timeSugg['time'], timeSuggestion.dateSuggested.strftime(DATETIME_FORMAT))
+        self.assertEqual(timeSugg['userid'], timeSuggestion.user.id)
+
+        self.assertEqual(locationSugg['location'], createLocationJson(locationSuggestion.location))
+        self.assertEqual(locationSugg['userid'], locationSuggestion.user.id)
+
 
 
 class PostStatusTests(TestCase):
@@ -828,6 +879,21 @@ class getStatusesTest(TestCase):
         self.assertTrue(response['success'])
         statuses = response['statuses']
         self.assertEqual(len(statuses), 0)
+
+    def testGetStatusDetails(self):
+        print "Get Status Details"
+        client = Client()
+
+        status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
+                                        location=self.location, starts=self.startDate,
+                                        visibility=Status.VIS_FRIENDS)
+
+        response = client.post(reverse('getStatusDetailsAPI'), {
+            'statusid': status1.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
 
 
 class GetMyStatusesTest(TestCase):
