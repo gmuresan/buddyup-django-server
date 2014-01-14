@@ -43,34 +43,39 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
     friendsStatuses = Status.objects.filter(Q(user__in=friends, visibility=Status.VIS_FRIENDS))
     friendsOfFriendsStatuses = Status.objects.filter(Q(Q(user__in=friendsOfFriends) | Q(user__in=friends),
                                  visibility=Status.VIS_FRIENDS_OF_FRIENDS))
-    #visibilityQuery = inVisibleList | friendsStatuses | friendsOfFriendsStatuses
 
-    statuses = inVisibleList | friendsOfFriendsStatuses | friendsStatuses
-
+    test4 = None
     if lat is not None and lng is not None:
+        distanceQuery = Q(location__point__distance_lte=(Point(float(lng), float(lat)), D(mi=radius)))
         publicStatuses = Status.objects.filter(Q(visibility=Status.VIS_PUBLIC))
-        test = list(publicStatuses)
-        statuses = statuses | publicStatuses
-        #visibilityQuery = visibilityQuery | publicStatuses
-        #visibilityQuery = Q(visibilityQuery,
-       #                     location__point__distance_lte=(Point(float(lng), float(lat)), D(mi=radius)))
+        publicStatuses = publicStatuses.filter(distanceQuery)
+        publicStatuses = publicStatuses.filter(expires__gt=now)
+        if since is not None:
+            publicStatuses = publicStatuses.filter(date__gt=since)
 
-    test = list(inVisibleList)
-    test = list(friendsStatuses)
-    test = list(friendsOfFriendsStatuses)
-    test = list(statuses)
+        test4 = list(publicStatuses)
 
+        inVisibleList = inVisibleList.filter(distanceQuery)
+        friendsStatuses = friendsStatuses.filter(distanceQuery)
+        friendsOfFriendsStatuses = friendsOfFriendsStatuses.filter(distanceQuery)
 
-    #statuses = Status.objects.filter(visibilityQuery)
-    statuses = statuses.filter(expires__gt=now)
-    test = list(statuses)
+    inVisibleList = inVisibleList.filter(expires__gt=now)
+    friendsStatuses = friendsStatuses.filter(expires__gt=now)
+    friendsOfFriendsStatuses = friendsOfFriendsStatuses.filter(expires__gt=now)
 
     if since is not None:
-        statuses = statuses.filter(date__gt=since)
+        inVisibleList = inVisibleList.filter(date__gt=since)
+        friendsStatuses = friendsStatuses.filter(date__gt=since)
+        friendsOfFriendsStatuses = friendsOfFriendsStatuses.filter(date__gt=since)
 
-    if lat is not None and lng is not None:
-        statuses = statuses.filter(location__point__distance_lte=(Point(float(lng), float(lat)), D(mi=radius)))
-        test = list(statuses)
+    test1 = list(inVisibleList)
+    test2 = list(friendsStatuses)
+    test3 = list(friendsOfFriendsStatuses)
+
+    if test4:
+        statuses = set(test1+test2+test3 + test4)
+    else:
+        statuses = set(test1+test2+test3)
 
     test = list(statuses)
 
