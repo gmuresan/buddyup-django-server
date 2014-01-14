@@ -7,7 +7,9 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'buddyup.views.home', name='home'),
-    url(r'^api/', include('api.urls')),
+    url(r'^api/', include('chat.urls')),
+    url(r'^api/', include('userprofile.urls')),
+    url(r'^api/', include('status.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
