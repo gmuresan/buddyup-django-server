@@ -29,7 +29,7 @@ def getNewStatusMessages(status, lastMessageId):
 
 
 def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=None):
-    friends = userProfile.getUnblockedFriends()
+    friends = userProfile.friends.all()
     friendsOfFriends = UserProfile.objects.filter(friends=friends).distinct().exclude(pk=userProfile.pk)
     now = datetime.utcnow()
 
