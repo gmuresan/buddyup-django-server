@@ -42,9 +42,9 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
     inVisibleList = Status.objects.filter(Q(friendsVisible=userProfile))
     friendsStatuses = Status.objects.filter(Q(user__in=friends, visibility=Status.VIS_FRIENDS))
     friendsOfFriendsStatuses = Status.objects.filter(Q(Q(user__in=friendsOfFriends) | Q(user__in=friends),
-                                 visibility=Status.VIS_FRIENDS_OF_FRIENDS))
+                                                       visibility=Status.VIS_FRIENDS_OF_FRIENDS))
 
-    test4 = None
+    publicStatuses = None
     if lat is not None and lng is not None:
         distanceQuery = Q(location__point__distance_lte=(Point(float(lng), float(lat)), D(mi=radius)))
         publicStatuses = Status.objects.filter(Q(visibility=Status.VIS_PUBLIC))
@@ -53,7 +53,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
         if since is not None:
             publicStatuses = publicStatuses.filter(date__gt=since)
 
-        test4 = list(publicStatuses)
+        publicStatuses = list(publicStatuses)
 
         inVisibleList = inVisibleList.filter(distanceQuery)
         friendsStatuses = friendsStatuses.filter(distanceQuery)
@@ -68,16 +68,14 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
         friendsStatuses = friendsStatuses.filter(date__gt=since)
         friendsOfFriendsStatuses = friendsOfFriendsStatuses.filter(date__gt=since)
 
-    test1 = list(inVisibleList)
-    test2 = list(friendsStatuses)
-    test3 = list(friendsOfFriendsStatuses)
+    inVisibleList = list(inVisibleList)
+    friendsStatuses = list(friendsStatuses)
+    friendsOfFriendsStatuses = list(friendsOfFriendsStatuses)
 
-    if test4:
-        statuses = set(test1+test2+test3 + test4)
+    if publicStatuses:
+        statuses = set(inVisibleList + friendsStatuses + friendsOfFriendsStatuses + publicStatuses)
     else:
-        statuses = set(test1+test2+test3)
-
-    test = list(statuses)
+        statuses = set(inVisibleList + friendsStatuses + friendsOfFriendsStatuses)
 
     statuses = list(statuses)
     newSince = datetime.utcnow()
@@ -127,7 +125,6 @@ def createLocationJson(locationObj):
     location['venue'] = locationObj.venue
 
     return location
-
 
 
 def getLocationObjectFromJson(locationData):

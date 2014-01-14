@@ -29,16 +29,18 @@ class Status(geomodels.Model):
     expires = geomodels.DateTimeField(db_index=True, null=True, blank=True)
     starts = geomodels.DateTimeField(db_index=True, default=datetime.datetime.now)
     text = geomodels.CharField(max_length=100, db_index=True)
-    attending = geomodels.ManyToManyField(UserProfile, related_name="statusesAttending")
-    invited = geomodels.ManyToManyField(UserProfile, related_name="statusesInvited")
-    statusType = geomodels.CharField(max_length=10, db_index=True, choices=STATUS_TYPES, default='other')
-    visibility = geomodels.CharField(max_length=20, db_index=True, choices=VISIBILITY, default='friends')
-    friendsVisible = geomodels.ManyToManyField(UserProfile, related_name='statusesVisible')
-    fbFriendsVisible = geomodels.ManyToManyField(FacebookUser, related_name='statusesVisible')
-    invited = geomodels.ManyToManyField(UserProfile, related_name='statusesInvited')
-    fbInvited = geomodels.ManyToManyField(FacebookUser, related_name='statusesInvited')
-    attending = geomodels.ManyToManyField(UserProfile, related_name='statusesAttending')
-    fbAttending = geomodels.ManyToManyField(FacebookUser, related_name='statusesAttending')
+    attending = geomodels.ManyToManyField(UserProfile, related_name="statusesAttending", null=True, blank=True)
+    invited = geomodels.ManyToManyField(UserProfile, related_name="statusesInvited", null=True, blank=True)
+    statusType = geomodels.CharField(max_length=10, db_index=True, choices=STATUS_TYPES, default='other', null=True,
+                                     blank=True)
+    visibility = geomodels.CharField(max_length=20, db_index=True, choices=VISIBILITY, default='friends', null=True,
+                                     blank=True)
+    friendsVisible = geomodels.ManyToManyField(UserProfile, related_name='statusesVisible', null=True, blank=True)
+    fbFriendsVisible = geomodels.ManyToManyField(FacebookUser, related_name='statusesVisible', null=True, blank=True)
+    invited = geomodels.ManyToManyField(UserProfile, related_name='statusesInvited', null=True, blank=True)
+    fbInvited = geomodels.ManyToManyField(FacebookUser, related_name='statusesInvited', null=True, blank=True)
+    attending = geomodels.ManyToManyField(UserProfile, related_name='statusesAttending', null=True, blank=True)
+    fbAttending = geomodels.ManyToManyField(FacebookUser, related_name='statusesAttending', null=True, blank=True)
 
     location = geomodels.ForeignKey('Location', related_name='statuses', null=True, blank=True)
     groups = geomodels.ManyToManyField(Group, related_name='receivedStatuses', null=True, blank=True)
@@ -90,7 +92,7 @@ class Location(geomodels.Model):
 
 class LocationSuggestion(models.Model):
     class Meta:
-        ordering=['-dateCreated']
+        ordering = ['-dateCreated']
 
     status = models.ForeignKey(Status, related_name="locationSuggestions")
     user = models.ForeignKey(UserProfile, related_name="locationSuggestions")
@@ -100,7 +102,7 @@ class LocationSuggestion(models.Model):
 
 class TimeSuggestion(models.Model):
     class Meta:
-        ordering=['-dateCreated']
+        ordering = ['-dateCreated']
 
     status = models.ForeignKey(Status, related_name="timeSuggestions")
     user = models.ForeignKey(UserProfile, related_name="timeSuggestions")
