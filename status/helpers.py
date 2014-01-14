@@ -39,23 +39,39 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
         except Setting.DoesNotExist:
             radius = DEFAULT_STATUS_RADIUS
 
-    inVisibleList = Q(friendsVisible=userProfile)
-    friendsStatuses = Q(user__in=friends, visibility=Status.VIS_FRIENDS)
-    friendsOfFriendsStatuses = Q(Q(user__in=friendsOfFriends) | Q(user__in=friends),
-                                 visibility=Status.VIS_FRIENDS_OF_FRIENDS)
-    visibilityQuery = inVisibleList | friendsStatuses | friendsOfFriendsStatuses
+    inVisibleList = Status.objects.filter(Q(friendsVisible=userProfile))
+    friendsStatuses = Status.objects.filter(Q(user__in=friends, visibility=Status.VIS_FRIENDS))
+    friendsOfFriendsStatuses = Status.objects.filter(Q(Q(user__in=friendsOfFriends) | Q(user__in=friends),
+                                 visibility=Status.VIS_FRIENDS_OF_FRIENDS))
+    #visibilityQuery = inVisibleList | friendsStatuses | friendsOfFriendsStatuses
+
+    statuses = inVisibleList | friendsOfFriendsStatuses | friendsStatuses
 
     if lat is not None and lng is not None:
-        publicStatuses = Q(visibility=Status.VIS_PUBLIC)
-        visibilityQuery = visibilityQuery | publicStatuses
-        visibilityQuery = Q(visibilityQuery,
-                            location__point__distance_lte=(Point(float(lng), float(lat)), D(mi=radius)))
+        publicStatuses = Status.objects.filter(Q(visibility=Status.VIS_PUBLIC))
+        test = list(publicStatuses)
+        statuses = statuses | publicStatuses
+        #visibilityQuery = visibilityQuery | publicStatuses
+        #visibilityQuery = Q(visibilityQuery,
+       #                     location__point__distance_lte=(Point(float(lng), float(lat)), D(mi=radius)))
 
-    statuses = Status.objects.filter(visibilityQuery)
+    test = list(inVisibleList)
+    test = list(friendsStatuses)
+    test = list(friendsOfFriendsStatuses)
+
+
+    #statuses = Status.objects.filter(visibilityQuery)
     statuses = statuses.filter(expires__gt=now)
+    test = list(statuses)
 
     if since is not None:
         statuses = statuses.filter(date__gt=since)
+
+    if lat is not None and lng is not None:
+        statuses = statuses.filter(location__point__distance_lte=(Point(float(lng), float(lat)), D(mi=radius)))
+        test = list(statuses)
+
+    test = list(statuses)
 
     statuses = list(statuses)
     newSince = datetime.utcnow()
