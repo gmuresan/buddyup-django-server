@@ -58,6 +58,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
     test = list(inVisibleList)
     test = list(friendsStatuses)
     test = list(friendsOfFriendsStatuses)
+    test = list(statuses)
 
 
     #statuses = Status.objects.filter(visibilityQuery)
