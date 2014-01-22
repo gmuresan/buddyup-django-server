@@ -6,8 +6,9 @@ from api.views import *
 from push_notifications.models import GCMDevice, APNSDevice
 from status.helpers import getNewStatusesJsonResponse, getMyStatusesJsonResponse
 from userprofile.models import UserProfile, Group, Feedback, Setting
+from django.views.decorators.csrf import csrf_exempt
 
-
+@csrf_exempt
 def facebookLogin(request):
     response = dict()
 
