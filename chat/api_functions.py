@@ -1,3 +1,4 @@
+from django.views.decorators.csrf import csrf_exempt
 from api.helpers import *
 from api.views import *
 from chat.models import Conversation, Message
@@ -5,6 +6,7 @@ from push_notifications.notifications import sendChatNotifications
 from userprofile.models import *
 
 
+@csrf_exempt
 def createChat(request):
     response = dict()
 
@@ -52,6 +54,7 @@ def createChat(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def inviteToChat(request):
     response = dict()
 
@@ -109,6 +112,7 @@ def inviteToChat(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def leaveChat(request):
     response = dict()
 
@@ -138,6 +142,8 @@ def leaveChat(request):
 
     return HttpResponse(json.dumps(response))
 
+
+@csrf_exempt
 def sendMessage(request):
     response = dict()
 
@@ -176,6 +182,7 @@ def sendMessage(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getMessages(request):
     response = dict()
 

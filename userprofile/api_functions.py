@@ -69,6 +69,7 @@ def facebookLogin(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def createGroup(request):
     response = dict()
 
@@ -92,6 +93,7 @@ def createGroup(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def deleteGroup(request):
     response = dict()
 
@@ -118,6 +120,7 @@ def deleteGroup(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def editGroupName(request):
     response = dict()
 
@@ -146,6 +149,7 @@ def editGroupName(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def setGroups(request):
     response = dict()
 
@@ -195,6 +199,7 @@ def setGroups(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def addGroupMember(request):
     response = dict()
 
@@ -231,6 +236,7 @@ def addGroupMember(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def removeGroupMember(request):
     response = dict()
 
@@ -267,6 +273,7 @@ def removeGroupMember(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getGroups(request):
     response = dict()
 
@@ -285,6 +292,7 @@ def getGroups(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def setGroupMembers(request):
     response = dict()
 
@@ -326,6 +334,7 @@ def setGroupMembers(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getFriends(request):
     response = dict()
 
@@ -354,6 +363,7 @@ def getFriends(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def blockFriend(request):
     response = dict()
 
@@ -381,6 +391,7 @@ def blockFriend(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def unblockFriend(request):
     response = dict()
 
@@ -409,6 +420,7 @@ def unblockFriend(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def submitFeedback(request):
     response = dict()
 
@@ -427,6 +439,7 @@ def submitFeedback(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getNewData(request):
     response = dict()
 
@@ -451,6 +464,7 @@ def getNewData(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def goOffline(request):
     response = dict()
 
@@ -473,6 +487,7 @@ def goOffline(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def setSetting(request):
     response = dict()
 
@@ -500,6 +515,7 @@ def setSetting(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getSetting(request):
     response = dict()
 
@@ -523,6 +539,7 @@ def getSetting(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def registerForPushNotifications(request):
     response = dict()
 

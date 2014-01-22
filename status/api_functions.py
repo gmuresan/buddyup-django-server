@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Point
+from django.views.decorators.csrf import csrf_exempt
 import pytz
 from api.FacebookProfile import FacebookProfile
 from api.views import *
@@ -11,6 +12,7 @@ from userprofile.models import Group, UserProfile, FacebookUser
 DEFAULT_GET_STATUS_RADIUS = 50
 
 
+@csrf_exempt
 def deleteStatus(request):
     response = dict()
 
@@ -35,6 +37,7 @@ def deleteStatus(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def cancelStatus(request):
     response = dict()
 
@@ -63,6 +66,7 @@ def cancelStatus(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getStatuses(request):
     response = dict()
 
@@ -90,6 +94,7 @@ def getStatuses(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getMyStatuses(request):
     response = dict()
 
@@ -108,6 +113,7 @@ def getMyStatuses(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def poke(request):
     response = dict()
 
@@ -141,6 +147,7 @@ def poke(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def postStatus(request):
     response = dict()
 
@@ -239,6 +246,7 @@ def postStatus(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def inviteToStatus(request):
     response = dict()
     userid = request.REQUEST['userid']
@@ -282,6 +290,7 @@ def inviteToStatus(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def rsvpStatus(request):
     response = dict()
 
@@ -311,6 +320,7 @@ def rsvpStatus(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def sendStatusMessage(request):
     response = dict()
 
@@ -338,6 +348,7 @@ def sendStatusMessage(request):
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def getStatusDetails(request):
     response = dict()
 
@@ -358,7 +369,6 @@ def getStatusDetails(request):
     for timeSugg in status.timeSuggestions.all():
         timeSuggestions.append(createTimeSuggestionJson(timeSugg))
 
-
     response['success'] = True
     response['messages'] = messagesJson
     response['attending'] = list(status.attending.values_list('id', flat=True))
@@ -368,10 +378,10 @@ def getStatusDetails(request):
     response['locationsuggestions'] = locationSuggestions
     response['timesuggestions'] = timeSuggestions
 
-
     return HttpResponse(json.dumps(response))
 
 
+@csrf_exempt
 def suggestLocationTime(request):
     response = dict()
 
