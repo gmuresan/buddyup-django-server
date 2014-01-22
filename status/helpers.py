@@ -43,7 +43,8 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
 
     inVisibleList = Status.objects.filter(Q(friendsVisible=userProfile))
     friendsStatuses = Status.objects.filter(Q(user__in=friends, visibility=Status.VIS_FRIENDS))
-    friendsOfFriendsStatuses = Status.objects.filter(user__in=friendsOfFriends, visibility=Status.VIS_FRIENDS_OF_FRIENDS)
+    friendsOfFriendsStatuses = Status.objects.filter(
+        Q(user__in=friendsOfFriends, visibility=Status.VIS_FRIENDS_OF_FRIENDS))
 
     publicStatuses = None
     if lat is not None and lng is not None:
