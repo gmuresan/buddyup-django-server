@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import chain
 import pdb
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import D
@@ -31,6 +32,7 @@ def getNewStatusMessages(status, lastMessageId):
 def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=None):
     friends = userProfile.friends.all()
     friendsOfFriends = UserProfile.objects.filter(friends=friends).distinct().exclude(pk=userProfile.pk)
+    friendsOfFriends = chain(friends, friendsOfFriends)
     now = datetime.utcnow()
 
     if not radius:
@@ -41,8 +43,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
 
     inVisibleList = Status.objects.filter(Q(friendsVisible=userProfile))
     friendsStatuses = Status.objects.filter(Q(user__in=friends, visibility=Status.VIS_FRIENDS))
-    friendsOfFriendsStatuses = Status.objects.filter(Q(user__in=friendsOfFriends) | Q(user__in=friends),
-                                                     visibility=Status.VIS_FRIENDS_OF_FRIENDS)
+    friendsOfFriendsStatuses = Status.objects.filter(user__in=friendsOfFriends, visibility=Status.VIS_FRIENDS_OF_FRIENDS)
 
     publicStatuses = None
     if lat is not None and lng is not None:
