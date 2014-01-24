@@ -1,3 +1,4 @@
+import pdb
 from django.contrib.gis.geos import Point
 from django.views.decorators.csrf import csrf_exempt
 import pytz
@@ -267,12 +268,12 @@ def inviteToStatus(request):
     except Status.DoesNotExist:
         return errorResponse('Invalid Status')
 
-    if status.user != userProfile:
-        if status.visibility == Status.VIS_FRIENDS or status.visibility == Status.VIS_CUSTOM:
-            return errorResponse("Cant invite people to private events")
+    # if status.user != userProfile:
+    #     if status.visibility == Status.VIS_FRIENDS or status.visibility == Status.VIS_CUSTOM:
+    #         return errorResponse("Cant invite people to private events")
 
     friends = UserProfile.objects.filter(pk__in=friends)
-    status.invited.add(friends)
+    status.invited.add(*list(friends))
 
     for fbFriendId in fbFriends:
         try:
@@ -281,9 +282,10 @@ def inviteToStatus(request):
         except UserProfile.DoesNotExist:
             try:
                 friend = FacebookUser.objects.get(facebookUID=fbFriendId)
-                status.fbInvited.add(friend)
             except FacebookUser.DoesNotExist:
-                pass
+                friend = FacebookUser.objects.create(facebookUID=fbFriendId)
+
+            status.fbInvited.add(friend)
 
     response['success'] = True
 

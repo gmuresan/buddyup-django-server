@@ -282,7 +282,8 @@ class StatusMessageTests(TestCase):
 
         timeSuggestion = TimeSuggestion.objects.create(user=self.friend2, status=status, dateSuggested=dateSuggested)
         status.timeSuggestions.add(timeSuggestion)
-        locationSuggestion = LocationSuggestion.objects.create(user=self.friend1, status=status, location=locationSuggested)
+        locationSuggestion = LocationSuggestion.objects.create(user=self.friend1, status=status,
+                                                               location=locationSuggested)
         status.locationSuggestions.add(locationSuggestion)
 
         response = client.post(reverse('postStatusMessageAPI'), {
@@ -324,7 +325,6 @@ class StatusMessageTests(TestCase):
 
         self.assertEqual(locationSugg['location'], createLocationJson(locationSuggestion.location))
         self.assertEqual(locationSugg['userid'], locationSuggestion.user.id)
-
 
 
 class PostStatusTests(TestCase):
@@ -473,6 +473,46 @@ class PostStatusTests(TestCase):
         response = json.loads(response.content)
 
         self.assertTrue(response['success'])
+
+    def testInviteUsersToStatus(self):
+        print "Invite Users To Status"
+        client = Client()
+
+        friends = [self.friend1.id, self.friend2.id]
+        fbfriends = ['asfafafsafs', '1u989h108f1f']
+
+        response = client.post(reverse('postStatusAPI'), {
+            'userid': self.user.id,
+            'starts': self.expires.strftime(DATETIME_FORMAT),
+            'text': self.text,
+            'location': json.dumps(self.location),
+            'visibility': 'friends'
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statusId = response['statusid']
+
+        response = client.post(reverse('inviteToStatusAPI'), {
+            'userid': self.user.id,
+            'statusid': response['statusid'],
+            'friends': json.dumps(friends),
+            'fbfriends': json.dumps(fbfriends)
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        status = Status.objects.get(pk=statusId)
+
+        invitedFriendIds = status.invited.values_list('id', flat=True)
+        fbFriendIds = status.fbInvited.values_list('facebookUID', flat=True)
+
+        for friendId in friends:
+            self.assertIn(friendId, invitedFriendIds)
+
+        for facebookId in fbfriends:
+            self.assertIn(facebookId, fbFriendIds)
 
 
 class facebookShareStatusTests(TestCase):
