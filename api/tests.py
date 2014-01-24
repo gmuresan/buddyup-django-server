@@ -31,7 +31,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAPXZBK6qd1C6rQqeWLM44djDcHFlCWWY657NB6mSG22FzfACudinnDw48bpC3WOVofnejM874aTGfsSImWSZB78PkWEbVz8W3QiwqAOb0aRLzLqNzMii2T8z2RmPaj0YTJqSu43E7m7ZA0Chmq1PPb7XXRQEQVgAt6P6wt3A2xsx6WZAEruxGUhrK0AtpAZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAFHCb9BsmQROHG00ZBRyp2O3BaNgsLSeJ9RpBzWPIXdGzbKx3orR7Ia8coquZA9hzGL7wmVnM89t03j7kGQeyyThWImbOGKbaBnjDlLmH7ZA8mvEIaC47cC9Brt4SWC6wKUNLxvGsy79ZAeUjbbrf6MyxZAvfnTZBELs9bCeeZAOxApEmPBIteEQzqiWpyKDgZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 

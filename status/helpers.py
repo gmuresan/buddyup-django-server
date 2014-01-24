@@ -19,7 +19,7 @@ def getNewStatusMessages(status, lastMessageId):
     messagesJson = list()
     for message in messages:
         messageObj = dict()
-        messageObj['id'] = message.id
+        messageObj['messageid'] = message.id
         messageObj['userid'] = message.user.id
         messageObj['text'] = message.text
         messageObj['date'] = message.date.strftime(DATETIME_FORMAT)
