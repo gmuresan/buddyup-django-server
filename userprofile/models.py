@@ -34,6 +34,7 @@ class Group(models.Model):
 
     name = models.CharField(max_length=64, db_index=True)
     members = models.ManyToManyField(UserProfile, related_name='groupsIn')
+    fbMembers = models.ManyToManyField(FacebookUser, related_name='groupsIn')
     user = models.ForeignKey(UserProfile, related_name='groups')
 
 

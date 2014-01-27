@@ -164,7 +164,6 @@ def postStatus(request):
     statusType = request.REQUEST.get('type', 'other')
     visibility = request.REQUEST.get('visibility', 'friends')
     visibilityFriends = request.REQUEST.get('visibilityFriends', '[]')
-    visibilityFbFriends = request.REQUEST.get('visibilityfbfriends', '[]')
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
@@ -207,26 +206,27 @@ def postStatus(request):
 
     if status.visibility == 'custom':
         visibilityFriends = json.loads(visibilityFriends)
-        visibilityFbFriends = json.loads(visibilityFbFriends)
 
         for friendId in visibilityFriends:
-            try:
-                friendProfile = UserProfile.objects.get(pk=friendId)
-                status.friendsVisible.add(friendProfile)
-            except UserProfile.DoesNotExist:
-                pass
 
-        for fbFriendId in visibilityFbFriends:
-            try:
-                friendProfile = UserProfile.objects.get(facebookUID=fbFriendId)
-                status.friendsVisible.add(friendProfile)
-            except UserProfile.DoesNotExist:
+            if friendId[:2] == 'fb':
+                friendId = friendId[2:]
                 try:
-                    facebookUser = FacebookUser.objects.get(facebookUID=fbFriendId)
-                except FacebookUser.DoesNotExist:
-                    facebookUser = FacebookUser.objects.create(facebookUID=fbFriendId)
+                    friendProfile = UserProfile.objects.get(facebookUID=friendId)
+                    status.friendsVisible.add(friendProfile)
+                except UserProfile.DoesNotExist:
+                    try:
+                        facebookUser = FacebookUser.objects.get(facebookUID=friendId)
+                    except FacebookUser.DoesNotExist:
+                        facebookUser = FacebookUser.objects.create(facebookUID=friendId)
 
-                status.fbFriendsVisible.add(facebookUser)
+                    status.fbFriendsVisible.add(facebookUser)
+            else:
+                try:
+                    friendProfile = UserProfile.objects.get(pk=friendId)
+                    status.friendsVisible.add(friendProfile)
+                except UserProfile.DoesNotExist:
+                    pass
 
     if groupids:
         groups = Group.objects.filter(id__in=groupids)
@@ -253,10 +253,8 @@ def inviteToStatus(request):
     userid = request.REQUEST['userid']
     statusId = request.REQUEST['statusid']
     friends = request.REQUEST.get('friends', '[]')
-    fbFriends = request.REQUEST.get('fbfriends', '[]')
 
     friends = json.loads(friends)
-    fbFriends = json.loads(fbFriends)
 
     try:
         userProfile = UserProfile.objects.get(pk=userid)
@@ -272,20 +270,28 @@ def inviteToStatus(request):
     #     if status.visibility == Status.VIS_FRIENDS or status.visibility == Status.VIS_CUSTOM:
     #         return errorResponse("Cant invite people to private events")
 
-    friends = UserProfile.objects.filter(pk__in=friends)
-    status.invited.add(*list(friends))
+    for friendId in friends:
+        friendId = str(friendId)
+        if friendId[:2] == 'fb':
+            friendId = friendId[2:]
 
-    for fbFriendId in fbFriends:
-        try:
-            friend = UserProfile.objects.get(facebookUID=fbFriendId)
-            status.invited.add(friend)
-        except UserProfile.DoesNotExist:
             try:
-                friend = FacebookUser.objects.get(facebookUID=fbFriendId)
-            except FacebookUser.DoesNotExist:
-                friend = FacebookUser.objects.create(facebookUID=fbFriendId)
+                friend = UserProfile.objects.get(facebookUID=friendId)
+                status.invited.add(friend)
+            except UserProfile.DoesNotExist:
+                try:
+                    fbFriend = FacebookUser.objects.get(facebookUID=friendId)
+                except FacebookUser.DoesNotExist:
+                    fbFriend = FacebookUser.objects.create(facebookUID=friendId)
 
-            status.fbInvited.add(friend)
+                status.fbInvited.add(fbFriend)
+
+        else:
+            try:
+                friend = UserProfile.objects.get(pk=friendId)
+                status.invited.add(friend)
+            except UserProfile.DoesNotExist:
+                pass
 
     response['success'] = True
 

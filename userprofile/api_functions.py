@@ -1,3 +1,4 @@
+import pdb
 from django.contrib.auth.models import User
 import facebook
 from api.FacebookProfile import FacebookProfile
@@ -5,7 +6,7 @@ from api.helpers import *
 from api.views import *
 from push_notifications.models import GCMDevice, APNSDevice
 from status.helpers import getNewStatusesJsonResponse, getMyStatusesJsonResponse
-from userprofile.models import UserProfile, Group, Feedback, Setting
+from userprofile.models import UserProfile, Group, Feedback, Setting, FacebookUser
 from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
@@ -154,7 +155,7 @@ def setGroups(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    friendid = request.REQUEST['friendid']
+    friendid = str(request.REQUEST['friendid'])
     groupids = request.REQUEST.get('groupids', '[]')
     groupids = json.loads(groupids)
 
@@ -163,13 +164,23 @@ def setGroups(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    try:
-        friendProfile = UserProfile.objects.get(pk=friendid)
-    except UserProfile.DoesNotExist:
-        return errorResponse("Friend user does not exist")
+    if friendid[:2] == 'fb':
+        friendid = friendid[2:]
+        try:
+            friendProfile = UserProfile.objects.get(facebookUID=friendid)
+        except UserProfile.DoesNotExist:
+            try:
+                friendProfile = FacebookUser.objects.get(facebookUID=friendid)
+            except FacebookUser.DoesNotExist:
+                friendProfile = FacebookUser.objects.create(facebookUID=friendid)
+    else:
+        try:
+            friendProfile = UserProfile.objects.get(pk=friendid)
+        except UserProfile.DoesNotExist:
+            return errorResponse("Friend user does not exist")
 
-    if friendProfile not in userProfile.friends.all():
-        return errorResponse("That user is not your friend")
+        if friendProfile not in userProfile.friends.all():
+            return errorResponse("That user is not your friend")
 
     newGroups = []
     for groupid in groupids:
@@ -184,15 +195,21 @@ def setGroups(request):
         newGroups.append(group)
 
     for group in userProfile.groups.all():
+        members = None
+        if isinstance(friendProfile, UserProfile):
+            members = group.members
+        elif isinstance(friendProfile, FacebookUser):
+            members = group.fbMembers
+
         # if friend in current group and current group not in newGroups then remove from group
-        if friendProfile in group.members.all():
+        if friendProfile in members.all():
             if group not in newGroups:
-                group.members.remove(friendProfile)
+                members.remove(friendProfile)
                 group.save()
         # if friend not in current group and current group is in newGroups then add to group
         else:
             if group in newGroups:
-                group.members.add(friendProfile)
+                members.add(friendProfile)
                 group.save()
 
     response['success'] = True
@@ -204,7 +221,7 @@ def addGroupMember(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    friendid = request.REQUEST['friendid']
+    friendid = str(request.REQUEST['friendid'])
     groupid = request.REQUEST['groupid']
 
     try:
@@ -220,16 +237,23 @@ def addGroupMember(request):
     if group.user != userProfile:
         return errorResponse("Group does not belong to user")
 
-    try:
-        friendProfile = UserProfile.objects.get(pk=friendid)
-    except UserProfile.DoesNotExist:
-        return errorResponse("Friend user does not exist")
-
-    if friendProfile not in userProfile.friends.all():
-        return errorResponse("That user is not your friend")
-
-    if friendProfile not in group.members.all():
-        group.members.add(friendProfile)
+    if friendid[:2] == 'fb':
+        friendid = friendid[2:]
+        try:
+            friendProfile = UserProfile.objects.get(facebookUID=friendid)
+            group.members.add(friendProfile)
+        except UserProfile.DoesNotExist:
+            try:
+                facebookUser = FacebookUser.objects.get(facebookUID=friendid)
+            except FacebookUser.DoesNotExist:
+                facebookUser = FacebookUser.objects.create(facebookUID=friendid)
+            group.fbMembers.add(facebookUser)
+    else:
+        try:
+            friend = UserProfile.objects.get(pk=friendid)
+            group.members.add(friend)
+        except User.DoesNotExist:
+            return errorResponse("Friend does not exist")
 
     response['success'] = True
 
@@ -241,7 +265,7 @@ def removeGroupMember(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    friendid = request.REQUEST['friendid']
+    friendid = str(request.REQUEST['friendid'])
     groupid = request.REQUEST['groupid']
 
     try:
@@ -257,16 +281,23 @@ def removeGroupMember(request):
     if group.user != userProfile:
         return errorResponse("Group does not belong to user")
 
-    try:
-        friendProfile = UserProfile.objects.get(pk=friendid)
-    except UserProfile.DoesNotExist:
-        return errorResponse("Friend user does not exist")
-
-    if friendProfile not in userProfile.friends.all():
-        return errorResponse("That user is not your friend")
-
-    if friendProfile in group.members.all():
-        group.members.remove(friendProfile)
+    if friendid[:2] == 'fb':
+        friendid = friendid[2:]
+        try:
+            friendProfile = UserProfile.objects.get(facebookUID=friendid)
+            group.members.remove(friendProfile)
+        except UserProfile.DoesNotExist:
+            try:
+                facebookUser = FacebookUser.objects.get(facebookUID=friendid)
+            except FacebookUser.DoesNotExist:
+                facebookUser = FacebookUser.objects.create(facebookUID=friendid)
+            group.fbMembers.remove(facebookUser)
+    else:
+        try:
+            friend = UserProfile.objects.get(pk=friendid)
+            group.members.remove(friend)
+        except User.DoesNotExist:
+            return errorResponse("Friend does not exist")
 
     response['success'] = True
 
@@ -316,16 +347,30 @@ def setGroupMembers(request):
 
     userFriends = userProfile.friends.all()
     group.members.clear()
+
     for friendid in friendids:
-        try:
-            friend = UserProfile.objects.get(pk=friendid)
-        except User.DoesNotExist:
-            return errorResponse("Friend does not exist")
+        friendid = str(friendid)
+        if friendid[:2] == 'fb':
+            friendid = friendid[2:]
+            try:
+                friendProfile = UserProfile.objects.get(facebookUID=friendid)
+                group.members.add(friendProfile)
+            except UserProfile.DoesNotExist:
+                try:
+                    facebookUser = FacebookUser.objects.get(facebookUID=friendid)
+                except FacebookUser.DoesNotExist:
+                    facebookUser = FacebookUser.objects.create(facebookUID=friendid)
+                group.fbMembers.add(facebookUser)
+        else:
+            try:
+                friend = UserProfile.objects.get(pk=friendid)
+            except User.DoesNotExist:
+                return errorResponse("Friend does not exist")
 
-        if friend not in userFriends:
-            return errorResponse("User is not a friend")
+            if friend not in userFriends:
+                return errorResponse("User is not a friend")
 
-        group.members.add(friend)
+            group.members.add(friend)
 
     group.save()
 

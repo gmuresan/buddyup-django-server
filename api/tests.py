@@ -241,7 +241,7 @@ class StatusMessageTests(TestCase):
         self.assertEqual(messages[0].text, self.text)
         self.assertEqual(len(response['messages']), 1)
 
-        messageId = response['messages'][0]['id']
+        messageId = response['messages'][0]['messageid']
 
         message = StatusMessage.objects.create(user=self.friend1, text='text', status=status)
 
@@ -459,6 +459,9 @@ class PostStatusTests(TestCase):
 
         friends = [self.friend1.id, self.friend2.id]
         fbfriends = ['asfafafsafs', '1u989h108f1f']
+        allFriends = list(friends)
+        for fbfriend in fbfriends:
+            allFriends.append("fb" + fbfriend)
 
         response = client.post(reverse('postStatusAPI'), {
             'userid': self.user.id,
@@ -467,7 +470,6 @@ class PostStatusTests(TestCase):
             'location': json.dumps(self.location),
             'visibility': 'custom',
             'visiblityfriends': json.dumps(friends),
-            'visibilityfbfriends': json.dumps(fbfriends),
         })
 
         response = json.loads(response.content)
@@ -480,6 +482,9 @@ class PostStatusTests(TestCase):
 
         friends = [self.friend1.id, self.friend2.id]
         fbfriends = ['asfafafsafs', '1u989h108f1f']
+        allFriends = list(friends)
+        for friend in fbfriends:
+            allFriends.append("fb" + friend)
 
         response = client.post(reverse('postStatusAPI'), {
             'userid': self.user.id,
@@ -496,8 +501,7 @@ class PostStatusTests(TestCase):
         response = client.post(reverse('inviteToStatusAPI'), {
             'userid': self.user.id,
             'statusid': response['statusid'],
-            'friends': json.dumps(friends),
-            'fbfriends': json.dumps(fbfriends)
+            'friends': json.dumps(allFriends),
         })
         response = json.loads(response.content)
 
@@ -1615,6 +1619,7 @@ class GroupTests(TestCase):
 
         response = json.loads(response.content)
         groupid = response['groupid']
+        fbFriendId = 'asfasfqfqfqfwqwf'
 
         client.post(reverse('addGroupMemberAPI'), {
             'userid': self.user.id,
@@ -1628,11 +1633,24 @@ class GroupTests(TestCase):
             'groupid': groupid
         })
 
+        client.post(reverse('addGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': "fb"+fbFriendId,
+            'groupid': groupid
+        })
+
+        client.post(reverse('removeGroupMemberAPI'), {
+            'userid': self.user.id,
+            'friendid': "fb"+fbFriendId,
+            'groupid': groupid
+        })
+
         client.post(reverse('removeGroupMemberAPI'), {
             'userid': self.user.id,
             'friendid': self.friend.id,
             'groupid': groupid
         })
+
         response = client.post(reverse('removeGroupMemberAPI'), {
             'userid': self.user.id,
             'friendid': self.friend2.id,
@@ -1647,6 +1665,7 @@ class GroupTests(TestCase):
 
         self.assertNotIn(self.friend, members)
         self.assertNotIn(self.friend2, members)
+        self.assertNotIn(fbFriendId, group.fbMembers.values_list('facebookUID', flat=True))
 
         response = client.post(reverse('removeGroupMemberAPI'), {
             'userid': self.user.id,
@@ -1764,6 +1783,61 @@ class GroupTests(TestCase):
         self.assertTrue(self.friend not in group2.members.all())
         self.assertTrue(self.friend not in group3.members.all())
 
+    def testSetGroupsForFBUser(self):
+        print "Set Groups FB User"
+        client = Client()
+
+        groupName1 = "group1"
+        groupName2 = "group2"
+        groupName3 = "group3"
+
+        fbFriendId = 'fbffaf198yf89hf180h'
+
+        group1 = Group.objects.create(user=self.user, name=groupName1)
+        group2 = Group.objects.create(user=self.user, name=groupName2)
+        group3 = Group.objects.create(user=self.user, name=groupName3)
+
+        groups = [group1.id, group2.id, group3.id]
+        response = client.post(reverse('setGroupsAPI'), {
+            'userid': self.user.id,
+            'friendid': fbFriendId,
+            'groupids': json.dumps(groups)
+        })
+        response = json.loads(response.content)
+
+        fbFriend = FacebookUser.objects.get(facebookUID=fbFriendId[2:])
+
+        self.assertEqual(response['success'], True)
+        self.assertTrue(fbFriend in group1.fbMembers.all())
+        self.assertTrue(fbFriend in group2.fbMembers.all())
+        self.assertTrue(fbFriend in group3.fbMembers.all())
+
+        groups = [group1.id]
+        response = client.post(reverse('setGroupsAPI'), {
+            'userid': self.user.id,
+            'friendid': fbFriendId,
+            'groupids': json.dumps(groups)
+        })
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+        self.assertTrue(fbFriend in group1.fbMembers.all())
+        self.assertTrue(fbFriend not in group2.fbMembers.all())
+        self.assertTrue(fbFriend not in group3.fbMembers.all())
+
+        groups = []
+        response = client.post(reverse('setGroupsAPI'), {
+            'userid': self.user.id,
+            'friendid': fbFriendId,
+            'groupids': json.dumps(groups)
+        })
+        response = json.loads(response.content)
+
+        self.assertEqual(response['success'], True)
+        self.assertTrue(fbFriend not in group1.fbMembers.all())
+        self.assertTrue(fbFriend not in group2.fbMembers.all())
+        self.assertTrue(fbFriend not in group3.fbMembers.all())
+
     def testSetGroupMembers(self):
         print "SetGroupMembers"
         client = Client()
@@ -1781,7 +1855,10 @@ class GroupTests(TestCase):
         group1.save()
         group2.save()
 
-        members1 = [self.friend.id, self.friend2.id]
+        fbFriendId1 = 'ff13f13f13f13f13f1f'
+        fbFriendId2 = 'fbf0u190uni130fj91j31f'
+
+        members1 = [self.friend.id, self.friend2.id, "fb"+fbFriendId1, "fb"+fbFriendId2]
         members2 = []
 
         response = client.post(reverse('setGroupMembersAPI'), {
@@ -1795,6 +1872,8 @@ class GroupTests(TestCase):
 
         self.assertTrue(self.friend in group1.members.all())
         self.assertTrue(self.friend2 in group1.members.all())
+        self.assertTrue(fbFriendId2 in group1.fbMembers.values_list('facebookUID', flat=True))
+        self.assertTrue(fbFriendId1 in group1.fbMembers.values_list('facebookUID', flat=True))
 
         response = client.post(reverse('setGroupMembersAPI'), {
             'userid': self.user.id,
@@ -1806,6 +1885,8 @@ class GroupTests(TestCase):
         self.assertTrue(response['success'])
         self.assertTrue(self.friend not in group2.members.all())
         self.assertTrue(self.friend2 not in group2.members.all())
+        self.assertTrue(fbFriendId2 not in group2.fbMembers.values_list('facebookUID', flat=True))
+        self.assertTrue(fbFriendId1 not in group2.fbMembers.values_list('facebookUID', flat=True))
 
 
 class FriendsListTests(TestCase):
