@@ -25,7 +25,7 @@ FB_TEST_USER_4_ID = "100007225201630"
 def performFacebookRegister(accessToken):
     client = Client()
 
-    fb = FacebookProfile.getFacebookUserFromAuthKey(accessToken, 'android')
+    fb, newUser = FacebookProfile.getFacebookUserFromAuthKey(accessToken, 'android')
     return fb.userProfile
 
 
@@ -2284,6 +2284,9 @@ class AppNotificationTests(TestCase):
 
     def testFriendJoinedNotification(self):
         print "Friend Joined Notification"
+
+        UserProfile.objects.all().delete()
+        User.objects.all().delete()
 
         fb = facebook.GraphAPI()
         appAccessToken = helpers.getFacebookAppAccessToken()

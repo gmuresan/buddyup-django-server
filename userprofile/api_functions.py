@@ -23,7 +23,7 @@ def facebookLogin(request):
         return errorResponse('Invalid device: ' + device)
 
     try:
-        facebookProfile = FacebookProfile.getFacebookUserFromAuthKey(facebookAuthKey, device)
+        facebookProfile, newUser = FacebookProfile.getFacebookUserFromAuthKey(facebookAuthKey, device)
         userProfile = facebookProfile.userProfile
     except facebook.GraphAPIError:
         return errorResponse("Invalid Facebook AUTH Key")
@@ -62,7 +62,8 @@ def facebookLogin(request):
     notifications = getNotificationsJson(userProfile)
     chatData = getNewChatsData(userProfile)
 
-    createFriendJoinedNotification(userProfile)
+    if newUser:
+        createFriendJoinedNotification(userProfile)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name

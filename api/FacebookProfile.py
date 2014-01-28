@@ -3,6 +3,7 @@ import pdb
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 import facebook
+from notifications.app_notifications import createFriendJoinedNotification
 from userprofile.models import UserProfile
 
 FACEBOOK_DATETIME_FORMAT = "%Y-%m-%dT%H:%M"
@@ -38,6 +39,7 @@ class FacebookProfile:
         profile = graph.get_object("me")
         facebookId = profile['id']
 
+        newUser = False
         try:
             userProfile = UserProfile.objects.get(facebookUID=facebookId)
         except UserProfile.DoesNotExist:
@@ -48,11 +50,15 @@ class FacebookProfile:
                             last_name=profile['last_name'],password=0)
 
                 user.save()
+                newUser = True
 
             userProfile = UserProfile(facebookUID=facebookId, user=user, device=device)
             userProfile.save()
 
-        return FacebookProfile(userProfile, facebookAuthKey)
+            if newUser:
+                createFriendJoinedNotification(userProfile)
+
+        return FacebookProfile(userProfile, facebookAuthKey), newUser
 
     def getFacebookFriends(self):
         appFriends = self.graph.request("me/friends", {'fields': 'installed'})
