@@ -111,22 +111,23 @@ class Notification(models.Model):
 
     def __unicode__(self):
         if self.notificationType == self.NOTIF_FRIEND_JOINED:
-            return "%s %s has joined BuddyUp".format(self.initiatingUser.user.first_name, self.initiatingUser.user.last_name)
+            return "{} {} has joined BuddyUp".format(self.initiatingUser.user.first_name,
+                                                     self.initiatingUser.user.last_name)
 
         elif self.notificationType == self.NOTIF_STATUS_MEMBERS_ADDED:
-            return "%s %s is now attending %s".format(self.initiatingUser.user.first_name,
+            return "{} {} is now attending {}".format(self.initiatingUser.user.first_name,
                                                       self.initiatingUser.user.last_name, self.status.text)
 
         elif self.notificationType == self.NOTIF_STATUS_MESSAGE:
-            return "%s %s commented on %s: %s".format(self.initiatingUser.user.first_name,
+            return "{} {} commented on {}: {}".format(self.initiatingUser.user.first_name,
                                                       self.initiatingUser.user.last_name, self.status.text,
                                                       self.message.text)
 
         elif self.notificationType == self.NOTIF_STATUS_CHANGED:
-            return "%s %s has made changes to their activity %s".format(self.initiatingUser.user.first_name,
+            return "{} {} has made changes to their activity {}".format(self.initiatingUser.user.first_name,
                                                                         self.initiatingUser.user.last_name,
                                                                         self.status.text)
 
         elif self.notificationType == self.NOTIF_INVITED:
-            return "You have been invited to %s by %s %s".format(self.status.text, self.initiatingUser.user.first_name,
+            return "You have been invited to {} by {} {}".format(self.status.text, self.initiatingUser.user.first_name,
                                                                  self.initiatingUser.user.last_name)
