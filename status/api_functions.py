@@ -5,7 +5,8 @@ import pytz
 from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
-from push_notifications.notifications import sendPokeNotifcation, sendStatusMessageNotification
+from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
+from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
@@ -186,6 +187,7 @@ def postStatus(request):
     if statusid:
         try:
             status = Status.objects.get(pk=statusid)
+            createStatusChangedNotification(status)
         except Status.DoesNotExist:
             return errorResponse('status does not exist with that id')
     else:
@@ -270,6 +272,8 @@ def inviteToStatus(request):
     #     if status.visibility == Status.VIS_FRIENDS or status.visibility == Status.VIS_CUSTOM:
     #         return errorResponse("Cant invite people to private events")
 
+    buddyupFriends = list()
+    facebookFriends = list()
     for friendId in friends:
         friendId = str(friendId)
         if friendId[:2] == 'fb':
@@ -277,21 +281,26 @@ def inviteToStatus(request):
 
             try:
                 friend = UserProfile.objects.get(facebookUID=friendId)
-                status.invited.add(friend)
+                buddyupFriends.append(friend)
             except UserProfile.DoesNotExist:
                 try:
                     fbFriend = FacebookUser.objects.get(facebookUID=friendId)
                 except FacebookUser.DoesNotExist:
                     fbFriend = FacebookUser.objects.create(facebookUID=friendId)
-
-                status.fbInvited.add(fbFriend)
+                facebookFriends.append(fbFriend)
 
         else:
             try:
                 friend = UserProfile.objects.get(pk=friendId)
-                status.invited.add(friend)
+                buddyupFriends.append(friend)
+
             except UserProfile.DoesNotExist:
                 pass
+
+    status.invited.add(*buddyupFriends)
+    status.fbInvited.add(*facebookFriends)
+
+    createInvitedToStatusNotification(buddyupFriends, userProfile, status)
 
     response['success'] = True
 
@@ -318,6 +327,7 @@ def rsvpStatus(request):
 
     if attending == 'true' or attending == 'True':
         status.attending.add(userProfile)
+        createAttendingStatusNotification(status, userProfile)
     elif attending == 'false' or attending == 'False':
         status.attending.remove(userProfile)
     else:
@@ -349,6 +359,7 @@ def sendStatusMessage(request):
 
     message = StatusMessage.objects.create(user=userProfile, text=text, status=status)
     sendStatusMessageNotification(message)
+    createCreateStatusMessageNotification(message)
 
     response['success'] = True
     response['messages'] = getNewStatusMessages(status, lastMessageId)

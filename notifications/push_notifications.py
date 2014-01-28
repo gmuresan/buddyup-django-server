@@ -1,7 +1,7 @@
 import pdb
 import thread
 from django.contrib.auth.models import User
-from push_notifications.models import GCMDevice, APNSDevice
+from notifications.models import GCMDevice, APNSDevice
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
@@ -15,7 +15,7 @@ def sendStatusMessageNotificationSynchronous(messageObj):
         audience = messageObj.status.attending.exclude(user=messageObj.user)
 
         messageContents = messageObj.user.user.first_name + " " + messageObj.user.user.last_name + \
-                          "commented on an activity: " + messageObj.text
+            "commented on an activity: " + messageObj.text
         extra = {'id': messageObj.id, 'statusid': messageObj.status.id,
                  'date': messageObj.date.strftime(DATETIME_FORMAT),
                  'text': messageObj.text}

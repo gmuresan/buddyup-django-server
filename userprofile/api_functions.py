@@ -4,10 +4,13 @@ import facebook
 from api.FacebookProfile import FacebookProfile
 from api.helpers import *
 from api.views import *
-from push_notifications.models import GCMDevice, APNSDevice
+from notifications.app_notifications import createFriendJoinedNotification
+from notifications.helpers import getNotificationsJson
+from notifications.models import GCMDevice, APNSDevice
 from status.helpers import getNewStatusesJsonResponse, getMyStatusesJsonResponse
 from userprofile.models import UserProfile, Group, Feedback, Setting, FacebookUser
 from django.views.decorators.csrf import csrf_exempt
+
 
 @csrf_exempt
 def facebookLogin(request):
@@ -52,8 +55,14 @@ def facebookLogin(request):
     statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
-    chatData, newSince = getNewChatsData(userProfile)
+
     settings = getSettingsData(userProfile)
+
+    newSince = datetime.now().strftime(MICROSECOND_DATETIME_FORMAT)
+    notifications = getNotificationsJson(userProfile)
+    chatData = getNewChatsData(userProfile)
+
+    createFriendJoinedNotification(userProfile)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name
@@ -64,8 +73,9 @@ def facebookLogin(request):
     response['groups'] = groupsData
     response['mystatuses'] = myStatusesResponse
     response['chats'] = chatData
-    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
+    response['newsince'] = newSince
     response['settings'] = settings
+    response['notifications'] = notifications
 
     return HttpResponse(json.dumps(response))
 
@@ -489,7 +499,7 @@ def getNewData(request):
     response = dict()
 
     userid = request.REQUEST['userid']
-    since = request.REQUEST.get('since')
+    since = request.REQUEST.get('since', None)
     if since:
         since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
@@ -498,11 +508,15 @@ def getNewData(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
+    newSince = datetime.now().strftime(MICROSECOND_DATETIME_FORMAT)
+
     pokes = getNewPokesData(userProfile, since)
-    chats, newSince = getNewChatsData(userProfile, since)
+    chats = getNewChatsData(userProfile, since)
+    notifications = getNotificationsJson(userProfile, since)
 
     response['chats'] = chats
-    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
+    response['newsince'] = newSince
+    response['notifications'] = notifications
     response['success'] = True
     response['pokes'] = pokes
 

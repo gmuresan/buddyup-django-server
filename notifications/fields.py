@@ -134,6 +134,6 @@ class UUIDField(Field):
 try:
     from south.modelsinspector import add_introspection_rules
 
-    add_introspection_rules([], [r"^push_notifications\.fields\.UUIDField"])
+    add_introspection_rules([], [r"^notifications\.fields\.UUIDField"])
 except ImportError:
     pass

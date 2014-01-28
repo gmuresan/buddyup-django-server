@@ -9,34 +9,34 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Adding model 'GCMDevice'
-        db.create_table(u'push_notifications_gcmdevice', (
+        db.create_table(u'notifications_gcmdevice', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('active', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['userprofile.UserProfile'], null=True, blank=True)),
-            ('device_id', self.gf('push_notifications.fields.UUIDField')(max_length=32, null=True, blank=True)),
+            ('device_id', self.gf('notifications.fields.UUIDField')(max_length=32, null=True, blank=True)),
             ('registration_id', self.gf('django.db.models.fields.TextField')()),
         ))
-        db.send_create_signal(u'push_notifications', ['GCMDevice'])
+        db.send_create_signal(u'notifications', ['GCMDevice'])
 
         # Adding model 'APNSDevice'
-        db.create_table(u'push_notifications_apnsdevice', (
+        db.create_table(u'notifications_apnsdevice', (
             (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
             ('active', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['userprofile.UserProfile'], null=True, blank=True)),
-            ('device_id', self.gf('push_notifications.fields.UUIDField')(max_length=32, null=True, blank=True)),
+            ('device_id', self.gf('notifications.fields.UUIDField')(max_length=32, null=True, blank=True)),
             ('registration_id', self.gf('django.db.models.fields.CharField')(unique=True, max_length=64)),
         ))
-        db.send_create_signal(u'push_notifications', ['APNSDevice'])
+        db.send_create_signal(u'notifications', ['APNSDevice'])
 
 
     def backwards(self, orm):
         # Deleting model 'GCMDevice'
-        db.delete_table(u'push_notifications_gcmdevice')
+        db.delete_table(u'notifications_gcmdevice')
 
         # Deleting model 'APNSDevice'
-        db.delete_table(u'push_notifications_apnsdevice')
+        db.delete_table(u'notifications_apnsdevice')
 
 
     models = {
@@ -76,19 +76,19 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'push_notifications.apnsdevice': {
+        u'notifications.apnsdevice': {
             'Meta': {'object_name': 'APNSDevice'},
             'active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'device_id': ('push_notifications.fields.UUIDField', [], {'max_length': '32', 'null': 'True', 'blank': 'True'}),
+            'device_id': ('notifications.fields.UUIDField', [], {'max_length': '32', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'registration_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '64'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['userprofile.UserProfile']", 'null': 'True', 'blank': 'True'})
         },
-        u'push_notifications.gcmdevice': {
+        u'notifications.gcmdevice': {
             'Meta': {'object_name': 'GCMDevice'},
             'active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'device_id': ('push_notifications.fields.UUIDField', [], {'max_length': '32', 'null': 'True', 'blank': 'True'}),
+            'device_id': ('notifications.fields.UUIDField', [], {'max_length': '32', 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'registration_id': ('django.db.models.fields.TextField', [], {}),
@@ -106,4 +106,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['push_notifications']
+    complete_apps = ['notifications']

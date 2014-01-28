@@ -11,7 +11,7 @@ from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
 from buddyup import settings
 from chat.models import Conversation, Message
-from push_notifications.models import GCMDevice, APNSDevice
+from notifications.models import GCMDevice, APNSDevice, Notification
 from status.helpers import createLocationJson
 from status.models import Status, Poke, Location, StatusMessage, TimeSuggestion, LocationSuggestion
 from userprofile.models import UserProfile, Group, Setting, FacebookUser
@@ -31,7 +31,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAFHCb9BsmQROHG00ZBRyp2O3BaNgsLSeJ9RpBzWPIXdGzbKx3orR7Ia8coquZA9hzGL7wmVnM89t03j7kGQeyyThWImbOGKbaBnjDlLmH7ZA8mvEIaC47cC9Brt4SWC6wKUNLxvGsy79ZAeUjbbrf6MyxZAvfnTZBELs9bCeeZAOxApEmPBIteEQzqiWpyKDgZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAEV8drtSrJw7rvzMIfQkjZBf3sMPWEnd2Qbqd5sIYqpmsAGa82VmQNAtEoCg7M4bVCupeZC2yITuvGMAuXtXrZBm1pUZAS4MzoymBe42gjL450U9ZAMZCayX7jqqHMI8vpntMQAuZCpXGZC1DYhWZBljxmS3QO13jz80crhUKZBVbsCBJySnwtfMEqEXERqINdTAZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -1635,13 +1635,13 @@ class GroupTests(TestCase):
 
         client.post(reverse('addGroupMemberAPI'), {
             'userid': self.user.id,
-            'friendid': "fb"+fbFriendId,
+            'friendid': "fb" + fbFriendId,
             'groupid': groupid
         })
 
         client.post(reverse('removeGroupMemberAPI'), {
             'userid': self.user.id,
-            'friendid': "fb"+fbFriendId,
+            'friendid': "fb" + fbFriendId,
             'groupid': groupid
         })
 
@@ -1858,7 +1858,7 @@ class GroupTests(TestCase):
         fbFriendId1 = 'ff13f13f13f13f13f1f'
         fbFriendId2 = 'fbf0u190uni130fj91j31f'
 
-        members1 = [self.friend.id, self.friend2.id, "fb"+fbFriendId1, "fb"+fbFriendId2]
+        members1 = [self.friend.id, self.friend2.id, "fb" + fbFriendId1, "fb" + fbFriendId2]
         members2 = []
 
         response = client.post(reverse('setGroupMembersAPI'), {
@@ -2242,3 +2242,224 @@ class PushNotificationTests(TestCase):
 
         androidDevice = GCMDevice.objects.get(user=self.friend, registration_id=androidToken)
         iosDevice = APNSDevice.objects.get(user=self.friend, registration_id=iosToken)
+
+
+class AppNotificationTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+        friend = User.objects.create(username='friend', password='0', email='friend')
+        self.friend = UserProfile.objects.create(user=friend)
+
+        self.user.friends.add(self.friend)
+        self.friend.friends.add(self.user)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.user.friends.add(self.friend2)
+        self.friend2.friends.add(self.user)
+
+        friend3 = User.objects.create(username='friend3', password='0', email='friend3')
+        self.friend3 = UserProfile.objects.create(user=friend3)
+
+        self.user.friends.add(self.friend3)
+        self.friend3.friends.add(self.user)
+
+        lat = 42.341560
+        lng = -83.501783
+        address = '46894 spinning wheel'
+        city = 'canton'
+        state = 'MI'
+        venue = "My house"
+        expirationDate = datetime.utcnow() + timedelta(hours=1)
+
+        location = Location.objects.create(lng=lng, lat=lat, point=Point(lng, lat), city=city, state=state, venue=venue,
+                                           address=address)
+
+        self.status = Status.objects.create(user=self.user, expires=expirationDate, text='Hang out1',
+                                            location=location)
+        self.status.attending.add(self.friend)
+
+    def testFriendJoinedNotification(self):
+        print "Friend Joined Notification"
+
+        fb = facebook.GraphAPI()
+        appAccessToken = helpers.getFacebookAppAccessToken()
+        testUsers = fb.request(settings.FACEBOOK_APP_ID + '/accounts/test-users',
+                               {'access_token': str(appAccessToken), })
+        testUsers = testUsers['data']
+        for user in testUsers:
+
+            if user['id'] == FB_TEST_USER_1_ID:
+                self.accessTokenUser = user['access_token']
+                continue
+
+            if user['id'] == FB_TEST_USER_2_ID:
+                self.accessTokenFriend1 = user['access_token']
+                continue
+
+            if user['id'] == FB_TEST_USER_3_ID:
+                self.accessTokenFriend2 = user['access_token']
+                continue
+
+            if user['id'] == FB_TEST_USER_4_ID:
+                self.accessTokenFriend3 = user['access_token']
+                continue
+
+        client = Client()
+        response = client.post(reverse('facebookLoginAPI'), {
+            'fbauthkey': self.accessTokenUser,
+            'device': 'android'
+        })
+        response = json.loads(response.content)
+        self.assertTrue(response['success'])
+
+        userId = response['userid']
+        user = UserProfile.objects.get(pk=userId)
+
+        response = client.post(reverse('facebookLoginAPI'), {
+            'fbauthkey': self.accessTokenFriend1,
+            'device': 'android'
+        })
+        response = json.loads(response.content)
+        self.assertTrue(response['success'])
+
+        friend1Id = response['userid']
+        friend1 = UserProfile.objects.get(pk=friend1Id)
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': user.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['notifications']), 1)
+        notif = response['notifications'][0]
+
+        self.assertEqual(notif['type'], Notification.NOTIF_FRIEND_JOINED)
+        self.assertEqual(notif['friendid'], friend1.id)
+
+        response = client.post(reverse('facebookLoginAPI'), {
+            'fbauthkey': self.accessTokenFriend2,
+            'device': 'android'
+        })
+        response = json.loads(response.content)
+
+        friend2Id = response['userid']
+        friend2 = UserProfile.objects.get(pk=friend2Id)
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': user.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['notifications']), 2)
+        notif1 = response['notifications'][0]
+        notif2 = response['notifications'][1]
+
+        self.assertEqual(notif['type'], Notification.NOTIF_FRIEND_JOINED)
+        self.assertIn(notif['friendid'], [friend1.id, friend2.id])
+
+        self.assertEqual(notif['type'], Notification.NOTIF_FRIEND_JOINED)
+        self.assertIn(notif['friendid'], [friend1.id, friend2.id])
+
+    def testStatusMessageNotification(self):
+        print "Status Message Notification"
+        client = Client()
+
+        response = client.post(reverse('postStatusMessageAPI'), {
+            'userid': self.friend.id,
+            'statusid': self.status.id,
+            'text': "asfasfasfasfasf"
+        })
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.user.id
+        })
+        response = json.loads(response.content)
+
+        notifications = response['notifications']
+        self.assertEqual(len(notifications), 1)
+        notif = notifications[0]
+
+        self.assertEqual(notif['type'], Notification.NOTIF_STATUS_MESSAGE)
+        self.assertEqual(notif['friendid'], self.friend.id)
+        self.assertEqual(notif['statusid'], self.status.id)
+
+    def testStatusChangedNotification(self):
+        print "Status Change Notification"
+        client = Client()
+
+        response = client.post(reverse('postStatusAPI'), {
+            'statusid': self.status.id,
+            'text': 'afafqwf13f13f1f',
+            'userid': self.user.id
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.friend.id
+        })
+        response = json.loads(response.content)
+
+        notifications = response['notifications']
+        self.assertEqual(len(notifications), 1)
+        notif = notifications[0]
+
+        self.assertEqual(notif['type'], Notification.NOTIF_STATUS_CHANGED)
+        self.assertEqual(notif['friendid'], self.user.id)
+        self.assertEqual(notif['statusid'], self.status.id)
+
+    def testStatusAttendingNotification(self):
+        print "Status Attending Notification"
+        client = Client()
+
+        response = client.post(reverse('rsvpStatusAPI'), {
+            'userid': self.friend2.id,
+            'statusid': self.status.id,
+            'attending': 'true'
+        })
+        response = json.loads(response.content)
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.friend.id
+        })
+        response = json.loads(response.content)
+
+        notifications = response['notifications']
+        self.assertEqual(len(notifications), 1)
+
+        notif = notifications[0]
+        self.assertEqual(notif['type'], Notification.NOTIF_STATUS_MEMBERS_ADDED)
+        self.assertEqual(notif['friendid'], self.friend2.id)
+        self.assertEqual(notif['statusid'], self.status.id)
+
+    def testInvitedToStatusNotification(self):
+        print "Invited To Status Notification"
+        client = Client()
+
+        response = client.post(reverse('inviteToStatusAPI'), {
+            'userid': self.user.id,
+            'statusid': self.status.id,
+            'friends': json.dumps([self.friend2.id, self.friend3.id])
+        })
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.friend2.id
+        })
+        response = json.loads(response.content)
+
+        notifications = response['notifications']
+        self.assertEqual(len(notifications), 1)
+
+        notif = notifications[0]
+
+        self.assertEqual(notif['type'], Notification.NOTIF_INVITED)
+        self.assertEqual(notif['friendid'], self.user.id)
+        self.assertEqual(notif['statusid'], self.status.id)
+

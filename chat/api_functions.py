@@ -2,7 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from api.helpers import *
 from api.views import *
 from chat.models import Conversation, Message
-from push_notifications.notifications import sendChatNotifications
+from notifications.push_notifications import sendChatNotifications
 from userprofile.models import *
 
 
@@ -171,10 +171,12 @@ def sendMessage(request):
     message = Message.objects.create(user=userProfile, conversation=convo, text=text)
     convo.save(force_update=True)
 
-    chatData, newSince = getNewChatsData(userProfile, since)
+    chatData = getNewChatsData(userProfile, since)
+
+    newSince = datetime.now().strftime(MICROSECOND_DATETIME_FORMAT)
 
     response['chats'] = chatData
-    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
+    response['newsince'] = newSince
     response['success'] = True
 
     sendChatNotifications(message)
@@ -196,10 +198,12 @@ def getMessages(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    chatData, newSince = getNewChatsData(userProfile, since)
+    newSince = datetime.now().strftime(MICROSECOND_DATETIME_FORMAT)
+
+    chatData = getNewChatsData(userProfile, since)
 
     response['success'] = True
-    response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
+    response['newsince'] = newSince
     response['chats'] = chatData
 
     return HttpResponse(json.dumps(response))

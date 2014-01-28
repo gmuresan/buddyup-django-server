@@ -55,7 +55,6 @@ def getNewChatsData(userProfile, since=None):
         conversations = conversations.filter(lastActivity__gt=since)
 
     conversations = list(conversations)
-    newSince = datetime.utcnow()
 
     chats = []
     for convo in conversations:
@@ -94,10 +93,10 @@ def getNewChatsData(userProfile, since=None):
 
         chats.append(chatData)
 
-    return chats, newSince
+    return chats
 
 
-def getNewPokesData(userProfile, since):
+def getNewPokesData(userProfile, since=None):
 
     pokes = userProfile.receivedPokes.all()
 
