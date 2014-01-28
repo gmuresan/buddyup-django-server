@@ -4,7 +4,7 @@ from push_notifications import *
 
 from buddyup import settings
 from chat.models import Conversation, Message
-from .models import APNSDevice, GCMDevice
+from .models import APNSDevice, GCMDevice, Notification
 from status.models import Poke
 
 
@@ -91,3 +91,4 @@ class DeviceAdmin(admin.ModelAdmin):
 
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, DeviceAdmin)
+admin.site.register(Notification)
