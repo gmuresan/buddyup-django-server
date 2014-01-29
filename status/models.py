@@ -69,9 +69,9 @@ class Location(geomodels.Model):
     def __unicode__(self):
         unicode = "{0}, {1}".format(self.lat, self.lng)
         if self.venue:
-            unicode += " {0}".format(self.venue).encode('utf-8')
+            unicode += " {0}".format(self.venue)
 
-        return unicode
+        return unicode.decode('ascii', 'ignore')
 
     lat = geomodels.FloatField()
     lng = geomodels.FloatField()
