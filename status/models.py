@@ -67,9 +67,9 @@ class StatusMessage(geomodels.Model):
 
 class Location(geomodels.Model):
     def __unicode__(self):
-        unicode = "{0}, {1}".format(self.lat, self.lng)
+        unicode = u"{0}, {1}".format(self.lat, self.lng)
         if self.venue:
-            unicode += " {0}".format(self.venue)
+            unicode += u" {0}".format(self.venue)
 
         return unicode.decode('ascii', 'ignore')
 
