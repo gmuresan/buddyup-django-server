@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import json
+import pdb
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
@@ -31,7 +32,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAEV8drtSrJw7rvzMIfQkjZBf3sMPWEnd2Qbqd5sIYqpmsAGa82VmQNAtEoCg7M4bVCupeZC2yITuvGMAuXtXrZBm1pUZAS4MzoymBe42gjL450U9ZAMZCayX7jqqHMI8vpntMQAuZCpXGZC1DYhWZBljxmS3QO13jz80crhUKZBVbsCBJySnwtfMEqEXERqINdTAZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAEV8drtSrJw7rvzMIfQkjsZBf3sMPWEnd2Qbqd5sIYqpmsAGa82VmQNAtEoCg7M4bVCupeZC2yITuvGMAuXtXrZBm1pUZAS4MzoymBe42gjL450U9ZAMZCayX7jqqHMI8vpntMQAuZCpXGZC1DYhWZBljxmS3QO13jz80crhUKZBVbsCBJySnwtfMEqEXERqINdTAZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -1825,6 +1826,15 @@ class GroupTests(TestCase):
         self.assertTrue(fbFriend not in group2.fbMembers.all())
         self.assertTrue(fbFriend not in group3.fbMembers.all())
 
+        response = client.post(reverse('getGroupsAPI'), {
+            'userid': self.user.id
+        })
+        response = json.loads(response.content)
+
+        for group in response['groups']:
+            if group['groupid'] == group1.id:
+                self.assertIn(fbFriendId, list(group['userids']))
+
         groups = []
         response = client.post(reverse('setGroupsAPI'), {
             'userid': self.user.id,
@@ -1837,6 +1847,7 @@ class GroupTests(TestCase):
         self.assertTrue(fbFriend not in group1.fbMembers.all())
         self.assertTrue(fbFriend not in group2.fbMembers.all())
         self.assertTrue(fbFriend not in group3.fbMembers.all())
+
 
     def testSetGroupMembers(self):
         print "SetGroupMembers"

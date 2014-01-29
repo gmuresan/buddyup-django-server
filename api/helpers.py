@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import pdb
 import urllib
 import urllib2
 from buddyup import settings
@@ -27,11 +28,15 @@ def createFriendJsonObject(friend, blocked, user):
 def createGroupJsonObject(group):
     groupData = dict()
 
+    #pdb.set_trace()
     groupData['groupname'] = group.name
     groupData['groupid'] = group.id
 
     memberIds = group.members.values_list('id', flat=True)
     groupData['userids'] = map(int, memberIds)
+
+    fbMemberIds = group.fbMembers.values_list('facebookUID', flat=True)
+    groupData['userids'].extend(map(lambda fbId: "fb" + fbId, fbMemberIds))
 
     return groupData
 
@@ -48,7 +53,6 @@ def getMyGroupsJsonResponse(userProfile):
 
 
 def getNewChatsData(userProfile, since=None):
-
     conversations = userProfile.conversations.all()
 
     if since is not None:
@@ -97,7 +101,6 @@ def getNewChatsData(userProfile, since=None):
 
 
 def getNewPokesData(userProfile, since=None):
-
     pokes = userProfile.receivedPokes.all()
 
     if since is not None:
@@ -111,7 +114,6 @@ def getNewPokesData(userProfile, since=None):
 
 
 def getSettingsData(userProfile):
-
     settings = userProfile.settings.all()
 
     settingsData = dict()
