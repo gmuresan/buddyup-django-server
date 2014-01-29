@@ -1,6 +1,7 @@
 import pdb
 import datetime
 from django.db import models
+from django.utils.encoding import smart_str
 from chat.models import Message
 from userprofile.models import UserProfile, Group, FacebookUser
 from django.contrib.gis.db import models as geomodels
@@ -71,7 +72,9 @@ class Location(geomodels.Model):
         if self.venue:
             unicode += u" {0}".format(self.venue)
 
-        return unicode.decode('ascii', 'ignore')
+        s = smart_str(unicode)
+
+        return s
 
     lat = geomodels.FloatField()
     lng = geomodels.FloatField()
