@@ -27,6 +27,9 @@ class UserProfile(models.Model):
 class FacebookUser(models.Model):
     facebookUID = models.CharField(max_length=64, db_index=True)
 
+    def __unicode__(self):
+        return self.facebookUID
+
 
 class Group(models.Model):
     def __unicode__(self):
