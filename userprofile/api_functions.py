@@ -177,13 +177,14 @@ def setGroups(request):
 
     if friendid[:2] == 'fb':
         friendid = friendid[2:]
-        try:
-            friendProfile = UserProfile.objects.get(facebookUID=friendid)
-        except UserProfile.DoesNotExist:
+        if friendid:
             try:
-                friendProfile = FacebookUser.objects.get(facebookUID=friendid)
-            except FacebookUser.DoesNotExist:
-                friendProfile = FacebookUser.objects.create(facebookUID=friendid)
+                friendProfile = UserProfile.objects.get(facebookUID=friendid)
+            except UserProfile.DoesNotExist:
+                try:
+                    friendProfile = FacebookUser.objects.get(facebookUID=friendid)
+                except FacebookUser.DoesNotExist:
+                    friendProfile = FacebookUser.objects.create(facebookUID=friendid)
     else:
         try:
             friendProfile = UserProfile.objects.get(pk=friendid)
@@ -294,15 +295,16 @@ def removeGroupMember(request):
 
     if friendid[:2] == 'fb':
         friendid = friendid[2:]
-        try:
-            friendProfile = UserProfile.objects.get(facebookUID=friendid)
-            group.members.remove(friendProfile)
-        except UserProfile.DoesNotExist:
+        if friendid:
             try:
-                facebookUser = FacebookUser.objects.get(facebookUID=friendid)
-            except FacebookUser.DoesNotExist:
-                facebookUser = FacebookUser.objects.create(facebookUID=friendid)
-            group.fbMembers.remove(facebookUser)
+                friendProfile = UserProfile.objects.get(facebookUID=friendid)
+                group.members.remove(friendProfile)
+            except UserProfile.DoesNotExist:
+                try:
+                    facebookUser = FacebookUser.objects.get(facebookUID=friendid)
+                except FacebookUser.DoesNotExist:
+                    facebookUser = FacebookUser.objects.create(facebookUID=friendid)
+                group.fbMembers.remove(facebookUser)
     else:
         try:
             friend = UserProfile.objects.get(pk=friendid)
@@ -363,15 +365,16 @@ def setGroupMembers(request):
         friendid = str(friendid)
         if friendid[:2] == 'fb':
             friendid = friendid[2:]
-            try:
-                friendProfile = UserProfile.objects.get(facebookUID=friendid)
-                group.members.add(friendProfile)
-            except UserProfile.DoesNotExist:
+            if friendid:
                 try:
-                    facebookUser = FacebookUser.objects.get(facebookUID=friendid)
-                except FacebookUser.DoesNotExist:
-                    facebookUser = FacebookUser.objects.create(facebookUID=friendid)
-                group.fbMembers.add(facebookUser)
+                    friendProfile = UserProfile.objects.get(facebookUID=friendid)
+                    group.members.add(friendProfile)
+                except UserProfile.DoesNotExist:
+                    try:
+                        facebookUser = FacebookUser.objects.get(facebookUID=friendid)
+                    except FacebookUser.DoesNotExist:
+                        facebookUser = FacebookUser.objects.create(facebookUID=friendid)
+                    group.fbMembers.add(facebookUser)
         else:
             try:
                 friend = UserProfile.objects.get(pk=friendid)

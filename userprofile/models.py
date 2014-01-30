@@ -36,8 +36,8 @@ class Group(models.Model):
         return self.name + " - " + self.user.user.username
 
     name = models.CharField(max_length=64, db_index=True)
-    members = models.ManyToManyField(UserProfile, related_name='groupsIn')
-    fbMembers = models.ManyToManyField(FacebookUser, related_name='groupsIn')
+    members = models.ManyToManyField(UserProfile, related_name='groupsIn', blank=True, null=True)
+    fbMembers = models.ManyToManyField(FacebookUser, related_name='groupsIn', blank=True, null=True)
     user = models.ForeignKey(UserProfile, related_name='groups')
 
 
