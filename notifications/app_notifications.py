@@ -1,4 +1,5 @@
 from itertools import chain
+import pdb
 from notifications.models import Notification
 
 
@@ -11,12 +12,12 @@ def createFriendJoinedNotification(userProfile):
 def createCreateStatusMessageNotification(statusMessage):
     user = statusMessage.user
     status = statusMessage.status
-    attending = status.attending.all().exclude(id=user.id).exclude(id=status.user.id)
+    attending = status.attending.all().exclude(id=user.id)
 
     notification = Notification.objects.create(notificationType=Notification.NOTIF_STATUS_MESSAGE, initiatingUser=user,
                                                status=status, message=statusMessage)
     notification.users.add(*attending)
-    if status.user not in notification.users.all():
+    if status.user.id != user.id:
         notification.users.add(status.user)
 
 
