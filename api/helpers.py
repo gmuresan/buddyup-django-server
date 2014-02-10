@@ -5,7 +5,7 @@ import urllib2
 from buddyup import settings
 from status.models import Poke
 
-DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
+DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12:11
 MICROSECOND_DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S.%f'
 
 

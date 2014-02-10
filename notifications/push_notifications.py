@@ -18,7 +18,7 @@ def sendStatusMessageNotificationSynchronous(messageObj):
             "commented on an activity: " + messageObj.text
         extra = {'id': messageObj.id, 'statusid': messageObj.status.id,
                  'date': messageObj.date.strftime(DATETIME_FORMAT),
-                 'text': messageObj.text}
+                 'text': messageObj.text, 'type': 'statuscomment'}
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
