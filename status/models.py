@@ -36,6 +36,8 @@ class Status(geomodels.Model):
                                      blank=True)
     visibility = geomodels.CharField(max_length=20, db_index=True, choices=VISIBILITY, default='friends', null=True,
                                      blank=True)
+    imageUrl = geomodels.URLField(null=True, blank=True)
+
     friendsVisible = geomodels.ManyToManyField(UserProfile, related_name='statusesVisible', null=True, blank=True)
     fbFriendsVisible = geomodels.ManyToManyField(FacebookUser, related_name='statusesVisible', null=True, blank=True)
     invited = geomodels.ManyToManyField(UserProfile, related_name='statusesInvited', null=True, blank=True)
