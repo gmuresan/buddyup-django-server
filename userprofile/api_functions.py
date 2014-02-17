@@ -360,6 +360,7 @@ def setGroupMembers(request):
 
     userFriends = userProfile.friends.all()
     group.members.clear()
+    group.fbMembers.clear()
 
     for friendid in friendids:
         friendid = str(friendid)
