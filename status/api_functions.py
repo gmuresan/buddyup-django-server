@@ -390,12 +390,21 @@ def getStatusDetails(request):
     for timeSugg in status.timeSuggestions.all():
         timeSuggestions.append(createTimeSuggestionJson(timeSugg))
 
+    attending = list(status.attending.values_list('id', flat=True))
+    invited = list(status.invited.values_list('id', flat=True))
+    fbAttending = list(status.fbAttending.values_list('facebookUID', flat=True))
+    fbInvited = list(status.fbInvited.values_list('facebookUID', flat=True))
+
+    for fbId in fbAttending:
+        attending.append("fb" + fbId)
+
+    for fbId in fbInvited:
+        invited.append("fb" + fbId)
+
     response['success'] = True
     response['messages'] = messagesJson
-    response['attending'] = list(status.attending.values_list('id', flat=True))
-    response['fbattending'] = list(status.fbAttending.values_list('facebookUID', flat=True))
-    response['invited'] = list(status.invited.values_list('id', flat=True))
-    response['fbinvited'] = list(status.fbInvited.values_list('facebookUID', flat=True))
+    response['attending'] = attending
+    response['invited'] = invited
     response['locationsuggestions'] = locationSuggestions
     response['timesuggestions'] = timeSuggestions
 
