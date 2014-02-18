@@ -5,6 +5,7 @@ from userprofile.api_functions import *
 
 urlpatterns = patterns('',
                        url(r'^facebooklogin/$', facebookLogin, {}, 'facebookLoginAPI'),
+                       url(r'^getuserdetails', getUserDetails, {}, 'getUserDetailsAPI'),
 
 
                        url(r'^gooffline/$', goOffline, {}, 'goOfflineAPI'),

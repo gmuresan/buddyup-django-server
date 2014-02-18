@@ -80,6 +80,23 @@ def facebookLogin(request):
 
     return HttpResponse(json.dumps(response))
 
+@csrf_exempt
+def getUserDetails(request):
+    response = dict()
+
+    userid = request.REQUEST['userid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+    response['success'] = True
+    response['firstname'] = userProfile.user.first_name
+    response['lastname'] = userProfile.user.last_name
+    response['facebookid'] = userProfile.facebookUID
+
+    return HttpResponse(json.dumps(response))
 
 @csrf_exempt
 def createGroup(request):
