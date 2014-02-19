@@ -457,10 +457,13 @@ class PostStatusTests(TestCase):
         client = Client()
 
         friends = [self.friend1.id, self.friend2.id]
-        fbfriends = ['asfafafsafs', '1u989h108f1f']
+        fbId1 = "1871409491024"
+        fbId2 = "11807901980890"
+        fbfriends = [fbId1, fbId2]
         allFriends = list(friends)
         for fbfriend in fbfriends:
-            allFriends.append("fb" + fbfriend)
+            fbId = "fb{}".format(fbfriend)
+            allFriends.append(fbId)
 
         response = client.post(reverse('postStatusAPI'), {
             'userid': self.user.id,
@@ -468,10 +471,19 @@ class PostStatusTests(TestCase):
             'text': self.text,
             'location': json.dumps(self.location),
             'visibility': 'custom',
-            'visiblityfriends': json.dumps(friends),
+            'visibilityfriends': json.dumps(allFriends),
         })
 
         response = json.loads(response.content)
+
+        status  = Status.objects.get(pk=response['statusid'])
+
+        self.assertIn(self.friend2, status.friendsVisible.all())
+        self.assertIn(self.friend1, status.friendsVisible.all())
+
+        fbFriendsVisible = status.fbFriendsVisible.values_list('facebookUID', flat=True)
+        self.assertIn(fbId1, fbFriendsVisible)
+        self.assertIn(fbId2, fbFriendsVisible)
 
         self.assertTrue(response['success'])
 

@@ -164,7 +164,7 @@ def postStatus(request):
     shareOnFacebook = request.REQUEST.get('facebookshare', False)
     statusType = request.REQUEST.get('type', 'other')
     visibility = request.REQUEST.get('visibility', 'friends')
-    visibilityFriends = request.REQUEST.get('visibilityFriends', '[]')
+    visibilityFriends = request.REQUEST.get('visibilityfriends', '[]')
     imageUrl = request.REQUEST.get('imageurl', None)
 
     groupids = json.loads(groupids)
@@ -213,8 +213,8 @@ def postStatus(request):
 
         for friendId in visibilityFriends:
 
-            if friendId[:2] == 'fb':
-                friendId = friendId[2:]
+            if str(friendId)[:2] == 'fb':
+                friendId = str(friendId)[2:]
                 try:
                     friendProfile = UserProfile.objects.get(facebookUID=friendId)
                     status.friendsVisible.add(friendProfile)
