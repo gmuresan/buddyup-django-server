@@ -42,7 +42,9 @@ class FacebookRegisterTest(TestCase):
 
         response = client.post(reverse('facebookLoginAPI'), {
             'fbauthkey': self.authKey,
-            'device': 'android'
+            'device': 'android',
+            'lat': 42.151515,
+            'lng': -87498989
         })
         response = json.loads(response.content)
         self.assertEqual(response['success'], True)
@@ -63,7 +65,9 @@ class FacebookRegisterTest(TestCase):
 
         response = client.post(reverse('facebookLoginAPI'), {
             'fbauthkey': self.authKey,
-            'device': 'android'
+            'device': 'android',
+            'lat': 42.151515,
+            'lng': -87498989
         })
         response = json.loads(response.content)
 
@@ -94,7 +98,9 @@ class FacebookRegisterTest(TestCase):
 
         response = client.post(reverse('facebookLoginAPI'), {
             'fbauthkey': self.authKey,
-            'device': 'android'
+            'device': 'android',
+            'lat': 42.151515,
+            'lng': -87498989
         })
         response = json.loads(response.content)
 
@@ -148,7 +154,9 @@ class FacebookRegisterTest(TestCase):
 
         response = client.post(reverse('facebookLoginAPI'), {
             'fbauthkey': self.authKey,
-            'device': 'android'
+            'device': 'android',
+            'lat': 42.151515,
+            'lng': -87498989
         })
         response = json.loads(response.content)
 

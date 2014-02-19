@@ -18,6 +18,8 @@ def facebookLogin(request):
 
     device = request.REQUEST['device']
     facebookAuthKey = request.REQUEST['fbauthkey']
+    lat = request.REQUEST.get('lat', 0)
+    lng = request.REQUEST.get('lng', 0)
 
     if device != 'ios' and device != 'android':
         return errorResponse('Invalid device: ' + device)
@@ -52,7 +54,7 @@ def facebookLogin(request):
             friendData = createFriendJsonObject(friend, blocked, userProfile)
             response['friends'].append(friendData)
 
-    statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None)
+    statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None, lat, lng)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
     groupsData = getMyGroupsJsonResponse(userProfile)
 
