@@ -86,18 +86,42 @@ def facebookLogin(request):
 def getUserDetails(request):
     response = dict()
 
-    userid = request.REQUEST['userid']
+    userid = request.REQUEST.get('userid', None)
+    userids = request.REQUEST.get('userids', '[]')
+    userids = json.loads(userids)
 
-    try:
-        userProfile = UserProfile.objects.get(pk=userid)
-    except UserProfile.DoesNotExist:
-        return errorResponse("Invalid user id")
+    if userid is None and len(userids) == 0:
+        return errorResponse("Need to supply userid or userids")
+
+    users = list()
+
+    if userid is not None:
+        try:
+            userProfile = UserProfile.objects.get(pk=userid)
+        except UserProfile.DoesNotExist:
+            return errorResponse("Invalid user id")
+
+        response['firstname'] = userProfile.user.first_name
+        response['lastname'] = userProfile.user.last_name
+        response['facebookid'] = userProfile.facebookUID
+
+    elif len(userids) > 0:
+        for userid in userids:
+            try:
+                userProfile = UserProfile.objects.get(pk=userid)
+            except UserProfile.DoesNotExist:
+                return errorResponse("Invalid user id")
+
+            userData = dict()
+            userData['firstname'] = userProfile.user.first_name
+            userData['lastname'] = userProfile.user.last_name
+            userData['facebookid'] = userProfile.facebookUID
+
+            users.append(userData)
+
+        response['users'] = users
 
     response['success'] = True
-    response['firstname'] = userProfile.user.first_name
-    response['lastname'] = userProfile.user.last_name
-    response['facebookid'] = userProfile.facebookUID
-
     return HttpResponse(json.dumps(response))
 
 @csrf_exempt
