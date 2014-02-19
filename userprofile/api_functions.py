@@ -18,8 +18,8 @@ def facebookLogin(request):
 
     device = request.REQUEST['device']
     facebookAuthKey = request.REQUEST['fbauthkey']
-    lat = request.REQUEST.get('lat', 0)
-    lng = request.REQUEST.get('lng', 0)
+    lat = request.REQUEST.get('lat', None)
+    lng = request.REQUEST.get('lng', None)
 
     if device != 'ios' and device != 'android':
         return errorResponse('Invalid device: ' + device)
