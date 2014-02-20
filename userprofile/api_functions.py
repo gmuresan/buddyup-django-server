@@ -104,6 +104,7 @@ def getUserDetails(request):
         response['firstname'] = userProfile.user.first_name
         response['lastname'] = userProfile.user.last_name
         response['facebookid'] = userProfile.facebookUID
+        response['userid'] = userProfile.id
 
     elif len(userids) > 0:
         for userid in userids:
@@ -116,6 +117,7 @@ def getUserDetails(request):
             userData['firstname'] = userProfile.user.first_name
             userData['lastname'] = userProfile.user.last_name
             userData['facebookid'] = userProfile.facebookUID
+            userData['userid'] = userProfile.id
 
             users.append(userData)
 
