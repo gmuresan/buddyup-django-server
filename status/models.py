@@ -13,7 +13,7 @@ class Status(geomodels.Model):
     VIS_FRIENDS_OF_FRIENDS = 'friendsoffriends'
     VIS_CUSTOM = 'custom'
 
-    STATUS_TYPES = (('food', 'food'), ('drink', 'drink'), ('study', 'study'), ('couch', 'couch'), ('go out', 'go out'),
+    STATUS_TYPES = (('food', 'food'), ('study', 'study'), ('couch', 'couch'), ('go out', 'go out'),
                     ('show', 'show'), ('sports', 'sports'), ('other', 'other'))
     VISIBILITY = ((VIS_FRIENDS, 'friends'), (VIS_PUBLIC, 'public'), (VIS_FRIENDS_OF_FRIENDS, 'friends of friends'),
                   (VIS_CUSTOM, 'custom'))

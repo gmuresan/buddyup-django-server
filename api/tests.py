@@ -484,7 +484,7 @@ class PostStatusTests(TestCase):
 
         response = json.loads(response.content)
 
-        status  = Status.objects.get(pk=response['statusid'])
+        status = Status.objects.get(pk=response['statusid'])
 
         self.assertIn(self.friend2, status.friendsVisible.all())
         self.assertIn(self.friend1, status.friendsVisible.all())
@@ -789,6 +789,7 @@ class getStatusesTest(TestCase):
         self.venue = "My house"
         self.expirationDate = datetime.utcnow() + timedelta(hours=2)
         self.startDate = datetime.utcnow() + timedelta(hours=1)
+        self.statusType = 'food'
 
         self.location = Location.objects.create(lng=self.lng, lat=self.lat, point=Point(self.lng, self.lat),
                                                 city=self.city, state=self.state, venue=self.venue)
@@ -799,7 +800,7 @@ class getStatusesTest(TestCase):
 
         status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
                                         location=self.location, starts=self.startDate,
-                                        visibility=Status.VIS_FRIENDS)
+                                        visibility=Status.VIS_FRIENDS, statusType=self.statusType)
 
         myLat = 42.321620
         myLng = -83.507794
@@ -821,13 +822,14 @@ class getStatusesTest(TestCase):
 
         statusDate = response['statuses'][0]['datecreated']
         self.assertEqual(statusDate, status1.date.strftime(DATETIME_FORMAT))
+        self.assertEqual(self.statusType, response['statuses'][0]['type'])
 
     def testCustomVisibility(self):
         print "Get Status Custom Visibility"
         client = Client()
 
         status = Status.objects.create(user=self.user1, expires=self.expirationDate, text='text', starts=self.startDate,
-                                       visibility=Status.VIS_CUSTOM)
+                                       visibility=Status.VIS_CUSTOM, statusType=self.statusType)
         status.friendsVisible.add(self.user2)
 
         response = client.get(reverse('getStatusesAPI'), {
@@ -853,7 +855,7 @@ class getStatusesTest(TestCase):
         client = Client()
 
         status = Status.objects.create(user=self.user2, expires=self.expirationDate, text='text', starts=self.startDate,
-                                       visibility=Status.VIS_FRIENDS)
+                                       visibility=Status.VIS_FRIENDS, statusType=self.statusType)
 
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user1.id
@@ -878,7 +880,7 @@ class getStatusesTest(TestCase):
         client = Client()
 
         status = Status.objects.create(user=self.user2, expires=self.expirationDate, text='text', starts=self.startDate,
-                                       visibility=Status.VIS_FRIENDS_OF_FRIENDS)
+                                       visibility=Status.VIS_FRIENDS_OF_FRIENDS, statusType=self.statusType)
 
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user1.id
@@ -903,8 +905,7 @@ class getStatusesTest(TestCase):
         client = Client()
 
         status = Status.objects.create(user=self.user4, expires=self.expirationDate, text='text', starts=self.startDate,
-                                       visibility=Status.VIS_PUBLIC, location=self.location)
-
+                                       visibility=Status.VIS_PUBLIC, location=self.location, statusType=self.statusType)
 
         # location right next to status
         response = client.get(reverse('getStatusesAPI'), {
@@ -949,7 +950,7 @@ class getStatusesTest(TestCase):
 
         status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
                                         location=self.location, starts=self.startDate,
-                                        visibility=Status.VIS_FRIENDS)
+                                        visibility=Status.VIS_FRIENDS, statusType=self.statusType)
 
         response = client.post(reverse('getStatusDetailsAPI'), {
             'statusid': status1.id
