@@ -824,6 +824,12 @@ class getStatusesTest(TestCase):
         self.assertEqual(statusDate, status1.date.strftime(DATETIME_FORMAT))
         self.assertEqual(self.statusType, response['statuses'][0]['type'])
 
+        userInfo = response['statuses'][0]['userinfo']
+        self.assertEqual(self.user1.id, userInfo['userid'])
+        self.assertEqual(self.user1.user.first_name, userInfo['firstname'])
+        self.assertEqual(self.user1.user.last_name, userInfo['lastname'])
+        self.assertEqual(self.user1.facebookUID, userInfo['facebookid'])
+
     def testCustomVisibility(self):
         print "Get Status Custom Visibility"
         client = Client()

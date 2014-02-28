@@ -6,6 +6,7 @@ from django.contrib.gis.measure import D
 from django.db.models import Q
 from api.helpers import DATETIME_FORMAT
 from status.models import Status, Location
+from userprofile.helpers import getUserProfileDetailsJson
 from userprofile.models import Setting, UserProfile
 
 DEFAULT_STATUS_RADIUS = 50
@@ -107,6 +108,7 @@ def createStatusJsonObject(status):
 
     statusData['statusid'] = status.id
     statusData['userid'] = status.user_id
+    statusData['userinfo'] = getUserProfileDetailsJson(status.user)
     statusData['text'] = status.text
     statusData['datecreated'] = status.date.strftime(DATETIME_FORMAT)
     statusData['dateexpires'] = status.expires.strftime(DATETIME_FORMAT)
