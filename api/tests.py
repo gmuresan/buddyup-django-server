@@ -816,15 +816,17 @@ class getStatusesTest(TestCase):
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
         self.assertEqual(len(response['statuses']), 1)
-        self.assertEqual(response['statuses'][0]['text'], status1.text)
-        self.assertEqual(response['statuses'][0]['dateexpires'], self.expirationDate.strftime(DATETIME_FORMAT))
-        self.assertEqual(response['statuses'][0]['datestarts'], self.startDate.strftime(DATETIME_FORMAT))
+        status = response['statuses'][0]
 
-        statusDate = response['statuses'][0]['datecreated']
+        self.assertEqual(status['text'], status1.text)
+        self.assertEqual(status['dateexpires'], self.expirationDate.strftime(DATETIME_FORMAT))
+        self.assertEqual(status['datestarts'], self.startDate.strftime(DATETIME_FORMAT))
+
+        statusDate = status['datecreated']
         self.assertEqual(statusDate, status1.date.strftime(DATETIME_FORMAT))
         self.assertEqual(self.statusType, response['statuses'][0]['type'])
 
-        userInfo = response['statuses'][0]['userinfo']
+        userInfo = status['userinfo']
         self.assertEqual(self.user1.id, userInfo['userid'])
         self.assertEqual(self.user1.user.first_name, userInfo['firstname'])
         self.assertEqual(self.user1.user.last_name, userInfo['lastname'])

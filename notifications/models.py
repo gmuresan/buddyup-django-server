@@ -116,18 +116,19 @@ class Notification(models.Model):
 
         elif self.notificationType == self.NOTIF_STATUS_MEMBERS_ADDED:
             return "{} {} is now attending {}".format(self.initiatingUser.user.first_name,
-                                                      self.initiatingUser.user.last_name, self.status.text)
+                                                      self.initiatingUser.user.last_name, unicode(self.status.text))
 
         elif self.notificationType == self.NOTIF_STATUS_MESSAGE:
             return "{} {} commented on {}: {}".format(self.initiatingUser.user.first_name,
-                                                      self.initiatingUser.user.last_name, self.status.text,
-                                                      self.message.text)
+                                                      self.initiatingUser.user.last_name, unicode(self.status.text),
+                                                      unicode(self.message.text))
 
         elif self.notificationType == self.NOTIF_STATUS_CHANGED:
             return "{} {} has made changes to their activity {}".format(self.initiatingUser.user.first_name,
                                                                         self.initiatingUser.user.last_name,
-                                                                        self.status.text)
+                                                                        unicode(self.status.text))
 
         elif self.notificationType == self.NOTIF_INVITED:
-            return "You have been invited to {} by {} {}".format(self.status.text, self.initiatingUser.user.first_name,
+            return "You have been invited to {} by {} {}".format(unicode(self.status.text),
+                                                                 self.initiatingUser.user.first_name,
                                                                  self.initiatingUser.user.last_name)

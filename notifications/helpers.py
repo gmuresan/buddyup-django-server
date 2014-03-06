@@ -18,7 +18,7 @@ def getNotificationsJson(user, since=None):
         if notif.status:
             json['statusid'] = notif.status.id
 
-        json['text'] = str(notif)
+        json['text'] = unicode(notif)
         json['date'] = notif.date.strftime(DATETIME_FORMAT)
         json['notificationid'] = notif.id
 
