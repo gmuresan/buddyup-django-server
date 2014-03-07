@@ -8,12 +8,18 @@ from notifications.app_notifications import createFriendJoinedNotification
 from notifications.helpers import getNotificationsJson
 from notifications.models import GCMDevice, APNSDevice
 from status.helpers import getNewStatusesJsonResponse, getMyStatusesJsonResponse
+from userprofile.helpers import getUserProfileDetailsJson
 from userprofile.models import UserProfile, Group, Feedback, Setting, FacebookUser
 from django.views.decorators.csrf import csrf_exempt
 
 
 @csrf_exempt
 def facebookLogin(request):
+    """
+
+    :param request:
+    :return:
+    """
     response = dict()
 
     device = request.REQUEST['device']
@@ -40,7 +46,7 @@ def facebookLogin(request):
         if friend in blockedFriends:
             blocked = True
 
-        friendData = createFriendJsonObject(friend, blocked, userProfile)
+        friendData = getUserProfileDetailsJson(friend)
         response['friends'].append(friendData)
 
     # Check all buddyup friends and add them if they weren't already included in facebook friends check
@@ -51,7 +57,7 @@ def facebookLogin(request):
             if friend in blockedFriends:
                 blocked = True
 
-            friendData = createFriendJsonObject(friend, blocked, userProfile)
+            friendData = getUserProfileDetailsJson(friend)
             response['friends'].append(friendData)
 
     statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None, lat, lng)
@@ -450,16 +456,14 @@ def getFriends(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    blockedFriends = userProfile.blockedFriends.all()
+    # blockedFriends = userProfile.blockedFriends.all()
     friendsData = list()
 
     for friend in userProfile.friends.all():
-        blocked = False
-        if friend in blockedFriends:
-            blocked = True
-
-        friendData = createFriendJsonObject(friend, blocked, userProfile)
-
+        # blocked = False
+        # if friend in blockedFriends:
+        #     blocked = True
+        friendData = getUserProfileDetailsJson(friend)
         friendsData.append(friendData)
 
     response['success'] = True

@@ -9,13 +9,14 @@ import pytz
 from django.test import TestCase, Client
 from api import helpers
 from api.FacebookProfile import FacebookProfile
-from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, createFriendJsonObject
+from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
 from buddyup import settings
 from chat.models import Conversation, Message
 from notifications.models import GCMDevice, APNSDevice, Notification
 from status.helpers import createLocationJson
 from status.models import Status, Poke, Location, StatusMessage, TimeSuggestion, LocationSuggestion
 from userprofile.models import UserProfile, Group, Setting, FacebookUser
+from userprofile.helpers import getUserProfileDetailsJson
 
 FB_TEST_USER_1_ID = "100007243621022"
 FB_TEST_USER_2_ID = "100007247311000"
@@ -32,7 +33,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAEV8drtSrJw7rvzMIfQkjsZBf3sMPWEnd2Qbqd5sIYqpmsAGa82VmQNAtEoCg7M4bVCupeZC2yITuvGMAuXtXrZBm1pUZAS4MzoymBe42gjL450U9ZAMZCayX7jqqHMI8vpntMQAuZCpXGZC1DYhWZBljxmS3QO13jz80crhUKZBVbsCBJySnwtfMEqEXERqINdTAZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAFWSsA7IRcLwydZClamc3GyLjlqSSGn9Tr4y6iMJZA5l3f7T8pwmp0bShMlHcKKMJZAIcItwtrihwalB5wKlzbUDClLrFZCBaJFp6V8qtkH0aZBbz9FUqFRpLxq4w17BzYcqIZBGEwbHpXyEDIIU11EURm3zdKZAxfhCsnIZBTAn9GMuLE07pFfCevcPE39ZB1AZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -44,7 +45,7 @@ class FacebookRegisterTest(TestCase):
             'fbauthkey': self.authKey,
             'device': 'android',
             'lat': 42.151515,
-            'lng': -87498989
+            'lng': -87.498989
         })
         response = json.loads(response.content)
         self.assertEqual(response['success'], True)
@@ -67,7 +68,7 @@ class FacebookRegisterTest(TestCase):
             'fbauthkey': self.authKey,
             'device': 'android',
             'lat': 42.151515,
-            'lng': -87498989
+            'lng': -87.498989
         })
         response = json.loads(response.content)
 
@@ -100,7 +101,7 @@ class FacebookRegisterTest(TestCase):
             'fbauthkey': self.authKey,
             'device': 'android',
             'lat': 42.151515,
-            'lng': -87498989
+            'lng': -87.498989
         })
         response = json.loads(response.content)
 
@@ -156,7 +157,7 @@ class FacebookRegisterTest(TestCase):
             'fbauthkey': self.authKey,
             'device': 'android',
             'lat': 42.151515,
-            'lng': -87498989
+            'lng': -87.498989
         })
         response = json.loads(response.content)
 
@@ -1071,14 +1072,7 @@ class PokeTest(TestCase):
 
         self.assertEqual(response['success'], True)
 
-        friendObj = createFriendJsonObject(self.user2, False, self.user1)
-
-        pokeTime = friendObj['lastpoketime']
-        lastPoke = Poke.objects.filter(sender=self.user1, recipient=self.user2).latest()
-        lastPokeTime = lastPoke.created.strftime(DATETIME_FORMAT)
-
-        self.assertEqual(lastPokeTime, pokeTime)
-
+        friendObj = getUserProfileDetailsJson(self.user2)
 
 class ConversationTests(TestCase):
     def setUp(self):
@@ -1965,9 +1959,9 @@ class FriendsListTests(TestCase):
         self.assertEqual(len(friends), 2)
 
         friend1 = {'userid': self.friend.id, 'firstname': self.friend.user.first_name,
-                   'lastname': self.friend.user.last_name, 'blocked': False, 'facebookid': self.friend.facebookUID}
+                   'lastname': self.friend.user.last_name, 'facebookid': self.friend.facebookUID}
         friend2 = {'userid': self.friend2.id, 'firstname': self.friend2.user.first_name,
-                   'lastname': self.friend2.user.last_name, 'blocked': False,
+                   'lastname': self.friend2.user.last_name,
                    'facebookid': self.friend2.facebookUID}
 
         self.assertIn(friend1, friends)
