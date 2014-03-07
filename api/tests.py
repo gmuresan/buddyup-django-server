@@ -333,6 +333,9 @@ class StatusMessageTests(TestCase):
         self.assertEqual(locationSugg['location'], createLocationJson(locationSuggestion.location))
         self.assertEqual(locationSugg['userid'], locationSuggestion.user.id)
 
+        self.assertEqual(response['statusid'], status.id)
+        self.assertEqual(response['text'], status.text)
+
 
 class PostStatusTests(TestCase):
     def setUp(self):

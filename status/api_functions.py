@@ -7,7 +7,7 @@ from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
 from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification
-from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson
+from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
 
@@ -407,6 +407,8 @@ def getStatusDetails(request):
     response['invited'] = invited
     response['locationsuggestions'] = locationSuggestions
     response['timesuggestions'] = timeSuggestions
+
+    response.update(createStatusJsonObject(status))
 
     return HttpResponse(json.dumps(response))
 
