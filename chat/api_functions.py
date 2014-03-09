@@ -150,6 +150,7 @@ def sendMessage(request):
     userid = request.REQUEST['userid']
     chatid = request.REQUEST['chatid']
     text = request.REQUEST['text']
+    text = str(text)
     since = request.REQUEST.get('since', None)
 
     if since:
