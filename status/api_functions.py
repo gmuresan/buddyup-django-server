@@ -303,7 +303,7 @@ def inviteToStatus(request):
     status.fbInvited.add(*facebookFriends)
 
     createInvitedToStatusNotification(buddyupFriends, userProfile, status)
-    sendInvitedToStatusNotification(status, userProfile, friend)
+    sendInvitedToStatusNotification(status, userProfile, buddyupFriends)
 
     response['success'] = True
 

@@ -7,16 +7,16 @@ from notifications.models import GCMDevice, APNSDevice
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
 
-def sendInvitedToStatusNotification(status, invitingUser, invitedUser):
-    thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (status, invitingUser, invitedUser))
+def sendInvitedToStatusNotification(status, invitingUser, invitedUsers):
+    thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (status, invitingUser, invitedUsers))
 
 
-def sendInvitedToStatusNotificationSynchronous(status, invitingUser, invitedUser):
+def sendInvitedToStatusNotificationSynchronous(status, invitingUser, invitedUsers):
     try:
-        audience = invitedUser
+        audience = invitedUsers
 
         messageContents = invitingUser.user.first_name + " " + invitingUser.user.last_name + " invited you to " + status.text
-        extra = {'id': invitingUser.id, 'statusid': status.id, 'type': 'invite',
+        extra = {'id': status.id, 'statusid': status.id, 'type': 'invite',
                  'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
@@ -39,9 +39,9 @@ def sendStatusMessageNotificationSynchronous(messageObj):
     try:
         audience = messageObj.status.attending.exclude(user=messageObj.user)
 
-        messageContents = messageObj.user.user.first_name + " " + messageObj.user.user.last_name + \
-                          " commented on " + messageObj.status.text + " : " + messageObj.text
-        extra = {'id': messageObj.id, 'statusid': messageObj.status.id,
+        messageContents = messageObj.user.user.first_name + " " + messageObj.user.user.last_name + " commented on " + \
+                          messageObj.status.text + " : " + messageObj.text
+        extra = {'id': messageObj.status.id, 'statusid': messageObj.status.id,
                  'date': messageObj.date.strftime(DATETIME_FORMAT),
                  'text': messageObj.text, 'type': 'statuscomment'}
 
