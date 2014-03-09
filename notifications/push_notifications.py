@@ -16,7 +16,7 @@ def sendInvitedToStatusNotificationSynchronous(status, invitingUser, invitedUser
         audience = invitedUsers
 
         messageContents = invitingUser.user.first_name + " " + invitingUser.user.last_name + " invited you to " + status.text
-        extra = {'id': status.id, 'statusid': status.id, 'type': 'invite',
+        extra = {'id': status.id, 'statusid': status.id, 'type': 'invite', 'userid': invitingUser.id,
                  'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
@@ -43,7 +43,7 @@ def sendStatusMessageNotificationSynchronous(messageObj):
                           messageObj.status.text + " : " + messageObj.text
         extra = {'id': messageObj.status.id, 'statusid': messageObj.status.id,
                  'date': messageObj.date.strftime(DATETIME_FORMAT),
-                 'text': messageObj.text, 'type': 'statuscomment'}
+                 'text': messageObj.text, 'type': 'statuscomment', 'userid': messageObj.user.id}
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
@@ -93,7 +93,7 @@ def sendChatNotificationsSynchronous(message):
         iosDevices = APNSDevice.objects.filter(user__in=conversation.members.exclude(pk=userProfile.pk))
 
         messageContents = userProfile.user.first_name + " " + userProfile.user.last_name + ": " + message.text
-        extra = {'id': conversation.id, 'type': 'chat'}
+        extra = {'id': conversation.id, 'type': 'chat', 'userid': message.user.id}
 
         androidResponse = androidDevices.send_message(messageContents, extra=extra)
         iosResponse = iosDevices.send_message(messageContents, extra=extra)
