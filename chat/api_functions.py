@@ -26,24 +26,34 @@ def createChat(request):
     except:
         friendids = json.loads(friendids)
 
-    conversation = Conversation.objects.create()
-
+    newMembers = list()
     for friendid in friendids:
 
         try:
             friendProfile = UserProfile.objects.get(pk=friendid)
         except UserProfile.DoesNotExist:
-            conversation.delete()
-            return errorResponse("Friend ID is not valid")
+            return errorResponse("User with id " + str(friendid) + " does not exist")
 
         if friendProfile not in userProfile.friends.all():
-            conversation.delete()
-            return errorResponse("That user is not your friend")
+            return errorResponse("User with id " + str(friendid) + " is not your friend")
 
         if not userProfile in friendProfile.blockedFriends.all():
-            conversation.members.add(friendProfile)
+            newMembers.append(friendProfile)
 
-    conversation.members.add(userProfile)
+    newMembers.append(userProfile)
+    try:
+        conversations = Conversation.objects.filter(members__in=newMembers)
+        conversation = None
+        if conversations:
+            conversation = conversations[0]
+
+        if conversation is None or conversation.members.count() != len(newMembers):
+            conversation = Conversation.objects.create()
+    except Conversation.DoesNotExist:
+        conversation = Conversation.objects.create()
+
+    for member in newMembers:
+        conversation.members.add(member)
     conversation.save()
 
     #TODO: Send push notification to friend that was invited to chat

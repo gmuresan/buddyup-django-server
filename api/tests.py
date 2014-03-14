@@ -1143,6 +1143,16 @@ class ConversationTests(TestCase):
         self.assertTrue(self.user in members)
         self.assertTrue(self.friend in members)
 
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend.id
+        })
+        response = json.loads(response.content)
+        self.assertEqual(response['success'], True)
+        self.assertNotIn('error', response)
+        self.assertEqual(response['chatid'], chatid)
+
+
     def testCreateConversationWithMultipleFriends(self):
         print "CreateConversationWithMultipleFriends"
         client = Client()

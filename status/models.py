@@ -27,6 +27,7 @@ class Status(geomodels.Model):
 
     user = geomodels.ForeignKey(UserProfile, related_name='statuses')
     date = geomodels.DateTimeField(auto_now=True, db_index=True)
+    dateCreated = geomodels.DateTimeField(auto_now_add=True, default=datetime.datetime.now)
     expires = geomodels.DateTimeField(db_index=True, null=True, blank=True)
     starts = geomodels.DateTimeField(db_index=True, default=datetime.datetime.now)
     text = geomodels.CharField(max_length=100, db_index=True)

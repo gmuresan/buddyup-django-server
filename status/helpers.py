@@ -110,7 +110,7 @@ def createStatusJsonObject(status):
     statusData['userid'] = status.user_id
     statusData['userinfo'] = getUserProfileDetailsJson(status.user)
     statusData['text'] = status.text
-    statusData['datecreated'] = status.date.strftime(DATETIME_FORMAT)
+    statusData['datecreated'] = status.dateCreated.strftime(DATETIME_FORMAT)
     statusData['dateexpires'] = status.expires.strftime(DATETIME_FORMAT)
     statusData['datestarts'] = status.starts.strftime(DATETIME_FORMAT)
     statusData['type'] = status.statusType
