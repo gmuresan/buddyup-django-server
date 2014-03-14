@@ -33,7 +33,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAFWSsA7IRcLwydZClamc3GyLjlqSSGn9Tr4y6iMJZA5l3f7T8pwmp0bShMlHcKKMJZAIcItwtrihwalB5wKlzbUDClLrFZCBaJFp6V8qtkH0aZBbz9FUqFRpLxq4w17BzYcqIZBGEwbHpXyEDIIU11EURm3zdKZAxfhCsnIZBTAn9GMuLE07pFfCevcPE39ZB1AZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAHqDbz8FuDwGZBLoz0wqQpZAdlplUpPNb8IKDhWw8EZBCwD65BiWEi6Hx5mANGmjbTdzHSk1pSzFIXpgZCcntPrTNpu9RLHsAWq5zWUycCT2GK1EHVoNFUuScVQ2x6UIPbieHblFK8FvKAPxvQNtWuE2zYGIMqPpMC7Q1OObEWY3rFcN8rYrv0zji86MrwZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -1955,7 +1955,7 @@ class FriendsListTests(TestCase):
 
         self.assertTrue(response['success'])
 
-        friends = response['friends']
+        friends = response['users']
         self.assertEqual(len(friends), 2)
 
         friend1 = {'userid': self.friend.id, 'firstname': self.friend.user.first_name,

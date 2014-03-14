@@ -467,7 +467,7 @@ def getFriends(request):
         friendsData.append(friendData)
 
     response['success'] = True
-    response['friends'] = friendsData
+    response['users'] = friendsData
 
     return HttpResponse(json.dumps(response))
 
