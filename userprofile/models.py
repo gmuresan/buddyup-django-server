@@ -42,6 +42,9 @@ class Group(models.Model):
 
 
 class Feedback(models.Model):
+    def __unicode__(self):
+        return self.user.user.email + " - " + self.text
+
     user = models.ForeignKey(UserProfile, related_name='submittedFeedback')
     date = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
