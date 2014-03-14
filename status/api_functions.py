@@ -30,7 +30,8 @@ def deleteStatus(request):
         return errorResponse("Invalid statusid")
 
     if status.user == userProfile:
-        status.delete()
+        status.deleted = True
+        status.save()
         response['success'] = True
     else:
         response['success'] = False

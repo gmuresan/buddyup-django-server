@@ -650,8 +650,8 @@ class deleteStatusTest(TestCase):
 
         self.assertTrue(response['success'])
 
-        with self.assertRaises(Status.DoesNotExist):
-            Status.objects.get(pk=self.status1Id)
+        status = Status.objects.get(pk=self.status1Id)
+        self.assertTrue(status.deleted)
 
     def testDeleteOtherUserStatus(self):
         print "DeleteOtherUserStatus"
@@ -727,37 +727,6 @@ class deleteStatusTest(TestCase):
         now = datetime.utcnow()
         self.assertFalse(status.expires < now)
 
-    def testDeleteStatus(self):
-        print "DeleteStatus"
-        client = Client()
-
-        response = client.post(reverse('deleteStatusAPI'), {
-            'userid': self.user1.id,
-            'statusid': self.status1Id
-        })
-
-        response = json.loads(response.content)
-
-        with self.assertRaises(Status.DoesNotExist):
-            Status.objects.get(pk=self.status1Id)
-
-        self.assertTrue(response['success'])
-
-    def testDeleteOtherUserStatus(self):
-        print "DeleteOtherUserStatus"
-        client = Client()
-
-        response = client.post(reverse('cancelStatusAPI'), {
-            'userid': self.user2.id,
-            'statusid': self.status1Id
-        })
-
-        response = json.loads(response.content)
-
-        self.assertFalse(response['success'])
-
-        status = Status.objects.get(pk=self.status1Id)
-
 
 class getStatusesTest(TestCase):
     # TODO: create a test for testing that the location is present in the status
@@ -781,9 +750,13 @@ class getStatusesTest(TestCase):
         self.user1.friends.add(self.user3)
         self.user3.friends.add(self.user1)
 
+        self.user2.friends.add(self.user4)
+        self.user4.friends.add(self.user2)
+
         self.user1.save()
         self.user2.save()
         self.user3.save()
+        self.user4.save()
 
         self.lat = 42.341560
         self.lng = -83.501783
@@ -971,6 +944,45 @@ class getStatusesTest(TestCase):
 
         self.assertTrue(response['success'])
 
+    def testDeletedStatuses(self):
+        print "Test Deleted Statuses"
+        client = Client()
+
+        friends = Status.objects.create(user=self.user2, expires=self.expirationDate, text='friends',
+                                        location=self.location, starts=self.startDate,
+                                        visibility=Status.VIS_FRIENDS, statusType=self.statusType, deleted=True)
+        friendsOfFriends = Status.objects.create(user=self.user4, expires=self.expirationDate,
+                                                 text='friends of friends',
+                                                 starts=self.startDate, location=self.location,
+                                                 visibility=Status.VIS_FRIENDS_OF_FRIENDS, statusType=self.statusType,
+                                                 deleted=True)
+        public = Status.objects.create(user=self.user4, expires=self.expirationDate, text='public',
+                                       starts=self.startDate,
+                                       visibility=Status.VIS_PUBLIC, location=self.location, statusType=self.statusType,
+                                       deleted=True)
+        custom = Status.objects.create(user=self.user2, expires=self.expirationDate, text='custom',
+                                       starts=self.startDate,
+                                       visibility=Status.VIS_CUSTOM, statusType=self.statusType, location=self.location,
+                                       deleted=True)
+        custom.friendsVisible.add(self.user1)
+        custom.save()
+
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user1.id,
+            'radius': 50,
+            'lat': str(self.location.lat + .01),
+            'lng': str(self.location.lng + .01)
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertEqual(len(response['statuses']), 4)
+        statuses = response['statuses']
+        self.assertTrue(statuses[0]['deleted'])
+        self.assertTrue(statuses[1]['deleted'])
+        self.assertTrue(statuses[2]['deleted'])
+        self.assertTrue(statuses[3]['deleted'])
+
 
 class GetMyStatusesTest(TestCase):
     def setUp(self):
@@ -1073,6 +1085,7 @@ class PokeTest(TestCase):
         self.assertEqual(response['success'], True)
 
         friendObj = getUserProfileDetailsJson(self.user2)
+
 
 class ConversationTests(TestCase):
     def setUp(self):

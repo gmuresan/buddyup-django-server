@@ -30,6 +30,7 @@ class Status(geomodels.Model):
     expires = geomodels.DateTimeField(db_index=True, null=True, blank=True)
     starts = geomodels.DateTimeField(db_index=True, default=datetime.datetime.now)
     text = geomodels.CharField(max_length=100, db_index=True)
+    deleted = geomodels.BooleanField(default=False)
     attending = geomodels.ManyToManyField(UserProfile, related_name="statusesAttending", null=True, blank=True)
     invited = geomodels.ManyToManyField(UserProfile, related_name="statusesInvited", null=True, blank=True)
     statusType = geomodels.CharField(max_length=10, db_index=True, choices=STATUS_TYPES, default='other', null=True,

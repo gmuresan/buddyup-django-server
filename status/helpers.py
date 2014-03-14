@@ -114,6 +114,7 @@ def createStatusJsonObject(status):
     statusData['dateexpires'] = status.expires.strftime(DATETIME_FORMAT)
     statusData['datestarts'] = status.starts.strftime(DATETIME_FORMAT)
     statusData['type'] = status.statusType
+    statusData['deleted'] = status.deleted
 
     if status.imageUrl:
         statusData['imageurl'] = status.imageUrl
