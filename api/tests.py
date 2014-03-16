@@ -1152,6 +1152,36 @@ class ConversationTests(TestCase):
         self.assertNotIn('error', response)
         self.assertEqual(response['chatid'], chatid)
 
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendid': self.friend2.id
+        })
+        response = json.loads(response.content)
+        self.assertEqual(response['success'], True)
+        self.assertNotEqual(response['chatid'], chatid)
+        chat2Id = response['chatid']
+
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendids': json.dumps([self.friend2.id, self.friend.id])
+        })
+        response = json.loads(response.content)
+        self.assertEqual(response['success'], True)
+        self.assertNotEqual(response['chatid'], chatid)
+        self.assertNotEqual(response['chatid'], chat2Id)
+        chat3Id = response['chatid']
+
+        response = client.post(reverse('createChatAPI'), {
+            'userid': self.user.id,
+            'friendids': json.dumps([self.friend2.id, self.friend.id])
+        })
+        response = json.loads(response.content)
+        self.assertEqual(response['success'], True)
+        self.assertNotEqual(response['chatid'], chatid)
+        self.assertNotEqual(response['chatid'], chat2Id)
+        self.assertEqual(response['chatid'], chat3Id)
+
+
 
     def testCreateConversationWithMultipleFriends(self):
         print "CreateConversationWithMultipleFriends"

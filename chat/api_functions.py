@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
 from api.helpers import *
 from api.views import *
@@ -42,10 +43,21 @@ def createChat(request):
 
     newMembers.append(userProfile)
     try:
-        conversations = Conversation.objects.filter(members__in=newMembers)
+        conversations = Conversation.objects.annotate(count=Count('members')).filter(count=len(newMembers))
+        for member in newMembers:
+            conversations = conversations.filter(members=member)
         conversation = None
         if conversations:
-            conversation = conversations[0]
+            for convo in conversations:
+                pdb.set_trace()
+                if convo.members.count() == len(newMembers):
+                    match = True
+                    for member in newMembers:
+                        if member not in convo.members.all():
+                            match = False
+                            break
+                    if match:
+                        conversation = convo
 
         if conversation is None or conversation.members.count() != len(newMembers):
             conversation = Conversation.objects.create()
