@@ -55,9 +55,6 @@ class FacebookProfile:
             userProfile = UserProfile(facebookUID=facebookId, user=user, device=device)
             userProfile.save()
 
-            if newUser:
-                createFriendJoinedNotification(userProfile)
-
         return FacebookProfile(userProfile, facebookAuthKey), newUser
 
     def getFacebookFriends(self):

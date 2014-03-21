@@ -49,7 +49,6 @@ def createChat(request):
         conversation = None
         if conversations:
             for convo in conversations:
-                pdb.set_trace()
                 if convo.members.count() == len(newMembers):
                     match = True
                     for member in newMembers:
