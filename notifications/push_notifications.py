@@ -7,6 +7,29 @@ from notifications.models import GCMDevice, APNSDevice
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
 
+def sendAttendingStatusPushNotification(status, attendingUser):
+    thread.start_new_thread(sendAttendingStatusPushNotificationSynchronous, (status, attendingUser))
+
+
+def sendAttendingStatusPushNotificationSynchronous(status, attendingUser):
+    try:
+        messageContents = attendingUser.user.first_name + " " + attendingUser.user.last_name + " is now attending " + \
+                          status.text
+        extra = {'id': status.id, 'statusid': status.id, 'type': 'attending', 'userid': attendingUser.id,
+                 'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
+
+        androidDevices = GCMDevice.objects.filter(user=status.user)
+        iosDevices = APNSDevice.objects.filter(user=status.user)
+
+        androidResponse = androidDevices.send_message(messageContents, extra=extra)
+        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+
+        return androidResponse, iosResponse
+
+    except User.DoesNotExist:
+        return None, None
+
+
 def sendInvitedToStatusNotification(status, invitingUser, invitedUsers):
     thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (status, invitingUser, invitedUsers))
 

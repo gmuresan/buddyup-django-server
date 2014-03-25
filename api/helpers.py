@@ -60,7 +60,7 @@ def getNewChatsData(userProfile, since=None):
         if since is not None:
             msgs = msgs.filter(created__gt=since)
         else:
-            msgs = msgs.filter(created__gt=(convo.lastActivity - timedelta(days=3)))
+            msgs = msgs.filter(created__gt=(convo.lastActivity - timedelta(days=7)))
 
         messagesData = []
         for message in msgs:
