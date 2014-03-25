@@ -153,8 +153,9 @@ def leaveChat(request):
     if userProfile not in convo.members.all():
         return errorResponse("User is not a member of this chat")
 
-    convo.members.remove(userProfile)
-    convo.save()
+    if convo.members.count() > 2:
+        convo.members.remove(userProfile)
+        convo.save()
 
     if convo.members.count() == 0:
         convo.delete()

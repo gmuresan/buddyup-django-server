@@ -1346,6 +1346,9 @@ class ConversationTests(TestCase):
         response = json.loads(response.content)
         chatid = response['chatid']
 
+        convo = Conversation.objects.get(pk=chatid)
+        convo.members.add(self.friend2)
+
         response = client.post(reverse('leaveChatAPI'), {
             'userid': self.user.id,
             'chatid': chatid
@@ -1355,9 +1358,19 @@ class ConversationTests(TestCase):
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
 
-        convo = Conversation.objects.get(pk=chatid)
         members = convo.members.all()
         self.assertTrue(self.user not in members)
+        self.assertTrue(self.friend in members)
+
+        response = client.post(reverse('leaveChatAPI'), {
+            'userid': self.friend.id,
+            'chatid': chatid
+        })
+        response = json.loads(response.content)
+
+        members = convo.members.all()
+        self.assertEqual(response['success'], True)
+        self.assertNotIn('error', response)
         self.assertTrue(self.friend in members)
 
     def testLeaveInvalidChat(self):
@@ -1372,31 +1385,6 @@ class ConversationTests(TestCase):
 
         self.assertEqual(response['success'], False)
         self.assertIn('error', response)
-
-    def testLastPersonToLeaveChat(self):
-        print "LastPersonToLeaveChat"
-        client = Client()
-
-        response = client.post(reverse('createChatAPI'), {
-            'userid': self.user.id,
-            'friendid': self.friend.id
-        })
-        response = json.loads(response.content)
-        chatid = response['chatid']
-
-        client.post(reverse('leaveChatAPI'), {
-            'userid': self.user.id,
-            'chatid': chatid
-        })
-
-        client.post(reverse('leaveChatAPI'), {
-            'userid': self.friend.id,
-            'chatid': chatid
-        })
-
-        convo = Conversation.objects.filter(pk=chatid)
-
-        self.assertEqual(convo.count(), 0)
 
 
 class ChatMessageTests(TestCase):
