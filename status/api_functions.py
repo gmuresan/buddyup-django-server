@@ -6,7 +6,7 @@ from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
-from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotificationSynchronous
+from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotificationSynchronous, sendAttendingStatusPushNotification
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
@@ -332,7 +332,7 @@ def rsvpStatus(request):
     if attending == 'true' or attending == 'True':
         status.attending.add(userProfile)
         createAttendingStatusNotification(status, userProfile)
-        sendAttendingStatusPushNotificationSynchronous(status, userProfile)
+        sendAttendingStatusPushNotification(status, userProfile)
     elif attending == 'false' or attending == 'False':
         status.attending.remove(userProfile)
     else:
