@@ -89,6 +89,7 @@ class ChatMessageTests(TestCase):
         self.assertEqual(len(response['chats']), 1)
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
+        self.assertIn('members', response)
 
         convo = Conversation.objects.get(pk=chatid)
         convoMessage = convo.messages.latest('created')

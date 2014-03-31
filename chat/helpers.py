@@ -4,6 +4,7 @@ from api.helpers import DATETIME_FORMAT
 
 CHAT_MESSAGE_PER_PAGE = 20
 
+
 def getNewChatsData(userProfile, since=None):
     conversations = userProfile.conversations.all()
 
@@ -45,6 +46,8 @@ def createChatMembersJson(chat):
         memberData['firstname'] = member.user.first_name
         memberData['lastname'] = member.user.last_name
         membersData.append(memberData)
+
+    return membersData
 
 
 def createChatJson(chat, messageObjects):
