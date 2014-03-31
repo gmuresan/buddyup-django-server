@@ -4,6 +4,7 @@ import facebook
 from api.FacebookProfile import FacebookProfile
 from api.helpers import *
 from api.views import *
+from chat.helpers import getNewChatsData
 from notifications.app_notifications import createFriendJoinedNotification
 from notifications.helpers import getNotificationsJson
 from notifications.models import GCMDevice, APNSDevice

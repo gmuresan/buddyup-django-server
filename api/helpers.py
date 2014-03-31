@@ -35,54 +35,6 @@ def getMyGroupsJsonResponse(userProfile):
     return groupsData
 
 
-def getNewChatsData(userProfile, since=None):
-    conversations = userProfile.conversations.all()
-
-    if since is not None:
-        conversations = conversations.filter(lastActivity__gt=since)
-
-    conversations = list(conversations)
-
-    chats = []
-    for convo in conversations:
-
-        membersData = []
-        members = convo.members.all()
-        for member in members:
-            memberData = dict()
-            memberData['userid'] = member.id
-            memberData['facebookid'] = member.facebookUID
-            memberData['firstname'] = member.user.first_name
-            memberData['lastname'] = member.user.last_name
-            membersData.append(memberData)
-
-        msgs = convo.messages.all()
-        if since is not None:
-            msgs = msgs.filter(created__gt=since)
-        else:
-            msgs = msgs.filter(created__gt=(convo.lastActivity - timedelta(days=7)))
-
-        messagesData = []
-        for message in msgs:
-            messageData = dict()
-            messageData['messageid'] = message.id
-            messageData['date'] = message.created.strftime(DATETIME_FORMAT)
-            messageData['text'] = message.text
-            messageData['userid'] = message.user.id
-
-            messagesData.append(messageData)
-
-        chatData = dict()
-        chatData['chatid'] = convo.id
-        chatData['lastactivity'] = convo.lastActivity.strftime(DATETIME_FORMAT)
-        chatData['messages'] = messagesData
-        chatData['members'] = membersData
-
-        chats.append(chatData)
-
-    return chats
-
-
 def getNewPokesData(userProfile, since=None):
     pokes = userProfile.receivedPokes.all()
 

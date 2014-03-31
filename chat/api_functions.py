@@ -2,6 +2,7 @@ from django.db.models import Count
 from django.views.decorators.csrf import csrf_exempt
 from api.helpers import *
 from api.views import *
+from chat.helpers import getNewChatsData, getChatMessagesPage
 from chat.models import Conversation, Message
 from notifications.push_notifications import sendChatNotifications
 from userprofile.models import *
@@ -230,3 +231,32 @@ def getMessages(request):
     response['chats'] = chatData
 
     return HttpResponse(json.dumps(response))
+
+
+def getChatPage(request):
+    response = dict()
+
+    userId = request.REQUEST['userid']
+    earliestMessageId = request.REQUEST['earliestmessageid']
+    chatId = request.REQUEST['chatid']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userId)
+        chat = Conversation.objects.get(pk=chatId)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+    except Conversation.DoesNotExist:
+        return errorResponse("Invalid chat id")
+
+    if userProfile not in chat.members.all():
+        return errorResponse("User not a member of chat")
+
+    chatData = getChatMessagesPage(chat, earliestMessageId)
+
+    response['success'] = True
+    response['chat'] = chatData
+
+    return HttpResponse(json.dumps(response))
+
+
+

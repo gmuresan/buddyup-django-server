@@ -8,4 +8,5 @@ urlpatterns = patterns('',
                        url(r'^leavechat/$', leaveChat, {}, 'leaveChatAPI'),
                        url(r'^sendmessage/$', sendMessage, {}, 'sendMessageAPI'),
                        url(r'^getmessages/$', getMessages, {}, 'getMessagesAPI'),
+                       url(r'^getchatpage/$', getChatPage, {}, 'getChatPageAPI'),
                        )
