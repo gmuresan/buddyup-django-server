@@ -929,6 +929,31 @@ class getStatusesTest(TestCase):
         statuses = response['statuses']
         self.assertEqual(len(statuses), 0)
 
+    def testInvitedStatus(self):
+        print "Test Invited Status"
+        client = Client()
+
+        farAwayLocation = self.location
+        farAwayLocation.lng = 0
+        farAwayLocation.lat = 0
+        farAwayLocation.point = Point(0, 0)
+        farAwayLocation.save()
+        status1 = Status.objects.create(user=self.user4, expires=self.expirationDate, text='Hang out',
+                                        location=farAwayLocation, starts=self.startDate,
+                                        visibility=Status.VIS_FRIENDS, statusType=self.statusType)
+        status1.invited.add(self.user1)
+
+        response = client.get(reverse('getStatusesAPI'), {
+            'userid': self.user1.id,
+            'radius': 50
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        statuses = response['statuses']
+
+        self.assertEqual(len(statuses), 1)
+
     def testGetStatusDetails(self):
         print "Get Status Details"
         client = Client()
@@ -2111,6 +2136,53 @@ class AppNotificationTests(TestCase):
             'attending': 'true'
         })
         response = json.loads(response.content)
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.friend.id
+        })
+        response = json.loads(response.content)
+
+        notifications = response['notifications']
+        self.assertEqual(len(notifications), 1)
+
+        notif = notifications[0]
+        self.assertEqual(notif['type'], Notification.NOTIF_STATUS_MEMBERS_ADDED)
+        self.assertEqual(notif['friendid'], self.friend2.id)
+        self.assertEqual(notif['statusid'], self.status.id)
+
+    def testNoDuplicateAttendingNotification(self):
+        print "No Duplicate Attending Notification"
+        client = Client()
+
+        response = client.post(reverse('rsvpStatusAPI'), {
+            'userid': self.friend2.id,
+            'statusid': self.status.id,
+            'attending': 'true'
+        })
+
+        response = client.post(reverse('rsvpStatusAPI'), {
+            'userid': self.friend2.id,
+            'statusid': self.status.id,
+            'attending': 'false'
+        })
+
+        response = client.post(reverse('rsvpStatusAPI'), {
+            'userid': self.friend2.id,
+            'statusid': self.status.id,
+            'attending': 'true'
+        })
+
+        response = client.post(reverse('rsvpStatusAPI'), {
+            'userid': self.friend2.id,
+            'statusid': self.status.id,
+            'attending': 'false'
+        })
+
+        response = client.post(reverse('rsvpStatusAPI'), {
+            'userid': self.friend2.id,
+            'statusid': self.status.id,
+            'attending': 'true'
+        })
 
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.friend.id

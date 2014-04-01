@@ -32,6 +32,11 @@ def createStatusChangedNotification(status):
 
 
 def createAttendingStatusNotification(status, newAttendingUser):
+    notification = Notification.objects.filter(notificationType=Notification.NOTIF_STATUS_MEMBERS_ADDED,
+                                               initiatingUser=newAttendingUser, status=status)
+    if notification:
+        return
+
     attending = status.attending.all().exclude(id=newAttendingUser.id)
     invited = status.invited.all().exclude(id=newAttendingUser.id)
     notifiedUsers = chain(attending, invited)

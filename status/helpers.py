@@ -47,6 +47,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
     friendsStatuses = Status.objects.filter(Q(user__in=friends, visibility=Status.VIS_FRIENDS))
     friendsOfFriendsStatuses = Status.objects.filter(
         Q(user__in=friendsOfFriends, visibility=Status.VIS_FRIENDS_OF_FRIENDS))
+    invitedStatuses = Status.objects.filter(invited=userProfile)
 
     publicStatuses = None
     if lat is not None and lng is not None:
@@ -66,20 +67,23 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
     inVisibleList = inVisibleList.filter(expires__gt=now)
     friendsStatuses = friendsStatuses.filter(expires__gt=now)
     friendsOfFriendsStatuses = friendsOfFriendsStatuses.filter(expires__gt=now)
+    invitedStatuses = invitedStatuses.filter(expires__gt=now)
 
     if since is not None:
         inVisibleList = inVisibleList.filter(date__gt=since)
         friendsStatuses = friendsStatuses.filter(date__gt=since)
         friendsOfFriendsStatuses = friendsOfFriendsStatuses.filter(date__gt=since)
+        invitedStatuses = invitedStatuses.filter(date__gt=since)
 
     inVisibleList = list(inVisibleList)
     friendsStatuses = list(friendsStatuses)
     friendsOfFriendsStatuses = list(friendsOfFriendsStatuses)
+    invitedStatuses = list(invitedStatuses)
 
     if publicStatuses:
-        statuses = set(inVisibleList + friendsStatuses + friendsOfFriendsStatuses + publicStatuses)
+        statuses = set(inVisibleList + friendsStatuses + friendsOfFriendsStatuses + publicStatuses + invitedStatuses)
     else:
-        statuses = set(inVisibleList + friendsStatuses + friendsOfFriendsStatuses)
+        statuses = set(inVisibleList + friendsStatuses + friendsOfFriendsStatuses + invitedStatuses)
 
     statuses = list(statuses)
     newSince = datetime.utcnow()
