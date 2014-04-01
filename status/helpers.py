@@ -93,7 +93,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
 
 
 def getMyStatusesJsonResponse(userProfile):
-    myStatuses = userProfile.statuses.filter(user=userProfile).order_by('-expires')
+    myStatuses = userProfile.statuses.filter(user=userProfile, deleted=False).order_by('-expires')
 
     myStatusesData = []
     for status in myStatuses:
