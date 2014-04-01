@@ -33,7 +33,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAPBW8gfzay0zw7goIMnfphVCa52f01iWMt0MJVbNekVG9Riz2MPl46A0Bx58shjorBHNMZCiDsuuetjaPavrZCaxzZB4PruZChm7dQ3lLODILg8gXTStZCD8FsC0EZAV5XnZCyedMYz2gc4k5JUCFIUlQBLQuNz0rbDFtD65mz5nZBUUn2k86FtMfHjeEtAkogZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAMdPDUy81V0bzAWIdBHs1FQMLLu9RMcuBxXmywVN7dRNjGMjHF98NQ89ZAfRSwo728BZAEjCvaCWGnhEmU39LEc9cD1bHnZAKH7EEAkDNAcqZAwiatDpiRFn23WHrFFH5ZArG1OqPV22cKSyd2paQL8ZC59D9UrPLZA9aZB51CUMKJbex5TWEFVG3Bl5fKlrOAZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -2149,3 +2149,37 @@ class AppNotificationTests(TestCase):
         self.assertEqual(notif['friendid'], self.user.id)
         self.assertEqual(notif['statusid'], self.status.id)
 
+    def testDeletedStatusNoNotification(self):
+        print "Delete Status No Notification"
+        client = Client()
+
+        response = client.post(reverse('inviteToStatusAPI'), {
+            'userid': self.user.id,
+            'statusid': self.status.id,
+            'friends': json.dumps([self.friend2.id, self.friend3.id])
+        })
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.friend2.id
+        })
+        response = json.loads(response.content)
+
+        notifications = response['notifications']
+        self.assertEqual(len(notifications), 1)
+
+        notif = notifications[0]
+
+        self.assertEqual(notif['type'], Notification.NOTIF_INVITED)
+        self.assertEqual(notif['friendid'], self.user.id)
+        self.assertEqual(notif['statusid'], self.status.id)
+
+        self.status.deleted = True
+        self.status.save()
+
+        response = client.post(reverse('getNewDataAPI'), {
+            'userid': self.friend2.id
+        })
+        response = json.loads(response.content)
+
+        notifications = response['notifications']
+        self.assertEqual(len(notifications), 0)
