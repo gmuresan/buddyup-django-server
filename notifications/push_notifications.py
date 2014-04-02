@@ -85,7 +85,7 @@ def sendStatusMessageNotificationSynchronous(messageId):
         return None, None
 
     try:
-        audience = messageObj.status.attending.exclude(user=messageObj.user)
+        audience = messageObj.status.attending.all().exclude(pk=messageObj.user.pk)
 
         messageContents = messageObj.user.user.first_name + " " + messageObj.user.user.last_name + " commented on " + \
                           messageObj.status.text + " : " + messageObj.text
