@@ -120,7 +120,7 @@ def sendChatNotificationsSynchronous(messageId):
         userProfile = message.user
 
         audience = conversation.members.all()
-        #audience = audience.exclude(pk=userProfile.pk)
+        audience = audience.exclude(pk=userProfile.pk)
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
