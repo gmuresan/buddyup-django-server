@@ -6,7 +6,7 @@ from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
 import facebook
 import pytz
-from django.test import TestCase, Client
+from django.test import TestCase, Client, LiveServerTestCase
 from api import helpers
 from api.FacebookProfile import FacebookProfile
 from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
@@ -33,7 +33,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAMdPDUy81V0bzAWIdBHs1FQMLLu9RMcuBxXmywVN7dRNjGMjHF98NQ89ZAfRSwo728BZAEjCvaCWGnhEmU39LEc9cD1bHnZAKH7EEAkDNAcqZAwiatDpiRFn23WHrFFH5ZArG1OqPV22cKSyd2paQL8ZC59D9UrPLZA9aZB51CUMKJbex5TWEFVG3Bl5fKlrOAZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAMdPDUy81V0bzAWIdBHs1FQMLLu9RMcuBxXmywVN7dRNjGMjHF98NQ89ZAfRSwo728BZAEjvaCWGnhEmU39LEc9cD1bHnZAKH7EEAkDNAcqZAwiatDpiRFn23WHrFFH5ZArG1OqPV22cKSyd2paQL8ZC59D9UrPLZA9aZB51CUMKJbex5TWEFVG3Bl5fKlrOAZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -1111,6 +1111,7 @@ class PokeTest(TestCase):
 
         friendObj = getUserProfileDetailsJson(self.user2)
 
+
 class GroupTests(TestCase):
     def setUp(self):
         user = User.objects.create(username='user', password='0', email='user')
@@ -1868,24 +1869,24 @@ class SettingsTests(TestCase):
         self.assertEqual('', response['value'])
 
 
-class PushNotificationTests(TestCase):
+class PushNotificationTests(LiveServerTestCase):
     def setUp(self):
         user = User.objects.create(username='user', password='0', email='user')
         self.user = UserProfile.objects.create(user=user)
 
-        friend = User.objects.create(username='friend', password='0', email='friend')
+        friend = User.objects.create(username='friend', password='0', email='friend', first_name="friend 1")
         self.friend = UserProfile.objects.create(user=friend)
 
         self.user.friends.add(self.friend)
         self.friend.friends.add(self.user)
 
-        friend2 = User.objects.create(username='friend2', password='0', email='friend2')
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name="friend 2")
         self.friend2 = UserProfile.objects.create(user=friend2)
 
         self.user.friends.add(self.friend2)
         self.friend2.friends.add(self.user)
 
-        friend3 = User.objects.create(username='friend3', password='0', email='friend3')
+        friend3 = User.objects.create(username='friend3', password='0', email='friend3', first_name="friend 3")
         self.friend3 = UserProfile.objects.create(user=friend3)
 
         self.user.friends.add(self.friend3)
@@ -1898,10 +1899,14 @@ class PushNotificationTests(TestCase):
         self.convo.save()
 
         self.friend1Device = APNSDevice.objects.create(user=self.friend,
-                                                       registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
+                                                       registration_id="ae134ff0db615fc5725e44d29bf3d83f606f801fed126741ac92ce3489ad77a7")
 
         self.friend2Device = GCMDevice.objects.create(user=self.friend2,
-                                                      registration_id="APA91bH7XrOXRl4pdORQVM_ISWWr1FrcaAkuCS9BYJMStNqSTdO70wqUc2pAc8ty82jlPaED9m3SX92Oj1CVMKT-qTLNDqXz5M_LQDMOdDJgl2JcQuQEAzddJLpOGvSzu13Xb2sJdbTN90GkFVH3u82j06oJljPr5w")
+                                                      registration_id="f7f6544e7bdb153cb17b0fb2c01dcd72d1ba315b753b29844258c66243b69f08")
+        self.friend2APNSDevice = APNSDevice.objects.create(user=self.friend2,
+                                                           registration_id="f7f6544e7bdb153cb17b0fb2c01dcd72d1ba315b753b29844258c66243b69f08")
+        self.friend3APNSDevice = APNSDevice.objects.create(user=self.friend3,
+                                                           registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
 
         self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend2)
 
@@ -1950,6 +1955,37 @@ class PushNotificationTests(TestCase):
 
         androidDevice = GCMDevice.objects.get(user=self.friend, registration_id=androidToken)
         iosDevice = APNSDevice.objects.get(user=self.friend, registration_id=iosToken)
+
+    def testDeviceFiltering(self):
+        print "test device filtering"
+
+        allUsers = UserProfile.objects.all()
+        apnsDevices = APNSDevice.objects.filter(user__in=allUsers)
+
+        self.assertGreaterEqual(len(apnsDevices), 2)
+
+    def testDeviceFilteringConversation(self):
+        print "Push Notif Device Convo Filter"
+        client = Client()
+
+        chat = Conversation.objects.create()
+        chat.members.add(self.friend)
+        chat.members.add(self.friend2)
+        chat.members.add(self.friend3)
+        self.assertGreaterEqual(chat.members.all(), 2)
+
+        members = chat.members.all()
+        apnsDevices = APNSDevice.objects.filter(user__in=members)
+        self.assertEqual(len(apnsDevices), 3)
+
+        membersMinusSender = chat.members.all().exclude(id=self.friend.id)
+        apnsDevices = APNSDevice.objects.filter(user__in=membersMinusSender)
+        self.assertEqual(len(apnsDevices), 2)
+        response = client.post(reverse('sendMessageAPI'), {
+            'userid': self.friend.id,
+            'chatid': chat.id,
+            'text': 'hello'
+        })
 
 
 class AppNotificationTests(TestCase):
