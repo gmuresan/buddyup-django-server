@@ -43,16 +43,21 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
         return None, None
 
 
-def sendInvitedToStatusNotification(status, invitingUserId, invitedUserIds):
-    thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (status, invitingUserId, invitedUserIds))
+def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
+    thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (statusId, invitingUserId, invitedUserIds))
 
 
-def sendInvitedToStatusNotificationSynchronous(status, invitingUserId, invitedUserIds):
+def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invitedUserIds):
     try:
         invitingUser = UserProfile.objects.get(pk=invitingUserId)
         invitedUsers = UserProfile.objects.filter(pk__in=invitedUserIds)
 
     except UserProfile.DoesNotExist:
+        return None, None
+
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
         return None, None
 
     try:

@@ -8,10 +8,10 @@ from status.models import Poke
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12:11
 MICROSECOND_DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S.%f'
 
+
 def createGroupJsonObject(group):
     groupData = dict()
 
-    #pdb.set_trace()
     groupData['groupname'] = group.name
     groupData['groupid'] = group.id
 

@@ -6,7 +6,7 @@ from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
-from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotificationSynchronous, sendAttendingStatusPushNotification
+from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotificationSynchronous, sendAttendingStatusPushNotification, sendInvitedToStatusNotificationSynchronous
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
@@ -309,7 +309,7 @@ def inviteToStatus(request):
     for friend in buddyupFriends:
         newInvitedIds.append(friend.pk)
 
-    sendInvitedToStatusNotification(status.pk, userProfile.pk, newInvitedIds)
+    sendInvitedToStatusNotificationSynchronous(status.pk, userProfile.pk, newInvitedIds)
 
     response['success'] = True
 
