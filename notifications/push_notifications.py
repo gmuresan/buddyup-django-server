@@ -4,15 +4,27 @@ import datetime
 from django.contrib.auth.models import User
 from chat.models import Message
 from notifications.models import GCMDevice, APNSDevice
+from status.models import StatusMessage, Status
+from userprofile.models import UserProfile
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
 
-def sendAttendingStatusPushNotification(status, attendingUser):
-    thread.start_new_thread(sendAttendingStatusPushNotificationSynchronous, (status, attendingUser))
+def sendAttendingStatusPushNotification(statusId, attendingUserId):
+    thread.start_new_thread(sendAttendingStatusPushNotificationSynchronous, (statusId, attendingUserId))
 
 
-def sendAttendingStatusPushNotificationSynchronous(status, attendingUser):
+def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
+        return None, None
+
+    try:
+        attendingUser = UserProfile.objects.get(pk=attendingUserId)
+    except UserProfile.DoesNotExist:
+        return None, None
+
     try:
         messageContents = attendingUser.user.first_name + " " + attendingUser.user.last_name + " is now attending " + \
                           status.text
@@ -31,11 +43,18 @@ def sendAttendingStatusPushNotificationSynchronous(status, attendingUser):
         return None, None
 
 
-def sendInvitedToStatusNotification(status, invitingUser, invitedUsers):
-    thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (status, invitingUser, invitedUsers))
+def sendInvitedToStatusNotification(status, invitingUserId, invitedUserIds):
+    thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (status, invitingUserId, invitedUserIds))
 
 
-def sendInvitedToStatusNotificationSynchronous(status, invitingUser, invitedUsers):
+def sendInvitedToStatusNotificationSynchronous(status, invitingUserId, invitedUserIds):
+    try:
+        invitingUser = UserProfile.objects.get(pk=invitingUserId)
+        invitedUsers = UserProfile.objects.filter(pk__in=invitedUserIds)
+
+    except UserProfile.DoesNotExist:
+        return None, None
+
     try:
         audience = invitedUsers
 
@@ -55,11 +74,16 @@ def sendInvitedToStatusNotificationSynchronous(status, invitingUser, invitedUser
         return None, None
 
 
-def sendStatusMessageNotification(messageObj):
-    thread.start_new_thread(sendStatusMessageNotificationSynchronous, (messageObj, ))
+def sendStatusMessageNotification(messageId):
+    thread.start_new_thread(sendStatusMessageNotificationSynchronous, (messageId, ))
 
 
-def sendStatusMessageNotificationSynchronous(messageObj):
+def sendStatusMessageNotificationSynchronous(messageId):
+    try:
+        messageObj = StatusMessage.objects.get(pk=messageId)
+    except StatusMessage.DoesNotExist:
+        return None, None
+
     try:
         audience = messageObj.status.attending.exclude(user=messageObj.user)
 

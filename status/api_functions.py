@@ -304,7 +304,12 @@ def inviteToStatus(request):
     status.fbInvited.add(*facebookFriends)
 
     createInvitedToStatusNotification(buddyupFriends, userProfile, status)
-    sendInvitedToStatusNotification(status, userProfile, buddyupFriends)
+
+    newInvitedIds = list()
+    for friend in buddyupFriends:
+        newInvitedIds.append(friend.pk)
+
+    sendInvitedToStatusNotification(status.pk, userProfile.pk, newInvitedIds)
 
     response['success'] = True
 
@@ -332,7 +337,7 @@ def rsvpStatus(request):
     if attending == 'true' or attending == 'True':
         status.attending.add(userProfile)
         createAttendingStatusNotification(status, userProfile)
-        sendAttendingStatusPushNotification(status, userProfile)
+        sendAttendingStatusPushNotification(status.pk, userProfile.pk)
     elif attending == 'false' or attending == 'False':
         status.attending.remove(userProfile)
     else:
@@ -363,7 +368,7 @@ def sendStatusMessage(request):
         return errorResponse('Invalid status id')
 
     message = StatusMessage.objects.create(user=userProfile, text=text, status=status)
-    sendStatusMessageNotification(message)
+    sendStatusMessageNotification(message.pk)
     createCreateStatusMessageNotification(message)
 
     response['success'] = True
