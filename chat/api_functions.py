@@ -203,7 +203,7 @@ def sendMessage(request):
     response['newsince'] = newSince
     response['success'] = True
 
-    sendChatNotificationsSynchronous(message)
+    sendChatNotifications(message.pk)
 
     return HttpResponse(json.dumps(response))
 

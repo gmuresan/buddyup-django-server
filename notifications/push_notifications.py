@@ -2,6 +2,7 @@ import pdb
 import thread
 import datetime
 from django.contrib.auth.models import User
+from chat.models import Message
 from notifications.models import GCMDevice, APNSDevice
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
@@ -103,12 +104,18 @@ def sendPokeNotificationSynchronous(pokeObj):
         return None, None
 
 
-def sendChatNotifications(message):
-    thread.start_new_thread(sendChatNotificationsSynchronous, (message, ))
+def sendChatNotifications(messageId):
+    thread.start_new_thread(sendChatNotificationsSynchronous, (messageId, ))
 
 
-def sendChatNotificationsSynchronous(message):
-    conversation = message.conversation
+def sendChatNotificationsSynchronous(messageId):
+
+    try:
+        message = Message.objects.get(pk=messageId)
+        conversation = message.conversation
+    except Message.DoesNotExist:
+        return None, None
+
     try:
         userProfile = message.user
 
@@ -128,3 +135,4 @@ def sendChatNotificationsSynchronous(message):
 
     except User.DoesNotExist:
         return None, None
+
