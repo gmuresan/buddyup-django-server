@@ -112,8 +112,11 @@ def sendChatNotificationsSynchronous(message):
     try:
         userProfile = message.user
 
-        androidDevices = GCMDevice.objects.filter(user__in=conversation.members.exclude(pk=userProfile.pk))
-        iosDevices = APNSDevice.objects.filter(user__in=conversation.members.exclude(pk=userProfile.pk))
+        audience = conversation.members.all()
+        audience = audience.exclude(pk=userProfile.pk)
+
+        androidDevices = GCMDevice.objects.filter(user__in=audience)
+        iosDevices = APNSDevice.objects.filter(user__in=audience)
 
         messageContents = userProfile.user.first_name + " " + userProfile.user.last_name + ": " + message.text
         extra = {'id': conversation.id, 'type': 'chat', 'userid': message.user.id}
