@@ -89,8 +89,8 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
 
     if socket:
         socket.write(data)
-        data = socket.recv(4096)
-        print "received message:", data
+        #data = socket.recv(4096)
+        #print "received message:", data
     else:
         socket = _apns_create_socket()
         socket.write(data)
