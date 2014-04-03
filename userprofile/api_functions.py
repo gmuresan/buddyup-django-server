@@ -668,12 +668,16 @@ def registerForPushNotifications(request):
 
     if platform == 'ios':
         try:
-            device = APNSDevice.objects.get(user=userProfile, registration_id=token)
+            device = APNSDevice.objects.get(registration_id=token)
+            device.user = userProfile
+            device.save()
         except APNSDevice.DoesNotExist:
             device = APNSDevice.objects.create(user=userProfile, registration_id=token)
     elif platform == 'android':
         try:
-            device = GCMDevice.objects.get(user=userProfile, registration_id=token)
+            device = GCMDevice.objects.get(registration_id=token)
+            device.user = userProfile
+            device.save()
         except GCMDevice.DoesNotExist:
             device = GCMDevice.objects.create(user=userProfile, registration_id=token)
     else:
