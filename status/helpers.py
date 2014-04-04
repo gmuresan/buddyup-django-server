@@ -119,8 +119,11 @@ def createStatusJsonObject(status):
     statusData['datestarts'] = status.starts.strftime(DATETIME_FORMAT)
     statusData['type'] = status.statusType
     statusData['deleted'] = status.deleted
-    statusData['invited'] = createInvitedJsonResponse(status)
-    statusData['attending'] = createAttendingJsonResponse(status)
+
+    attending, invited, userDetails = createAttendingAndInvitedAndUserDetailsJsonResponse(status)
+    statusData['invited'] = invited
+    statusData['attending'] = attending
+    statusData['users'] = userDetails
 
     if status.imageUrl:
         statusData['imageurl'] = status.imageUrl
@@ -178,21 +181,29 @@ def createLocationSuggestionJson(locSugg):
     return sugg
 
 
-def createAttendingJsonResponse(status):
-    attending = list(status.attending.values_list('id', flat=True))
+def createAttendingAndInvitedAndUserDetailsJsonResponse(status):
+    attending = status.attending.all()
+    invited = status.invited.all()
+
+    userDetails = list()
+    for user in attending:
+        userInfo = getUserProfileDetailsJson(user)
+        userDetails.append(userInfo)
+
+    for user in invited:
+        if user not in attending:
+            userInfo = getUserProfileDetailsJson(user)
+            userDetails.append(userInfo)
+
+    attending = list(attending.values_list('id', flat=True))
+    invited = list(invited.values_list('id', flat=True))
     fbAttending = list(status.fbAttending.values_list('facebookUID', flat=True))
+    fbInvited = list(status.fbInvited.values_list('facebookUID', flat=True))
 
     for fbId in fbAttending:
         attending.append("fb" + fbId)
 
-    return attending
-
-
-def createInvitedJsonResponse(status):
-    invited = list(status.invited.values_list('id', flat=True))
-    fbInvited = list(status.fbInvited.values_list('facebookUID', flat=True))
-
     for fbId in fbInvited:
         invited.append("fb" + fbId)
 
-    return invited
+    return attending, invited, userDetails

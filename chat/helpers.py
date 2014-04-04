@@ -1,6 +1,7 @@
 from datetime import timedelta
 import pdb
 from api.helpers import DATETIME_FORMAT
+from userprofile.helpers import getUserProfileDetailsJson
 
 CHAT_MESSAGE_PER_PAGE = 20
 
@@ -40,11 +41,7 @@ def createChatMembersJson(chat):
     membersData = []
     members = chat.members.all()
     for member in members:
-        memberData = dict()
-        memberData['userid'] = member.id
-        memberData['facebookid'] = member.facebookUID
-        memberData['firstname'] = member.user.first_name
-        memberData['lastname'] = member.user.last_name
+        memberData = getUserProfileDetailsJson(member)
         membersData.append(memberData)
 
     return membersData

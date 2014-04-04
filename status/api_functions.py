@@ -7,7 +7,7 @@ from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
 from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification
-from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingJsonResponse, createInvitedJsonResponse
+from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingAndInvitedAndUserDetailsJsonResponse
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
 
@@ -400,8 +400,10 @@ def getStatusDetails(request):
 
     response['success'] = True
     response['messages'] = messagesJson
-    response['attending'] = createAttendingJsonResponse(status)
-    response['invited'] = createInvitedJsonResponse(status)
+    attending, invited, userDetails = createAttendingAndInvitedAndUserDetailsJsonResponse(status)
+    response['attending'] = attending
+    response['invited'] = invited
+    response['users'] = userDetails
     response['locationsuggestions'] = locationSuggestions
     response['timesuggestions'] = timeSuggestions
 

@@ -811,6 +811,7 @@ class getStatusesTest(TestCase):
 
         self.assertIn('invited', status)
         self.assertIn('attending', status)
+        self.assertIn('users', status)
 
     def testCustomVisibility(self):
         print "Get Status Custom Visibility"
