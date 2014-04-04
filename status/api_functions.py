@@ -7,7 +7,7 @@ from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
 from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification
-from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject
+from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingJsonResponse, createInvitedJsonResponse
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
 
@@ -398,21 +398,10 @@ def getStatusDetails(request):
     for timeSugg in status.timeSuggestions.all():
         timeSuggestions.append(createTimeSuggestionJson(timeSugg))
 
-    attending = list(status.attending.values_list('id', flat=True))
-    invited = list(status.invited.values_list('id', flat=True))
-    fbAttending = list(status.fbAttending.values_list('facebookUID', flat=True))
-    fbInvited = list(status.fbInvited.values_list('facebookUID', flat=True))
-
-    for fbId in fbAttending:
-        attending.append("fb" + fbId)
-
-    for fbId in fbInvited:
-        invited.append("fb" + fbId)
-
     response['success'] = True
     response['messages'] = messagesJson
-    response['attending'] = attending
-    response['invited'] = invited
+    response['attending'] = createAttendingJsonResponse(status)
+    response['invited'] = createInvitedJsonResponse(status)
     response['locationsuggestions'] = locationSuggestions
     response['timesuggestions'] = timeSuggestions
 

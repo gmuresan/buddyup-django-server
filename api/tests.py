@@ -809,6 +809,9 @@ class getStatusesTest(TestCase):
         self.assertEqual(self.user1.user.last_name, userInfo['lastname'])
         self.assertEqual(self.user1.facebookUID, userInfo['facebookid'])
 
+        self.assertIn('invited', status)
+        self.assertIn('attending', status)
+
     def testCustomVisibility(self):
         print "Get Status Custom Visibility"
         client = Client()

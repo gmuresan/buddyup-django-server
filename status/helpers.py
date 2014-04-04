@@ -119,6 +119,8 @@ def createStatusJsonObject(status):
     statusData['datestarts'] = status.starts.strftime(DATETIME_FORMAT)
     statusData['type'] = status.statusType
     statusData['deleted'] = status.deleted
+    statusData['invited'] = createInvitedJsonResponse(status)
+    statusData['attending'] = createAttendingJsonResponse(status)
 
     if status.imageUrl:
         statusData['imageurl'] = status.imageUrl
@@ -174,3 +176,23 @@ def createLocationSuggestionJson(locSugg):
     sugg['location'] = createLocationJson(locSugg.location)
 
     return sugg
+
+
+def createAttendingJsonResponse(status):
+    attending = list(status.attending.values_list('id', flat=True))
+    fbAttending = list(status.fbAttending.values_list('facebookUID', flat=True))
+
+    for fbId in fbAttending:
+        attending.append("fb" + fbId)
+
+    return attending
+
+
+def createInvitedJsonResponse(status):
+    invited = list(status.invited.values_list('id', flat=True))
+    fbInvited = list(status.fbInvited.values_list('facebookUID', flat=True))
+
+    for fbId in fbInvited:
+        invited.append("fb" + fbId)
+
+    return invited
