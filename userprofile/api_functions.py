@@ -145,11 +145,7 @@ def createGroup(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
-    group = Group.objects.filter(name=groupName, user=userProfile)
-    if group.count() != 0:
-        return errorResponse("You already have a group with that name")
-
-    group = Group.objects.create(name=groupName, user=userProfile)
+    group, created = Group.objects.get_or_create(name=groupName, user=userProfile)
 
     response['success'] = True
     response['groupid'] = group.id

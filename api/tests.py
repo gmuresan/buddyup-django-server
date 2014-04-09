@@ -1157,18 +1157,21 @@ class GroupTests(TestCase):
         client = Client()
         groupName = "group1"
 
-        client.post(reverse('createGroupAPI'), {
-            'userid': self.user.id,
-            'groupname': groupName
-        })
-
         response = client.post(reverse('createGroupAPI'), {
             'userid': self.user.id,
             'groupname': groupName
         })
         response = json.loads(response.content)
-        self.assertEqual(response['success'], False)
-        self.assertIn('error', response)
+        groupId = response['groupid']
+
+        response = client.post(reverse('createGroupAPI'), {
+            'userid': self.user.id,
+            'groupname': groupName
+        })
+
+        response = json.loads(response.content)
+        self.assertEqual(response['success'], True)
+        self.assertEqual(response['groupid'], groupId)
 
     def testDeleteGroup(self):
         print "DeleteGroup"
