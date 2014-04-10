@@ -33,7 +33,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABAJ50kZAfDmy0xUqLpzg560cSLCuZBCCPTJm9ee6xZA7MoiGF3plEPZAYcfslAZAt4n4NEYHGpRYbQZBQaqsNHwmZBXoJK4kTuNm7mMHZBYwcBKY6KQZALS6kz70FlOyaHqn7r6txDbjK9S6iNKuZCaPqR4cwJQRYDzwawwdrvxuGtU0xa16sotFxxCPlUzLezo8wZDZD'
+        self.authKey = 'CAACBZAKw2g0ABABjiiQ2I815dZA3P92cDaISXIeF5cFVv9zGjswJFkhRQwwXdrFZAscp3sEhycFtVAkd9z57ZCFOAq0vCfD1Nt2piWZBmVSllfiHTMsZBCpOA2WW7VQvdokisZBo4Bah0KAcfL2HzAnZCrDt1CVKR4QbtdKUmDytGN2MuKZCLk0KyWoz15zCJxf9TpsXZAWEjF1gZDZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -148,6 +148,7 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(response['mystatuses'][0]['statusid'], myStatus.id)
         self.assertEqual(response['friends'][0]['userid'], friendProfile.id)
         self.assertIn('chats', response)
+        self.assertEqual(response['favoritesnotifications'], True)
 
     def testGetSettingsOnLogin(self):
         print "FacebookLoginWithSettings"

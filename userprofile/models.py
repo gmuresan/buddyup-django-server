@@ -14,6 +14,7 @@ class UserProfile(models.Model):
     friends = models.ManyToManyField("self", related_name='myFriends', null=True, blank=True)
     blockedFriends = models.ManyToManyField("self", related_name="blocked", null=True, blank=True)
     device = models.CharField(max_length=10, default='ios')
+    favoritesNotifications = models.BooleanField(default=True)
 
     def getUnblockedFriends(self):
         blocked = self.blockedFriends.values_list('pk', flat=True)

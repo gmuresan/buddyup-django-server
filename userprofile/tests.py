@@ -11,6 +11,24 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 from userprofile.models import UserProfile
 
+class FavoritesNotificationsTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(first_name="first", last_name="last", email="email", username='asfasf')
+        self.userProfile = UserProfile.objects.create(facebookUID='1234', user=user)
+
+    def setFavNotifications(self):
+        print "Set Fav Notifs"
+        client = Client()
+
+        response = client.get(reverse('setFavNotificationsAPI'), {
+            'userid': self.user.id,
+            'value': False
+        })
+        response = json.loads(response.content)
+
+        self.assertTrue(response['success'])
+        self.assertFalse(self.user.favoritesNotifications)
+
 
 class UserDetailsTests(TestCase):
     def setUp(self):

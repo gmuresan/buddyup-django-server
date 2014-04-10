@@ -33,4 +33,6 @@ urlpatterns = patterns('',
 
                        url(r'^registernotifications', registerForPushNotifications, {}, 'registerPushNotificationsAPI'),
 
+                        url(r'^setfavnotif/$', setFavoritesNotifications, {}, 'setFavNotificationsAPI'),
+
                        )

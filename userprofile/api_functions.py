@@ -86,6 +86,7 @@ def facebookLogin(request):
     response['newsince'] = newSince
     response['settings'] = settings
     response['notifications'] = notifications
+    response['favoritesnotifications'] = userProfile.favoritesNotifications
 
     return HttpResponse(json.dumps(response))
 
@@ -683,3 +684,21 @@ def registerForPushNotifications(request):
 
     return HttpResponse(json.dumps(response))
 
+@csrf_exempt
+def setFavoritesNotifications(request):
+
+    userId = request['userid']
+    value = request['value']
+
+    try:
+        userProfile = UserProfile.objects.get(pk=userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("User does not exist")
+
+    userProfile.favoritesNotifications = value
+    userProfile.save()
+
+    response = dict()
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
