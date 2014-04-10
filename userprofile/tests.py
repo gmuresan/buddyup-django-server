@@ -14,9 +14,9 @@ from userprofile.models import UserProfile
 class FavoritesNotificationsTests(TestCase):
     def setUp(self):
         user = User.objects.create(first_name="first", last_name="last", email="email", username='asfasf')
-        self.userProfile = UserProfile.objects.create(facebookUID='1234', user=user)
+        self.user = UserProfile.objects.create(facebookUID='1234', user=user)
 
-    def setFavNotifications(self):
+    def testSetFavNotifications(self):
         print "Set Fav Notifs"
         client = Client()
 
@@ -27,7 +27,9 @@ class FavoritesNotificationsTests(TestCase):
         response = json.loads(response.content)
 
         self.assertTrue(response['success'])
-        self.assertFalse(self.user.favoritesNotifications)
+
+        user = UserProfile.objects.get(pk=self.user.id)
+        self.assertFalse(user.favoritesNotifications)
 
 
 class UserDetailsTests(TestCase):

@@ -687,15 +687,19 @@ def registerForPushNotifications(request):
 @csrf_exempt
 def setFavoritesNotifications(request):
 
-    userId = request['userid']
-    value = request['value']
+    userId = request.REQUEST['userid']
+    value = request.REQUEST['value']
+    print value
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.objects.get(pk=userId)
     except UserProfile.DoesNotExist:
         return errorResponse("User does not exist")
 
-    userProfile.favoritesNotifications = value
+    if not value or value == 'False' or value == 'false':
+        userProfile.favoritesNotifications = False
+    else:
+        userProfile.favoritesNotifications = True
     userProfile.save()
 
     response = dict()
