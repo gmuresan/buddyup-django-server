@@ -207,3 +207,21 @@ def createAttendingAndInvitedAndUserDetailsJsonResponse(status):
         invited.append("fb" + fbId)
 
     return attending, invited, userDetails
+
+
+def isStatusVisibleToUser(status, user):
+
+    if status.visibility == Status.VIS_PUBLIC:
+        return True
+    elif status.visibility == Status.VIS_CUSTOM and user in status.friendsVisible.all():
+        return True
+    elif status.visibility == Status.VIS_FRIENDS or status.visibility == Status.VIS_FRIENDS_OF_FRIENDS:
+        friends = status.user.friends.all()
+        if user in friends:
+            return True
+
+        friendsOfFriends = UserProfile.objects.filter(friends__in=friends)
+        if status.visibility == Status.VIS_FRIENDS_OF_FRIENDS and user in friendsOfFriends:
+            return True
+
+    return False

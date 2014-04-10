@@ -4,10 +4,48 @@ import datetime
 from django.contrib.auth.models import User
 from chat.models import Message
 from notifications.models import GCMDevice, APNSDevice
+from status.helpers import isStatusVisibleToUser
 from status.models import StatusMessage, Status
-from userprofile.models import UserProfile
+from userprofile.models import UserProfile, Group
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
+
+
+def sendFavoritesStatusPushNotification(statusId, attendingUserId):
+    thread.start_new_thread(sendFavoritesStatusPushNotificationSynchronous, (statusId))
+
+
+def sendFavoritesStatusPushNotificationSynchronous(statusId):
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
+        return None
+
+    user = status.user
+
+    favoriteGroupsWithThisUser = Group.objects.filter(name=Group.FAVORITES_GROUP_NAME, members=user)
+
+    usersWithFavGroups = list()
+    for group in favoriteGroupsWithThisUser:
+        if group.user.favoritesNotifications and group.user not in usersWithFavGroups:
+            usersWithFavGroups.append(group.user)
+
+    usersToNotify = list()
+    for user in usersWithFavGroups:
+        if isStatusVisibleToUser(status, user):
+            usersToNotify.append(user)
+
+    messageContents = user.user.first_name + " " + user.user.last_name + " posted an activity: " + status.text
+    extra = {'id': status.id, 'statusid': status.id, 'type': 'statuspost', 'userid': user.id,
+             'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
+
+    androidDevices = GCMDevice.objects.filter(user__in=usersToNotify)
+    iosDevices = APNSDevice.objects.filter(user__in=usersToNotify)
+
+    androidResponse = androidDevices.send_message(messageContents, extra=extra)
+    iosResponse = iosDevices.send_message(messageContents, extra=extra)
+
+    return usersToNotify
 
 
 def sendAttendingStatusPushNotification(statusId, attendingUserId):
@@ -138,7 +176,6 @@ def sendChatNotifications(messageId):
 
 
 def sendChatNotificationsSynchronous(messageId):
-
     try:
         message = Message.objects.get(pk=messageId)
         conversation = message.conversation

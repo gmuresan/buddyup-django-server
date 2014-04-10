@@ -13,6 +13,7 @@ from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
 from buddyup import settings
 from chat.models import Conversation, Message
 from notifications.models import GCMDevice, APNSDevice, Notification
+from notifications.push_notifications import sendFavoritesStatusPushNotificationSynchronous
 from status.helpers import createLocationJson
 from status.models import Status, Poke, Location, StatusMessage, TimeSuggestion, LocationSuggestion
 from userprofile.models import UserProfile, Group, Setting, FacebookUser
@@ -1900,6 +1901,12 @@ class PushNotificationTests(LiveServerTestCase):
         self.user.friends.add(self.friend3)
         self.friend3.friends.add(self.user)
 
+        nonFriend = User.objects.create(username='friend4', password='0', email='friend4', first_name="friend 4")
+        self.nonFriend = UserProfile.objects.create(user=nonFriend)
+
+        self.friend3.friends.add(self.nonFriend)
+        self.nonFriend.friends.add(self.friend3)
+
         self.convo = Conversation.objects.create()
         self.convo.members.add(self.user, self.friend, self.friend2, self.friend3)
 
@@ -1917,6 +1924,54 @@ class PushNotificationTests(LiveServerTestCase):
                                                            registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
 
         self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend2)
+
+    def testWithFavoritesNotification(self):
+        print "Post Status With Favorites Notification"
+        client = Client()
+
+        group1 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend)
+        group2 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend2)
+        group3 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend3)
+        group4 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.nonFriend)
+
+        group1.members.add(self.user)
+        group2.members.add(self.user)
+        group3.members.add(self.user)
+        group4.members.add(self.user)
+
+        expires = datetime.now() + timedelta(hours=1)
+        text = "text"
+
+        lat = 42.341560
+        lng = -83.501783
+        address = '46894 spinning wheel'
+        city = 'canton'
+        state = 'MI'
+        venue = "My house"
+        expirationDate = datetime.utcnow() + timedelta(hours=1)
+
+        location = Location.objects.create(lng=lng, lat=lat, point=Point(lng, lat), city=city, state=state, venue=venue,
+                                           address=address)
+
+        status = Status.objects.create(user=self.user, expires=expirationDate, text='Hang out1', location=location)
+
+        usersSent = sendFavoritesStatusPushNotificationSynchronous(status.id)
+        self.assertEqual(len(usersSent), 3)
+        self.assertNotIn(self.nonFriend, usersSent)
+
+        status.visibility = Status.VIS_FRIENDS_OF_FRIENDS
+        status.save()
+
+        usersSent = sendFavoritesStatusPushNotificationSynchronous(status.id)
+        self.assertEqual(len(usersSent), 4)
+
+        status.visibility = Status.VIS_CUSTOM
+        status.friendsVisible.add(self.friend)
+        status.save()
+
+        usersSent = sendFavoritesStatusPushNotificationSynchronous(status.id)
+        self.assertEqual(len(usersSent), 1)
+        self.assertIn(self.friend, usersSent)
 
     def testSimpleChatNotification(self):
         pass

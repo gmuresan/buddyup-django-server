@@ -33,6 +33,8 @@ class FacebookUser(models.Model):
 
 
 class Group(models.Model):
+    FAVORITES_GROUP_NAME = "Favorites"
+
     def __unicode__(self):
         return self.name + " - " + self.user.user.username
 
