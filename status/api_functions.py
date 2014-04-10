@@ -6,7 +6,7 @@ from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
-from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification
+from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingAndInvitedAndUserDetailsJsonResponse
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
@@ -245,6 +245,8 @@ def postStatus(request):
         if accessToken is not None:
             fbProfile = FacebookProfile(userprofile, accessToken)
             fbProfile.shareStatus(status, request)
+
+    sendFavoritesStatusPushNotification(status.id)
 
     response['success'] = True
     response['statusid'] = status.id

@@ -11,8 +11,8 @@ from userprofile.models import UserProfile, Group
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
 
-def sendFavoritesStatusPushNotification(statusId, attendingUserId):
-    thread.start_new_thread(sendFavoritesStatusPushNotificationSynchronous, (statusId))
+def sendFavoritesStatusPushNotification(statusId):
+    thread.start_new_thread(sendFavoritesStatusPushNotificationSynchronous, (statusId, ))
 
 
 def sendFavoritesStatusPushNotificationSynchronous(statusId):
