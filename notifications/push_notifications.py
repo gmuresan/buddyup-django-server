@@ -21,9 +21,7 @@ def sendFavoritesStatusPushNotificationSynchronous(statusId):
     except Status.DoesNotExist:
         return None
 
-    user = status.user
-
-    favoriteGroupsWithThisUser = Group.objects.filter(name=Group.FAVORITES_GROUP_NAME, members=user)
+    favoriteGroupsWithThisUser = Group.objects.filter(name=Group.FAVORITES_GROUP_NAME, members=status.user)
 
     usersWithFavGroups = list()
     for group in favoriteGroupsWithThisUser:
@@ -35,8 +33,8 @@ def sendFavoritesStatusPushNotificationSynchronous(statusId):
         if isStatusVisibleToUser(status, user):
             usersToNotify.append(user)
 
-    messageContents = user.user.first_name + " " + user.user.last_name + " posted an activity: " + status.text
-    extra = {'id': status.id, 'statusid': status.id, 'type': 'statuspost', 'userid': user.id,
+    messageContents = status.user.user.first_name + " " + status.user.user.last_name + " posted an activity: " + status.text
+    extra = {'id': status.id, 'statusid': status.id, 'type': 'statuspost', 'userid': status.user.id,
              'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
 
     androidDevices = GCMDevice.objects.filter(user__in=usersToNotify)
