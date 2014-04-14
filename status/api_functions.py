@@ -200,7 +200,9 @@ def postStatus(request):
     status.starts = starts
     status.statusType = statusType
     status.visibility = visibility
-    status.imageUrl = imageUrl
+
+    if imageUrl:
+        status.imageUrl = imageUrl
 
     if locationData:
         location = getLocationObjectFromJson(locationData)
