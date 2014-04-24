@@ -42,7 +42,7 @@ env.venv_home = conf.get("VIRTUALENV_HOME", "/home/%s" % env.user)
 env.venv_path = "%s/%s" % (env.venv_home, env.proj_name)
 env.proj_dirname = "project"
 env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname)
-env.manage = "%s/bin/python %s/project/buddyup/manage.py" % (env.venv_path,
+env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path,
                                                      env.venv_path)
 env.live_host = conf.get("LIVE_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.repo_url = conf.get("REPO_URL", "")
