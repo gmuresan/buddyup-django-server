@@ -378,7 +378,7 @@ def create():
                 print "\nAborting!"
                 return False
             remove()
-        run("virtualenv %s --distribute -p %s/bin/python3.3" % (env.proj_name, env.python_dir))
+        run("virtualenv %s -p %s/bin/python3.3" % (env.proj_name, env.python_dir))
         vcs = "git" if env.git else "hg"
         run("%s clone %s %s" % (vcs, env.repo_url, env.proj_path))
 
