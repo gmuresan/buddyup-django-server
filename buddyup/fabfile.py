@@ -418,8 +418,7 @@ def create():
         if env.reqs_path:
             pip("setuptools")
             pip("-r %s/%s --allow-all-external" % (env.proj_path, env.reqs_path))
-        pip("gunicorn setproctitle south psycopg2 "
-            "python-memcached")
+        pip("gunicorn setproctitle south psycopg2 ")
         manage("createdb --noinput --nodata")
         #python("from django.conf import settings;"
          #      "from django.contrib.sites.models import Site;"
