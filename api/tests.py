@@ -39,7 +39,7 @@ class FacebookRegisterTest(TestCase):
         self.lastName = 'Muresan'
 
     def testRegister(self):
-        print "Register"
+        print("Register")
         client = Client()
 
         response = client.post(reverse('facebookLoginAPI'), {
@@ -59,7 +59,7 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(userProfile.user.last_name, self.lastName)
 
     def testFacebookLoginWithFriends(self):
-        print "FacebookLoginWithFriends"
+        print("FacebookLoginWithFriends")
         client = Client()
 
         user = User.objects.create(username='user1', password='0', email='user1', first_name='first', last_name='last')
@@ -95,7 +95,7 @@ class FacebookRegisterTest(TestCase):
             self.assertEqual(val, userprofileFriendData[key])
 
     def testFacebookLoginWithAllData(self):
-        print "FacebookLoginWithAllData"
+        print("FacebookLoginWithAllData")
         client = Client()
 
         response = client.post(reverse('facebookLoginAPI'), {
@@ -152,7 +152,7 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(response['favoritesnotifications'], True)
 
     def testGetSettingsOnLogin(self):
-        print "FacebookLoginWithSettings"
+        print("FacebookLoginWithSettings")
         client = Client()
 
         response = client.post(reverse('facebookLoginAPI'), {
@@ -232,7 +232,7 @@ class StatusMessageTests(TestCase):
 
 
     def testPostStatusMessage(self):
-        print "Post Status Message"
+        print("Post Status Message")
         client = Client()
 
         status = Status.objects.create(user=self.user, text=self.text, expires=self.expires)
@@ -270,7 +270,7 @@ class StatusMessageTests(TestCase):
         self.assertEqual(len(response['messages']), 2)
 
     def testGetStatusDetails(self):
-        print "Get Status Details"
+        print("Get Status Details")
         client = Client()
 
         fbId1 = "foijf09190fj19j"
@@ -377,7 +377,7 @@ class PostStatusTests(TestCase):
                          'city': self.city, 'venue': self.venue}
 
     def testPostNoLocation(self):
-        print "PostNoLocation"
+        print("PostNoLocation")
         client = Client()
 
         response = client.post(reverse('postStatusAPI'), {
@@ -398,7 +398,7 @@ class PostStatusTests(TestCase):
         self.assertEqual(status.text, self.text)
 
     def testPostWithLocation(self):
-        print "PostWithLocation"
+        print("PostWithLocation")
         client = Client()
 
         response = client.post(reverse('postStatusAPI'), {
@@ -422,7 +422,7 @@ class PostStatusTests(TestCase):
         self.assertEqual(status.location.venue, self.location['venue'])
 
     def testPostWithGroups(self):
-        print "PostWithGroups"
+        print("PostWithGroups")
         client = Client()
 
         groupids = [self.group1.id, self.group2.id]
@@ -447,7 +447,7 @@ class PostStatusTests(TestCase):
         self.assertIn(self.group1, status.groups.all())
 
     def testPostWithStartTime(self):
-        print "PostWithStartTime"
+        print("PostWithStartTime")
         client = Client()
 
         response = client.post(reverse('postStatusAPI'), {
@@ -467,7 +467,7 @@ class PostStatusTests(TestCase):
         self.assertEqual(self.expires.strftime(DATETIME_FORMAT), status.starts.strftime(DATETIME_FORMAT))
 
     def testPostCustomVisibility(self):
-        print "Post Status Custom Visibility"
+        print("Post Status Custom Visibility")
         client = Client()
 
         friends = [self.friend1.id, self.friend2.id]
@@ -502,7 +502,7 @@ class PostStatusTests(TestCase):
         self.assertTrue(response['success'])
 
     def testInviteUsersToStatus(self):
-        print "Invite Users To Status"
+        print("Invite Users To Status")
         client = Client()
 
         friends = [self.friend1.id, self.friend2.id]
@@ -640,7 +640,7 @@ class deleteStatusTest(TestCase):
         self.status2Id = self.status2.id
 
     def testDeleteStatus(self):
-        print "DeleteStatus"
+        print("DeleteStatus")
         client = Client()
 
         response = client.post(reverse('deleteStatusAPI'), {
@@ -656,7 +656,7 @@ class deleteStatusTest(TestCase):
         self.assertTrue(status.deleted)
 
     def testDeleteOtherUserStatus(self):
-        print "DeleteOtherUserStatus"
+        print("DeleteOtherUserStatus")
         client = Client()
 
         Status.objects.get(pk=self.status1Id)
@@ -673,7 +673,7 @@ class deleteStatusTest(TestCase):
         Status.objects.get(pk=self.status1Id)
 
     def testGoOffline(self):
-        print "GoOffline"
+        print("GoOffline")
         client = Client()
 
         response = client.post(reverse('goOfflineAPI'), {
@@ -692,7 +692,7 @@ class deleteStatusTest(TestCase):
         self.assertTrue(status2.expires < now)
 
     def testCancelStatus(self):
-        print "CancelStatus"
+        print("CancelStatus")
         client = Client()
 
         response = client.post(reverse('cancelStatusAPI'), {
@@ -710,7 +710,7 @@ class deleteStatusTest(TestCase):
         self.assertFalse(status2.expires < now)
 
     def testCancelOtherUserStatus(self):
-        print "CancelOtherUserStatus"
+        print("CancelOtherUserStatus")
         client = Client()
 
         Status.objects.get(pk=self.status1Id)
@@ -774,7 +774,7 @@ class getStatusesTest(TestCase):
                                                 city=self.city, state=self.state, venue=self.venue)
 
     def testSingleStatus(self):
-        print "SingleStatus"
+        print("SingleStatus")
         client = Client()
 
         status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
@@ -816,7 +816,7 @@ class getStatusesTest(TestCase):
         self.assertIn('users', status)
 
     def testCustomVisibility(self):
-        print "Get Status Custom Visibility"
+        print("Get Status Custom Visibility")
         client = Client()
 
         status = Status.objects.create(user=self.user1, expires=self.expirationDate, text='text', starts=self.startDate,
@@ -842,7 +842,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(len(statuses), 0)
 
     def testFriendsVisibility(self):
-        print "Get Status Friends Visibility"
+        print("Get Status Friends Visibility")
         client = Client()
 
         status = Status.objects.create(user=self.user2, expires=self.expirationDate, text='text', starts=self.startDate,
@@ -867,7 +867,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(len(statuses), 0)
 
     def testFriendsOfFriendsVisibility(self):
-        print "Get Status Friends of Friends Visibility"
+        print("Get Status Friends of Friends Visibility")
         client = Client()
 
         status = Status.objects.create(user=self.user2, expires=self.expirationDate, text='text', starts=self.startDate,
@@ -892,7 +892,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(len(statuses), 1)
 
     def testPublicVisibility(self):
-        print "Get Status Public Visibility"
+        print("Get Status Public Visibility")
         client = Client()
 
         status = Status.objects.create(user=self.user4, expires=self.expirationDate, text='text', starts=self.startDate,
@@ -936,7 +936,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(len(statuses), 0)
 
     def testInvitedStatus(self):
-        print "Test Invited Status"
+        print("Test Invited Status")
         client = Client()
 
         farAwayLocation = self.location
@@ -961,7 +961,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(len(statuses), 1)
 
     def testGetStatusDetails(self):
-        print "Get Status Details"
+        print("Get Status Details")
         client = Client()
 
         status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
@@ -976,7 +976,7 @@ class getStatusesTest(TestCase):
         self.assertTrue(response['success'])
 
     def testDeletedStatuses(self):
-        print "Test Deleted Statuses"
+        print("Test Deleted Statuses")
         client = Client()
 
         friends = Status.objects.create(user=self.user2, expires=self.expirationDate, text='friends',
@@ -1041,7 +1041,7 @@ class GetMyStatusesTest(TestCase):
                                              location=self.location)
 
     def testGetMyStatuses(self):
-        print "GetMyStatuses"
+        print("GetMyStatuses")
         client = Client()
 
         response = client.post(reverse('getMyStatusesAPI'), {
@@ -1080,7 +1080,7 @@ class PokeTest(TestCase):
         self.user2.friends.add(self.user1)
 
     def testPoke(self):
-        print "Poke"
+        print("Poke")
         client = Client()
 
         response = client.post(reverse('pokeAPI'), {
@@ -1103,7 +1103,7 @@ class PokeTest(TestCase):
         self.assertIsNotNone(response['error'])
 
     def testPokeInLogin(self):
-        print "PokeInLogin"
+        print("PokeInLogin")
         client = Client()
 
         response = client.post(reverse('pokeAPI'), {
@@ -1136,7 +1136,7 @@ class GroupTests(TestCase):
         self.friend2.friends.add(self.user)
 
     def testCreateGroup(self):
-        print "CreateGroup"
+        print("CreateGroup")
 
         client = Client()
         groupName = "group1"
@@ -1154,7 +1154,7 @@ class GroupTests(TestCase):
         self.assertEqual(group.id, groupid)
 
     def testCreateGroupDuplicateName(self):
-        print "CreateGroupDuplicateName"
+        print("CreateGroupDuplicateName")
 
         client = Client()
         groupName = "group1"
@@ -1176,7 +1176,7 @@ class GroupTests(TestCase):
         self.assertEqual(response['groupid'], groupId)
 
     def testDeleteGroup(self):
-        print "DeleteGroup"
+        print("DeleteGroup")
 
         client = Client()
         groupName = "group1"
@@ -1202,7 +1202,7 @@ class GroupTests(TestCase):
             Group.objects.get(pk=groupid)
 
     def testDeleteOtherUserGroup(self):
-        print "DeleteOtherUserGroup"
+        print("DeleteOtherUserGroup")
 
         client = Client()
         groupName = "group1"
@@ -1225,7 +1225,7 @@ class GroupTests(TestCase):
         self.assertIn('error', response)
 
     def testEditGroupName(self):
-        print "EditGroupName"
+        print("EditGroupName")
 
         client = Client()
         groupName = "group1"
@@ -1252,7 +1252,7 @@ class GroupTests(TestCase):
         self.assertEqual(group.name, newGroupName)
 
     def testEditOtherUserGroupName(self):
-        print "EditOtherUserGroupName"
+        print("EditOtherUserGroupName")
 
         client = Client()
         groupName = "group1"
@@ -1280,7 +1280,7 @@ class GroupTests(TestCase):
         self.assertEqual(group.name, groupName)
 
     def testAddGroupMembers(self):
-        print "AddGroupMembers"
+        print("AddGroupMembers")
 
         client = Client()
         groupName = "group1"
@@ -1315,7 +1315,7 @@ class GroupTests(TestCase):
         self.assertIn(self.friend2, members)
 
     def testRemoveGroupMembers(self):
-        print "RemoveGroupMembers"
+        print("RemoveGroupMembers")
 
         client = Client()
         groupName = "group1"
@@ -1385,7 +1385,7 @@ class GroupTests(TestCase):
         self.assertTrue(response['success'])
 
     def testGetGroups(self):
-        print "GetGroups"
+        print("GetGroups")
         client = Client()
 
         groupName1 = "group1"
@@ -1431,7 +1431,7 @@ class GroupTests(TestCase):
         self.assertIn(self.friend2.id, group3Data['userids'])
 
     def testSetGroups(self):
-        print "SetGroups"
+        print("SetGroups")
         client = Client()
 
         groupName1 = "group1"
@@ -1492,7 +1492,7 @@ class GroupTests(TestCase):
         self.assertTrue(self.friend not in group3.members.all())
 
     def testSetGroupsForFBUser(self):
-        print "Set Groups FB User"
+        print("Set Groups FB User")
         client = Client()
 
         groupName1 = "group1"
@@ -1557,7 +1557,7 @@ class GroupTests(TestCase):
 
 
     def testSetGroupMembers(self):
-        print "SetGroupMembers"
+        print("SetGroupMembers")
         client = Client()
 
         groupName1 = "group1"
@@ -1627,7 +1627,7 @@ class FriendsListTests(TestCase):
         self.friend2.friends.add(self.user)
 
     def testGetFriends(self):
-        print "GetFriends"
+        print("GetFriends")
 
         client = Client()
 
@@ -1651,7 +1651,7 @@ class FriendsListTests(TestCase):
         self.assertIn(friend2, friends)
 
     def testBlockFriends(self):
-        print "BlockFriends"
+        print("BlockFriends")
 
         client = Client()
 
@@ -1672,7 +1672,7 @@ class FriendsListTests(TestCase):
         self.assertIn(self.friend2, self.user.blockedFriends.all())
 
     def testUnblockFriends(self):
-        print "UnblockFriends"
+        print("UnblockFriends")
 
         self.user.blockedFriends.add(self.friend)
         self.user.blockedFriends.add(self.friend2)
@@ -1702,7 +1702,7 @@ class FeedbackTests(TestCase):
         self.user = UserProfile.objects.create(user=user)
 
     def testSubmitFeedback(self):
-        print "SubmitFeedback"
+        print("SubmitFeedback")
 
         client = Client()
         text = "I think this app is very useful and well made"
@@ -1745,7 +1745,7 @@ class GetNewDataTests(TestCase):
         self.message = Message.objects.create(user=self.user, conversation=self.convo, text="text")
 
     def testGetNewData(self):
-        print "GetNewData"
+        print("GetNewData")
 
         client = Client()
 
@@ -1769,7 +1769,7 @@ class GetNewDataTests(TestCase):
         self.assertEqual(len(response['chats']), 0)
 
     def testGetPokes(self):
-        print "GetPokes"
+        print("GetPokes")
 
         client = Client()
 
@@ -1819,7 +1819,7 @@ class SettingsTests(TestCase):
         self.setting1 = Setting.objects.create(user=self.user, value="value1", key=self.key1)
 
     def testSetSetting(self):
-        print "SetSetting"
+        print("SetSetting")
 
         client = Client()
 
@@ -1848,7 +1848,7 @@ class SettingsTests(TestCase):
 
 
     def testGetSetting(self):
-        print "GetSetting"
+        print("GetSetting")
 
         client = Client()
 
@@ -1863,7 +1863,7 @@ class SettingsTests(TestCase):
         self.assertEqual(self.setting1.value, response['value'])
 
     def testGetBlankSetting(self):
-        print "GetBlankSetting"
+        print("GetBlankSetting")
 
         client = Client()
 
@@ -1926,7 +1926,7 @@ class PushNotificationTests(LiveServerTestCase):
         self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend2)
 
     def testWithFavoritesNotification(self):
-        print "Post Status With Favorites Notification"
+        print("Post Status With Favorites Notification")
         client = Client()
 
         group1 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend)
@@ -1975,7 +1975,7 @@ class PushNotificationTests(LiveServerTestCase):
 
     def testSimpleChatNotification(self):
         pass
-        #print "Chat Push Notification"
+        #print("Chat Push Notification")
 
         #androidResponse, iosResponse = sendChatNotificationsSynchronous(self.message)
         #print androidResponse
@@ -1983,14 +1983,14 @@ class PushNotificationTests(LiveServerTestCase):
 
     def testPokeNotification(self):
         pass
-        #print "Poke Push Notification"
+        #print("Poke Push Notification"
 
         #androidResponse, iosResponse = sendPokeNotificationSynchronous(self.pokeObj)
         #print androidResponse
         # print iosResponse
 
     def testRegisterToken(self):
-        print "Resgister Push Notification Token"
+        print("Resgister Push Notification Token")
         client = Client()
 
         iosToken = 'asfafqwf1f13f1f'
@@ -2020,7 +2020,7 @@ class PushNotificationTests(LiveServerTestCase):
         iosDevice = APNSDevice.objects.get(user=self.friend, registration_id=iosToken)
 
     def testDeviceFiltering(self):
-        print "test device filtering"
+        print("test device filtering")
 
         allUsers = UserProfile.objects.all()
         apnsDevices = APNSDevice.objects.filter(user__in=allUsers)
@@ -2028,7 +2028,7 @@ class PushNotificationTests(LiveServerTestCase):
         self.assertGreaterEqual(len(apnsDevices), 2)
 
     def testDeviceFilteringConversation(self):
-        print "Push Notif Device Convo Filter"
+        print("Push Notif Device Convo Filter")
         client = Client()
 
         chat = Conversation.objects.create()
@@ -2090,7 +2090,7 @@ class AppNotificationTests(TestCase):
         self.status.attending.add(self.friend)
 
     def testFriendJoinedNotification(self):
-        print "Friend Joined Notification"
+        print("Friend Joined Notification")
 
         UserProfile.objects.all().delete()
         User.objects.all().delete()
@@ -2177,7 +2177,7 @@ class AppNotificationTests(TestCase):
         self.assertIn(notif['friendid'], [friend1.id, friend2.id])
 
     def testStatusMessageNotification(self):
-        print "Status Message Notification"
+        print("Status Message Notification")
         client = Client()
 
         response = client.post(reverse('postStatusMessageAPI'), {
@@ -2200,7 +2200,7 @@ class AppNotificationTests(TestCase):
         self.assertEqual(notif['statusid'], self.status.id)
 
     def testStatusChangedNotification(self):
-        print "Status Change Notification"
+        print("Status Change Notification")
         client = Client()
 
         response = client.post(reverse('postStatusAPI'), {
@@ -2226,7 +2226,7 @@ class AppNotificationTests(TestCase):
         self.assertEqual(notif['statusid'], self.status.id)
 
     def testStatusAttendingNotification(self):
-        print "Status Attending Notification"
+        print("Status Attending Notification")
         client = Client()
 
         response = client.post(reverse('rsvpStatusAPI'), {
@@ -2250,7 +2250,7 @@ class AppNotificationTests(TestCase):
         self.assertEqual(notif['statusid'], self.status.id)
 
     def testNoDuplicateAttendingNotification(self):
-        print "No Duplicate Attending Notification"
+        print("No Duplicate Attending Notification")
         client = Client()
 
         response = client.post(reverse('rsvpStatusAPI'), {
@@ -2297,7 +2297,7 @@ class AppNotificationTests(TestCase):
         self.assertEqual(notif['statusid'], self.status.id)
 
     def testInvitedToStatusNotification(self):
-        print "Invited To Status Notification"
+        print("Invited To Status Notification")
         client = Client()
 
         response = client.post(reverse('inviteToStatusAPI'), {
@@ -2321,7 +2321,7 @@ class AppNotificationTests(TestCase):
         self.assertEqual(notif['statusid'], self.status.id)
 
     def testDeletedStatusNoNotification(self):
-        print "Delete Status No Notification"
+        print("Delete Status No Notification")
         client = Client()
 
         response = client.post(reverse('inviteToStatusAPI'), {
