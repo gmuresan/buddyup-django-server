@@ -456,7 +456,8 @@ def create():
     # Create virtualenv
     sudo("mkdir -p %s" % env.venv_home, True)
     sudo("chown %s %s" % (env.user, env.venv_home), True)
-    sudo("chown -R %s %s" % (env.user, env.python_dir), True)
+    sudo("chown -R %s %s" % (env.user, env.python_dir), True
+    )
     #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
