@@ -208,7 +208,7 @@ FABRIC = {
      "REQUIREMENTS_PATH": "requirements.txt", # Path to pip requirements, relative to project
      "GUNICORN_PORT": 8000, # Port gunicorn will listen on
      "LOCALE": "en_US.UTF-8", # Should end with ".UTF-8"
-     "LIVE_HOSTNAME": "www.buddyup.mobi", # Host for public site.
+     "LIVE_HOSTNAME": "ec2-54-85-155-132.compute-1.amazonaws.com", # Host for public site.
      "REPO_URL": "https://gmuresan:20040591@bitbucket.org/gmuresan/buddyup-server.git", # Git or Mercurial remote repo URL for the project
      "DB_PASS": "buddyup", # Live database password
      "ADMIN_PASS": "admin", # Live admin user password
