@@ -260,6 +260,7 @@ def upload_template_and_reload(name):
     clean = lambda s: s.replace("\n", "").replace("\r", "").strip()
     if clean(remote_data) == clean(local_data):
         return
+
     upload_template(local_path, remote_path, env, use_sudo=True, backup=False)
     if owner:
         sudo("chown %s %s" % (owner, remote_path))
@@ -462,8 +463,7 @@ def create():
     #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
-            prompt = input("\nVirtualenv exists: %s\nWould you like "
-                               "to replace it? (yes/no) " % env.proj_name)
+            prompt = raw_input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
             if prompt.lower() != "yes":
                 print("\nAborting!")
                 return False
@@ -595,7 +595,7 @@ def deploy():
     processes for the project.
     """
     if not exists(env.venv_path):
-        prompt = input("\nVirtualenv doesn't exist: %s\nWould you like "
+        prompt = raw_input("\nVirtualenv doesn't exist: %s\nWould you like "
                            "to create it? (yes/no) " % env.proj_name)
         if prompt.lower() != "yes":
             print("\nAborting!")

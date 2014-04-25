@@ -31,4 +31,4 @@ CACHES = {
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
-SECRET_KEY = '0h4=__y0%ee@119bvqi-r1&zb72=4!@g3q*3esj&$$y9n#bb=b'
+SECRET_KEY = '0h4=__y0ee@119bvqi-r1&zb72=4!@g3q*3esj&$$y9n#bb=b'
