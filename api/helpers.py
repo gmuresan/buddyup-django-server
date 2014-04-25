@@ -1,7 +1,11 @@
 from datetime import datetime, timedelta
 import pdb
+try:
+    import urllib.request as urllib2
+except:
+    import urllib2
+
 import urllib
-import urllib2
 from buddyup import settings
 from status.models import Poke
 
