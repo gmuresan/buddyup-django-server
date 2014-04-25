@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 import pdb
 try:
     import urllib.request as urllib2
@@ -20,10 +21,11 @@ def createGroupJsonObject(group):
     groupData['groupid'] = group.id
 
     memberIds = group.members.values_list('id', flat=True)
-    groupData['userids'] = map(int, memberIds)
+    groupData['userids'] = list(map(int, memberIds))
 
     fbMemberIds = group.fbMembers.values_list('facebookUID', flat=True)
-    groupData['userids'].extend(map(lambda fbId: "fb" + fbId, fbMemberIds))
+    for id in fbMemberIds:
+        groupData['userids'].append("fb" + id)
 
     return groupData
 
@@ -64,10 +66,15 @@ def getSettingsData(userProfile):
 
 def getFacebookAppAccessToken():
     response = urllib2.urlopen("https://graph.facebook.com/" + 'oauth/access_token' + "?" +
-                               urllib.urlencode({'client_id': settings.FACEBOOK_APP_ID,
+                               urllib.parse.urlencode({'client_id': settings.FACEBOOK_APP_ID,
                                                  'client_secret': settings.FACEBOOK_APP_SECRET,
                                                  'grant_type': 'client_credentials'}), None)
 
-    accessToken = str(response.read()).split('=')[1]
+    test = response.read().decode('UTF-8')
+    accessToken = str(test).split('=')[1]
 
     return accessToken
+
+
+def loadJson(bytes):
+    return json.loads(bytes.decode('UTF-8'))

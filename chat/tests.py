@@ -4,7 +4,7 @@ import pdb
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.test import Client, TestCase
-from api.helpers import MICROSECOND_DATETIME_FORMAT
+from api.helpers import MICROSECOND_DATETIME_FORMAT, loadJson
 from chat.helpers import CHAT_MESSAGE_PER_PAGE
 from chat.models import Conversation, Message
 from userprofile.models import UserProfile
@@ -30,7 +30,7 @@ class ChatMessageTests(TestCase):
         self.friend2.friends.add(self.user)
 
     def testSendMessage(self):
-        print "SendMessage"
+        print("SendMessage")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -38,7 +38,7 @@ class ChatMessageTests(TestCase):
             'friendid': self.friend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         response = client.post(reverse('sendMessageAPI'), {
@@ -46,7 +46,7 @@ class ChatMessageTests(TestCase):
             'chatid': chatid,
             'text': 'hello'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
 
@@ -60,7 +60,7 @@ class ChatMessageTests(TestCase):
         self.assertIn('newsince', response)
 
     def testGetSingleMessage(self):
-        print "GetSingleMessage"
+        print("GetSingleMessage")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -68,7 +68,7 @@ class ChatMessageTests(TestCase):
             'friendid': self.friend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         client.post(reverse('sendMessageAPI'), {
@@ -84,7 +84,7 @@ class ChatMessageTests(TestCase):
             'since': since.strftime(MICROSECOND_DATETIME_FORMAT)
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(len(response['chats']), 1)
         self.assertEqual(response['success'], True)
@@ -105,7 +105,7 @@ class ChatMessageTests(TestCase):
     def testGetChatPage(self):
         NUMBER_OF_MESSAGES = 30
 
-        print "Test Chat Paging"
+        print("Test Chat Paging")
         client = Client()
 
         chat = Conversation.objects.create()
@@ -122,7 +122,7 @@ class ChatMessageTests(TestCase):
             'earliestmessageid': latestMessage.id,
             'chatid': chat.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertNotIn('error', response)
         self.assertTrue(response['success'])
@@ -143,7 +143,7 @@ class ChatMessageTests(TestCase):
             'earliestmessageid': earliestId,
             'chatid': chat.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         chatData = response['chat']
@@ -189,7 +189,7 @@ class ConversationTests(TestCase):
         self.user.save()
 
     def testCreateConversation(self):
-        print "CreateConversation"
+        print("CreateConversation")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -197,7 +197,7 @@ class ConversationTests(TestCase):
             'friendid': self.friend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         self.assertEqual(response['success'], True)
@@ -212,7 +212,7 @@ class ConversationTests(TestCase):
             'userid': self.user.id,
             'friendid': self.friend.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
         self.assertEqual(response['chatid'], chatid)
@@ -221,7 +221,7 @@ class ConversationTests(TestCase):
             'userid': self.user.id,
             'friendid': self.friend2.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
         self.assertNotEqual(response['chatid'], chatid)
         chat2Id = response['chatid']
@@ -230,7 +230,7 @@ class ConversationTests(TestCase):
             'userid': self.user.id,
             'friendids': json.dumps([self.friend2.id, self.friend.id])
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
         self.assertNotEqual(response['chatid'], chatid)
         self.assertNotEqual(response['chatid'], chat2Id)
@@ -240,7 +240,7 @@ class ConversationTests(TestCase):
             'userid': self.user.id,
             'friendids': json.dumps([self.friend2.id, self.friend.id])
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
         self.assertNotEqual(response['chatid'], chatid)
         self.assertNotEqual(response['chatid'], chat2Id)
@@ -248,7 +248,7 @@ class ConversationTests(TestCase):
 
 
     def testCreateConversationWithMultipleFriends(self):
-        print "CreateConversationWithMultipleFriends"
+        print("CreateConversationWithMultipleFriends")
         client = Client()
 
         friendids = [self.friend.id, self.friend2.id]
@@ -257,7 +257,7 @@ class ConversationTests(TestCase):
             'friendid': json.dumps(friendids)
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         self.assertEqual(response['success'], True)
@@ -270,7 +270,7 @@ class ConversationTests(TestCase):
         self.assertTrue(self.friend2 in members)
 
     def testCreateConverationWithNonFriend(self):
-        print "CreateConversationWithNonFriend"
+        print("CreateConversationWithNonFriend")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -278,12 +278,12 @@ class ConversationTests(TestCase):
             'friendid': self.nonFriend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], False)
         self.assertIn('error', response)
 
     def testCreateConversationWithBlockedFriend(self):
-        print "CreateConversationWithBlockedFriend"
+        print("CreateConversationWithBlockedFriend")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -291,7 +291,7 @@ class ConversationTests(TestCase):
             'friendid': self.blockedFriend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
 
         chatid = response['chatid']
@@ -302,7 +302,7 @@ class ConversationTests(TestCase):
         self.assertNotIn(self.blockedFriend, chat.members.all())
 
     def testChatInvite(self):
-        print "ChatInvite"
+        print("ChatInvite")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -310,13 +310,13 @@ class ConversationTests(TestCase):
             'friendid': self.friend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         response = client.post(reverse('inviteToChatAPI'), {'userid': self.user.id,
                                                             'friendid': self.friend2.id,
                                                             'chatid': chatid})
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
@@ -328,7 +328,7 @@ class ConversationTests(TestCase):
         self.assertTrue(self.friend2 in members)
 
     def testMutlipleFriendChatInvite(self):
-        print "MultipleFriendChatInvite"
+        print("MultipleFriendChatInvite")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -336,14 +336,14 @@ class ConversationTests(TestCase):
             'friendid': self.friend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         friendids = [self.friend2.id, self.friend3.id]
         response = client.post(reverse('inviteToChatAPI'), {'userid': self.user.id,
                                                             'friendids': json.dumps(friendids),
                                                             'chatid': chatid})
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
@@ -356,7 +356,7 @@ class ConversationTests(TestCase):
         self.assertIn(self.friend3, members)
 
     def testChatInviteNonFriend(self):
-        print "ChatInviteNonFriend"
+        print("ChatInviteNonFriend")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -364,7 +364,7 @@ class ConversationTests(TestCase):
             'friendid': self.friend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         response = client.post(reverse('inviteToChatAPI'), {
@@ -373,12 +373,12 @@ class ConversationTests(TestCase):
             'chatid': chatid
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], False)
         self.assertIn('error', response)
 
     def testChatInviteBlockedFriend(self):
-        print "ChatInviteBlockedFriend"
+        print("ChatInviteBlockedFriend")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
@@ -386,7 +386,7 @@ class ConversationTests(TestCase):
             'friendid': self.friend.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         response = client.post(reverse('inviteToChatAPI'), {
@@ -395,19 +395,19 @@ class ConversationTests(TestCase):
             'chatid': chatid
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], False)
         self.assertIn('error', response)
 
     def testLeaveChat(self):
-        print "LeaveChat"
+        print("LeaveChat")
         client = Client()
 
         response = client.post(reverse('createChatAPI'), {
             'userid': self.user.id,
             'friendid': self.friend.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         chatid = response['chatid']
 
         convo = Conversation.objects.get(pk=chatid)
@@ -417,7 +417,7 @@ class ConversationTests(TestCase):
             'userid': self.user.id,
             'chatid': chatid
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
@@ -430,7 +430,7 @@ class ConversationTests(TestCase):
             'userid': self.friend.id,
             'chatid': chatid
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         members = convo.members.all()
         self.assertEqual(response['success'], True)
@@ -438,14 +438,14 @@ class ConversationTests(TestCase):
         self.assertTrue(self.friend in members)
 
     def testLeaveInvalidChat(self):
-        print "LeaveInvalidChat"
+        print("LeaveInvalidChat")
         client = Client()
 
         response = client.post(reverse('leaveChatAPI'), {
             'userid': self.user.id,
             'chatid': 1
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], False)
         self.assertIn('error', response)

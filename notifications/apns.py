@@ -50,7 +50,7 @@ def _apns_create_socket():
 
 def _apns_pack_message(token, data):
     format = "!cH32sH%ds" % (len(data))
-    return struct.pack(format, b"\0", 32, unhexlify(token), len(data), data)
+    return struct.pack(format, b"\0", 32, unhexlify(token), len(data), data.encode('UTF-8'))
 
 
 def _apns_send(token, alert, badge=0, sound="chime", content_available=False, action_loc_key=None, loc_key=None,
