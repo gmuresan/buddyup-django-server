@@ -348,11 +348,12 @@ def python(code, show=True):
 
 
 def static():
+    pass
     """
     Returns the live STATIC_ROOT directory.
     """
-    return python("from django.conf import settings;"
-                  "print settings.STATIC_ROOT").split("\n")[-1]
+    #return python("from django.conf import settings;"
+                 # "print settings.STATIC_ROOT").split("\n")[-1]
 
 
 @task
