@@ -31,7 +31,7 @@ if sys.argv[0].split(os.sep)[-1] == "fab":
         except (KeyError, ValueError):
             raise ImportError
     except (ImportError, AttributeError):
-        print "Aborting, no hosts defined."
+        print("Aborting, no hosts defined.")
         exit()
 
 env.db_pass = conf.get("DB_PASS", None)
@@ -183,9 +183,9 @@ def update_changed_requirements():
 ###########################################
 
 def _print(output):
-    print
-    print output
-    print
+    print()
+    print(output)
+    print()
 
 
 def print_command(command):
@@ -460,10 +460,10 @@ def create():
     #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
-            prompt = raw_input("\nVirtualenv exists: %s\nWould you like "
+            prompt = input("\nVirtualenv exists: %s\nWould you like "
                                "to replace it? (yes/no) " % env.proj_name)
             if prompt.lower() != "yes":
-                print "\nAborting!"
+                print("\nAborting!")
                 return False
             remove()
         run("virtualenv %s -p %s/bin/python3.3" % (env.proj_name, env.python_dir))
@@ -593,10 +593,10 @@ def deploy():
     processes for the project.
     """
     if not exists(env.venv_path):
-        prompt = raw_input("\nVirtualenv doesn't exist: %s\nWould you like "
+        prompt = input("\nVirtualenv doesn't exist: %s\nWould you like "
                            "to create it? (yes/no) " % env.proj_name)
         if prompt.lower() != "yes":
-            print "\nAborting!"
+            print("\nAborting!")
             return False
         create()
     for name in get_templates():

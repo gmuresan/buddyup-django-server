@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 from django.test import TestCase, Client
+from api.helpers import loadJson
 from userprofile.models import UserProfile
 
 class FavoritesNotificationsTests(TestCase):
@@ -17,14 +18,14 @@ class FavoritesNotificationsTests(TestCase):
         self.user = UserProfile.objects.create(facebookUID='1234', user=user)
 
     def testSetFavNotifications(self):
-        print "Set Fav Notifs"
+        print("Set Fav Notifs")
         client = Client()
 
         response = client.get(reverse('setFavNotificationsAPI'), {
             'userid': self.user.id,
             'value': False
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -41,13 +42,13 @@ class UserDetailsTests(TestCase):
         self.userProfile2 = UserProfile.objects.create(facebookUID='12345', user=user2)
 
     def testGetDetails(self):
-        print "Get User Details"
+        print("Get User Details")
         client = Client()
 
         response = client.get(reverse('getUserDetailsAPI'), {
             'userid': self.userProfile.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(response['firstname'], self.userProfile.user.first_name)
@@ -55,13 +56,13 @@ class UserDetailsTests(TestCase):
         self.assertEqual(response['facebookid'], self.userProfile.facebookUID)
 
     def testGetMultipleDetails(self):
-        print "Get Multiple user details"
+        print("Get Multiple user details")
         client = Client()
 
         response = client.get(reverse('getUserDetailsAPI'), {
             'userids': json.dumps([self.userProfile.id, self.userProfile2.id])
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['users']), 2)

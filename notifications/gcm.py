@@ -12,8 +12,8 @@ try:
     from urllib.request import Request, urlopen
     from urllib.parse import urlencode
 except ImportError:
-    # Python 2 support
-    from urllib2 import Request, urlopen
+    import urllib.request as urllib2
+
     from urllib import urlencode
 
 from django.core.exceptions import ImproperlyConfigured
@@ -45,11 +45,11 @@ def _gcm_send(data, content_type):
         "Content-Length": str(len(data)),
     }
 
-    request = Request(SETTINGS["GCM_POST_URL"], data, headers)
+    request = Request(SETTINGS["GCM_POST_URL"], data.encode('UTF-8'), headers)
     response = urlopen(request)
     result = response.read()
 
-    if result.startswith("Error="):
+    if result.decode('UTF-8').startswith("Error="):
         raise GCMError(result)
 
     return result

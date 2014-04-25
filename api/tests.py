@@ -9,7 +9,7 @@ import pytz
 from django.test import TestCase, Client, LiveServerTestCase
 from api import helpers
 from api.FacebookProfile import FacebookProfile
-from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT
+from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, loadJson
 from buddyup import settings
 from chat.models import Conversation, Message
 from notifications.models import GCMDevice, APNSDevice, Notification
@@ -34,7 +34,7 @@ def performFacebookRegister(accessToken):
 
 class FacebookRegisterTest(TestCase):
     def setUp(self):
-        self.authKey = 'CAACBZAKw2g0ABABjiiQ2I815dZA3P92cDaISXIeF5cFVv9zGjswJFkhRQwwXdrFZAscp3sEhycFtVAkd9z57ZCFOAq0vCfD1Nt2piWZBmVSllfiHTMsZBCpOA2WW7VQvdokisZBo4Bah0KAcfL2HzAnZCrDt1CVKR4QbtdKUmDytGN2MuKZCLk0KyWoz15zCJxf9TpsXZAWEjF1gZDZD'
+        self.authKey = 'CAACBZAKw2g0ABAKsEUXw0tkwZBy2dsRXx8kh3GxGGlD9h3tlr2nlqTJRguVqWczePNXIAVIw0hG7tud6ZA97hqF4hFbqZBmm9iROwrMskXO4ZCSrSFeLWOVpPbHmMBBcrHS57yTOfPJauGSn6ImfZBlKP8Q0lDBKYzIRLvTBpwZC6ImU6Em0daD97avmfvX3H4ZD'
         self.firstName = 'George'
         self.lastName = 'Muresan'
 
@@ -48,7 +48,7 @@ class FacebookRegisterTest(TestCase):
             'lat': 42.151515,
             'lng': -87.498989
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
         self.assertEqual(response['firstname'], self.firstName)
@@ -71,7 +71,7 @@ class FacebookRegisterTest(TestCase):
             'lat': 42.151515,
             'lng': -87.498989
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertIn('userid', response)
@@ -86,10 +86,10 @@ class FacebookRegisterTest(TestCase):
             'fbauthkey': self.authKey,
             'device': 'android'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
-        userprofileFriendData = {u'userid': userprofile.id, u'firstname': user.first_name, u'lastname': user.last_name,
-                                 u'blocked': False}
+        userprofileFriendData = {'userid': userprofile.id, 'firstname': user.first_name, 'lastname': user.last_name,
+                                 'blocked': False}
         self.assertNotEqual(len(response['friends']), 0)
         for key, val in userprofileFriendData.items():
             self.assertEqual(val, userprofileFriendData[key])
@@ -104,7 +104,7 @@ class FacebookRegisterTest(TestCase):
             'lat': 42.151515,
             'lng': -87.498989
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         userid = response['userid']
@@ -141,7 +141,7 @@ class FacebookRegisterTest(TestCase):
             'device': 'android'
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(response['statuses'][0]['statusid'], friendStatus.id)
@@ -161,7 +161,7 @@ class FacebookRegisterTest(TestCase):
             'lat': 42.151515,
             'lng': -87.498989
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -183,7 +183,7 @@ class FacebookRegisterTest(TestCase):
             'fbauthkey': self.authKey,
             'device': 'android'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['settings']), 2)
@@ -243,7 +243,7 @@ class StatusMessageTests(TestCase):
             'text': self.text
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -264,7 +264,7 @@ class StatusMessageTests(TestCase):
             'lastmessageid': messageId
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['messages']), 2)
@@ -307,7 +307,7 @@ class StatusMessageTests(TestCase):
         response = client.post(reverse('getStatusDetailsAPI'), {
             'statusid': status.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['messages']), 1)
@@ -387,7 +387,7 @@ class PostStatusTests(TestCase):
             'type': 'sports'
         })
 
-        responseObj = json.loads(response.content)
+        responseObj = loadJson(response.content)
         self.assertEqual(responseObj['success'], True)
         self.assertNotIn('error', responseObj)
 
@@ -410,7 +410,7 @@ class PostStatusTests(TestCase):
             'visibility': 'friendsoffriends'
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         status = Status.objects.get(pk=response['statusid'])
 
@@ -437,7 +437,7 @@ class PostStatusTests(TestCase):
             'visibility': 'public'
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         status = Status.objects.get(pk=response['statusid'])
 
@@ -458,7 +458,7 @@ class PostStatusTests(TestCase):
             'visibility': 'friends'
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         status = Status.objects.get(pk=response['statusid'])
 
@@ -488,7 +488,7 @@ class PostStatusTests(TestCase):
             'visibilityfriends': json.dumps(allFriends),
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         status = Status.objects.get(pk=response['statusid'])
 
@@ -518,7 +518,7 @@ class PostStatusTests(TestCase):
             'location': json.dumps(self.location),
             'visibility': 'friends'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statusId = response['statusid']
@@ -528,7 +528,7 @@ class PostStatusTests(TestCase):
             'statusid': response['statusid'],
             'friends': json.dumps(allFriends),
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -579,38 +579,38 @@ class facebookShareStatusTests(TestCase):
         self.group.members.add(self.friend2)
         self.group.save()
 
-    def testShareStatusOnFacebook(self):
-        client = Client()
-
-        text = "Hangout at my house"
-
-        expires = datetime.now(pytz.timezone("UTC"))
-        expires = expires + timedelta(hours=1)
-
-        lng = 42.341560
-        lat = -83.501783
-        address = '46894 spinning wheel'
-        city = 'canton'
-        state = 'MI'
-        venue = "My house"
-        location = {'lat': lat, 'lng': lng, 'address': address, 'state': state,
-                    'city': city, 'venue': venue}
-
-        response = client.post(reverse('postStatusAPI'), {
-            'userid': self.user.id,
-            'expires': expires.strftime(DATETIME_FORMAT),
-            'text': text,
-            'groupids': json.dumps([self.group.id]),
-            'location': json.dumps(location)
-        })
-
-        response = json.loads(response.content)
-
-        statusId = response['statusid']
-        status = Status.objects.get(pk=statusId)
-
-        fbProfile = FacebookProfile(self.user, self.accessTokenUser)
-        response = fbProfile.shareStatus(status)
+    # def testShareStatusOnFacebook(self):
+    #     client = Client()
+    #
+    #     text = "Hangout at my house"
+    #
+    #     expires = datetime.now(pytz.timezone("UTC"))
+    #     expires = expires + timedelta(hours=1)
+    #
+    #     lng = 42.341560
+    #     lat = -83.501783
+    #     address = '46894 spinning wheel'
+    #     city = 'canton'
+    #     state = 'MI'
+    #     venue = "My house"
+    #     location = {'lat': lat, 'lng': lng, 'address': address, 'state': state,
+    #                 'city': city, 'venue': venue}
+    #
+    #     response = client.post(reverse('postStatusAPI'), {
+    #         'userid': self.user.id,
+    #         'expires': expires.strftime(DATETIME_FORMAT),
+    #         'text': text,
+    #         'groupids': json.dumps([self.group.id]),
+    #         'location': json.dumps(location)
+    #     })
+    #
+    #     response = loadJson(response.content)
+    #
+    #     statusId = response['statusid']
+    #     status = Status.objects.get(pk=statusId)
+    #
+    #     fbProfile = FacebookProfile(self.user, self.accessTokenUser)
+    #     response = fbProfile.shareStatus(status)
 
 
 class deleteStatusTest(TestCase):
@@ -648,7 +648,7 @@ class deleteStatusTest(TestCase):
             'statusid': self.status1Id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -666,7 +666,7 @@ class deleteStatusTest(TestCase):
             'statusid': self.status1Id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertFalse(response['success'])
 
@@ -679,7 +679,7 @@ class deleteStatusTest(TestCase):
         response = client.post(reverse('goOfflineAPI'), {
             'userid': self.user1.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -699,7 +699,7 @@ class deleteStatusTest(TestCase):
             'userid': self.user1.id,
             'statusid': self.status1Id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         status1 = Status.objects.get(pk=self.status1Id)
         status2 = Status.objects.get(pk=self.status2Id)
@@ -720,7 +720,7 @@ class deleteStatusTest(TestCase):
             'statusid': self.status1Id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertFalse(response['success'])
 
@@ -790,7 +790,7 @@ class getStatusesTest(TestCase):
             'since': since.strftime(MICROSECOND_DATETIME_FORMAT),
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
@@ -826,7 +826,7 @@ class getStatusesTest(TestCase):
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user2.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -835,7 +835,7 @@ class getStatusesTest(TestCase):
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user3.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -851,7 +851,7 @@ class getStatusesTest(TestCase):
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user1.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -860,7 +860,7 @@ class getStatusesTest(TestCase):
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user3.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -876,7 +876,7 @@ class getStatusesTest(TestCase):
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user1.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -885,7 +885,7 @@ class getStatusesTest(TestCase):
         response = client.get(reverse('getStatusesAPI'), {
             'userid': self.user3.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -905,7 +905,7 @@ class getStatusesTest(TestCase):
             'lng': str(self.location.lng + .01),
             'radius': 50
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -918,7 +918,7 @@ class getStatusesTest(TestCase):
             'lng': str(self.location.lng + 20),
             'radius': 50
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -929,7 +929,7 @@ class getStatusesTest(TestCase):
             'userid': self.user1.id,
             'radius': 50
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -953,7 +953,7 @@ class getStatusesTest(TestCase):
             'userid': self.user1.id,
             'radius': 50
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         statuses = response['statuses']
@@ -971,7 +971,7 @@ class getStatusesTest(TestCase):
         response = client.post(reverse('getStatusDetailsAPI'), {
             'statusid': status1.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1004,7 +1004,7 @@ class getStatusesTest(TestCase):
             'lat': str(self.location.lat + .01),
             'lng': str(self.location.lng + .01)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['statuses']), 4)
@@ -1048,7 +1048,7 @@ class GetMyStatusesTest(TestCase):
             'userid': self.user1.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertTrue(response['success'])
 
         status1Found = False
@@ -1088,7 +1088,7 @@ class PokeTest(TestCase):
             'friendid': self.user2.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
 
@@ -1097,7 +1097,7 @@ class PokeTest(TestCase):
             'friendid': self.user2.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertNotIn('pokeid', response)
         self.assertEqual(response['success'], False)
         self.assertIsNotNone(response['error'])
@@ -1111,7 +1111,7 @@ class PokeTest(TestCase):
             'friendid': self.user2.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
 
@@ -1145,7 +1145,7 @@ class GroupTests(TestCase):
             'userid': self.user.id,
             'groupname': groupName
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         groupid = response['groupid']
         group = self.user.groups.latest('id')
@@ -1163,7 +1163,7 @@ class GroupTests(TestCase):
             'userid': self.user.id,
             'groupname': groupName
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         groupId = response['groupid']
 
         response = client.post(reverse('createGroupAPI'), {
@@ -1171,7 +1171,7 @@ class GroupTests(TestCase):
             'groupname': groupName
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
         self.assertEqual(response['groupid'], groupId)
 
@@ -1186,7 +1186,7 @@ class GroupTests(TestCase):
             'groupname': groupName
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         groupid = response['groupid']
 
         response = client.post(reverse('deleteGroupAPI'), {
@@ -1194,7 +1194,7 @@ class GroupTests(TestCase):
             'groupid': groupid
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertEqual(response['success'], True)
         self.assertNotIn('error', response)
 
@@ -1212,14 +1212,14 @@ class GroupTests(TestCase):
             'groupname': groupName
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         groupid = response['groupid']
 
         response = client.post(reverse('deleteGroupAPI'), {
             'userid': self.friend.id,
             'groupid': groupid
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertFalse(response['success'])
         self.assertIn('error', response)
@@ -1236,7 +1236,7 @@ class GroupTests(TestCase):
             'groupname': groupName
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         groupid = response['groupid']
 
         response = client.post(reverse('editGroupNameAPI'), {
@@ -1244,7 +1244,7 @@ class GroupTests(TestCase):
             'groupid': groupid,
             'groupname': newGroupName
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1263,7 +1263,7 @@ class GroupTests(TestCase):
             'groupname': groupName
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         groupid = response['groupid']
 
         response = client.post(reverse('editGroupNameAPI'), {
@@ -1271,7 +1271,7 @@ class GroupTests(TestCase):
             'groupid': groupid,
             'groupname': newGroupName
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertFalse(response['success'])
         self.assertIn('error', response)
@@ -1290,7 +1290,7 @@ class GroupTests(TestCase):
             'groupname': groupName
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         groupid = response['groupid']
 
         client.post(reverse('addGroupMemberAPI'), {
@@ -1304,7 +1304,7 @@ class GroupTests(TestCase):
             'friendid': self.friend2.id,
             'groupid': groupid
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1325,7 +1325,7 @@ class GroupTests(TestCase):
             'groupname': groupName
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         groupid = response['groupid']
         fbFriendId = 'asfasfqfqfqfwqwf'
 
@@ -1364,7 +1364,7 @@ class GroupTests(TestCase):
             'friendid': self.friend2.id,
             'groupid': groupid
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1380,7 +1380,7 @@ class GroupTests(TestCase):
             'friendid': self.friend.id,
             'groupid': groupid
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1409,7 +1409,7 @@ class GroupTests(TestCase):
         response = client.post(reverse('getGroupsAPI'), {
             'userid': self.user.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertIn('groups', response)
@@ -1458,7 +1458,7 @@ class GroupTests(TestCase):
             'friendid': self.friend.id,
             'groupids': json.dumps(groups)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertTrue(self.friend in group1.members.all())
@@ -1471,7 +1471,7 @@ class GroupTests(TestCase):
             'friendid': self.friend2.id,
             'groupids': json.dumps(groups)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertTrue(self.friend2 in group1.members.all())
@@ -1484,7 +1484,7 @@ class GroupTests(TestCase):
             'friendid': self.friend.id,
             'groupids': json.dumps(groups)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertTrue(self.friend not in group1.members.all())
@@ -1511,7 +1511,7 @@ class GroupTests(TestCase):
             'friendid': fbFriendId,
             'groupids': json.dumps(groups)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         fbFriend = FacebookUser.objects.get(facebookUID=fbFriendId[2:])
 
@@ -1526,7 +1526,7 @@ class GroupTests(TestCase):
             'friendid': fbFriendId,
             'groupids': json.dumps(groups)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertTrue(fbFriend in group1.fbMembers.all())
@@ -1536,7 +1536,7 @@ class GroupTests(TestCase):
         response = client.post(reverse('getGroupsAPI'), {
             'userid': self.user.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         for group in response['groups']:
             if group['groupid'] == group1.id:
@@ -1548,7 +1548,7 @@ class GroupTests(TestCase):
             'friendid': fbFriendId,
             'groupids': json.dumps(groups)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertEqual(response['success'], True)
         self.assertTrue(fbFriend not in group1.fbMembers.all())
@@ -1584,7 +1584,7 @@ class GroupTests(TestCase):
             'groupid': group1.id,
             'friendids': json.dumps(members1)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1598,7 +1598,7 @@ class GroupTests(TestCase):
             'groupid': group2.id,
             'friendids': json.dumps(members2)
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertTrue(self.friend not in group2.members.all())
@@ -1634,7 +1634,7 @@ class FriendsListTests(TestCase):
         response = client.post(reverse('getFriendsAPI'), {
             'userid': self.user.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1664,7 +1664,7 @@ class FriendsListTests(TestCase):
             'userid': self.user.id,
             'friendid': self.friend2.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1688,7 +1688,7 @@ class FriendsListTests(TestCase):
             'userid': self.user.id,
             'friendid': self.friend2.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1711,7 +1711,7 @@ class FeedbackTests(TestCase):
             'userid': self.user.id,
             'text': text
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1753,7 +1753,7 @@ class GetNewDataTests(TestCase):
             'userid': self.user.id,
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['chats'][0]['messages']), 1)
@@ -1763,7 +1763,7 @@ class GetNewDataTests(TestCase):
             'since': response['newsince'],
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['chats']), 0)
@@ -1778,7 +1778,7 @@ class GetNewDataTests(TestCase):
             'friendid': self.user.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1786,7 +1786,7 @@ class GetNewDataTests(TestCase):
             'userid': self.user.id
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1802,7 +1802,7 @@ class GetNewDataTests(TestCase):
             'since': newSince
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['pokes']), 0)
@@ -1828,7 +1828,7 @@ class SettingsTests(TestCase):
             'key': self.key1,
             'value': 'value2'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -1840,7 +1840,7 @@ class SettingsTests(TestCase):
             'key': self.key2,
             'value': 'value3'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         setting2 = self.user.settings.get(key=self.key2)
         self.assertTrue(response['success'])
@@ -1857,7 +1857,7 @@ class SettingsTests(TestCase):
             'key': self.setting1.key
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(self.setting1.value, response['value'])
@@ -1872,7 +1872,7 @@ class SettingsTests(TestCase):
             'key': 'nokey'
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual('', response['value'])
@@ -2002,7 +2002,7 @@ class PushNotificationTests(LiveServerTestCase):
             'platform': 'ios'
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -2012,7 +2012,7 @@ class PushNotificationTests(LiveServerTestCase):
             'platform': 'android'
         })
 
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
@@ -2035,7 +2035,7 @@ class PushNotificationTests(LiveServerTestCase):
         chat.members.add(self.friend)
         chat.members.add(self.friend2)
         chat.members.add(self.friend3)
-        self.assertGreaterEqual(chat.members.all(), 2)
+        self.assertGreaterEqual(chat.members.all().count(), 2)
 
         members = chat.members.all()
         apnsDevices = APNSDevice.objects.filter(user__in=members)
@@ -2123,7 +2123,7 @@ class AppNotificationTests(TestCase):
             'fbauthkey': self.accessTokenUser,
             'device': 'android'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertTrue(response['success'])
 
         userId = response['userid']
@@ -2133,7 +2133,7 @@ class AppNotificationTests(TestCase):
             'fbauthkey': self.accessTokenFriend1,
             'device': 'android'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
         self.assertTrue(response['success'])
 
         friend1Id = response['userid']
@@ -2142,7 +2142,7 @@ class AppNotificationTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': user.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['notifications']), 1)
@@ -2155,7 +2155,7 @@ class AppNotificationTests(TestCase):
             'fbauthkey': self.accessTokenFriend2,
             'device': 'android'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         friend2Id = response['userid']
         friend2 = UserProfile.objects.get(pk=friend2Id)
@@ -2163,7 +2163,7 @@ class AppNotificationTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': user.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
         self.assertEqual(len(response['notifications']), 2)
@@ -2189,7 +2189,7 @@ class AppNotificationTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.user.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         notifications = response['notifications']
         self.assertEqual(len(notifications), 1)
@@ -2208,14 +2208,14 @@ class AppNotificationTests(TestCase):
             'text': 'afafqwf13f13f1f',
             'userid': self.user.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         self.assertTrue(response['success'])
 
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.friend.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         notifications = response['notifications']
         self.assertEqual(len(notifications), 1)
@@ -2234,12 +2234,12 @@ class AppNotificationTests(TestCase):
             'statusid': self.status.id,
             'attending': 'true'
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.friend.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         notifications = response['notifications']
         self.assertEqual(len(notifications), 1)
@@ -2286,7 +2286,7 @@ class AppNotificationTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.friend.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         notifications = response['notifications']
         self.assertEqual(len(notifications), 1)
@@ -2309,7 +2309,7 @@ class AppNotificationTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.friend2.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         notifications = response['notifications']
         self.assertEqual(len(notifications), 1)
@@ -2333,7 +2333,7 @@ class AppNotificationTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.friend2.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         notifications = response['notifications']
         self.assertEqual(len(notifications), 1)
@@ -2350,7 +2350,7 @@ class AppNotificationTests(TestCase):
         response = client.post(reverse('getNewDataAPI'), {
             'userid': self.friend2.id
         })
-        response = json.loads(response.content)
+        response = loadJson(response.content)
 
         notifications = response['notifications']
         self.assertEqual(len(notifications), 0)

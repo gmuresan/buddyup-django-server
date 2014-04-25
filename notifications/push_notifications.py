@@ -1,5 +1,5 @@
 import pdb
-import thread
+import _thread as thread
 import datetime
 from django.contrib.auth.models import User
 from chat.models import Message

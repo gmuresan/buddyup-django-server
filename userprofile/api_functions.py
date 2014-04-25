@@ -689,7 +689,6 @@ def setFavoritesNotifications(request):
 
     userId = request.REQUEST['userid']
     value = request.REQUEST['value']
-    print value
 
     try:
         userProfile = UserProfile.objects.get(pk=userId)
