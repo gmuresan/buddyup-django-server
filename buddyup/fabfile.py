@@ -6,10 +6,14 @@ from functools import wraps
 from getpass import getpass, getuser
 from glob import glob
 from contextlib import contextmanager
+import getpass as _getpass
 
 from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
+from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
+
+from fabric.operations import local, run
 
 
 ################
@@ -50,7 +54,7 @@ env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
 env.reqs_path = conf.get("REQUIREMENTS_PATH", None)
 env.gunicorn_port = conf.get("GUNICORN_PORT", 8000)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
-env.python_dir = "/usr/lib/python3.3"
+env.python_dir = "/opt/lib/python3.3"
 
 
 ##################
@@ -92,6 +96,38 @@ templates = {
 ######################################
 # Context for virtualenv and project #
 ######################################
+
+@task
+def localSSH():
+    pass
+   ### run the following commands ###
+    # sudo ssh-add ubuntu (remember the password)
+    # sudo visudo (paste the following under user privilege : "ubuntu ALL=(ALL) NOPASSWD: ALL"
+
+    #ssh_file = "~/.ssh/id_dsa_buddyup"
+    #local("ssh-keygen -t dsa -P '' -f %s" % ssh_file)
+    #local("cat %s.pub >> ~/.ssh/authorized_keys" % ssh_file)
+    #env.key_filename = ssh_file
+    #env.user = _getpass.getuser()
+
+@task
+def localInstall():
+    env.host_string = '127.0.0.1'
+    env.hosts = ['127.0.0.1']
+    install()
+
+@task
+def localCreate():
+    localSSH()
+    env.host_string = '127.0.0.1'
+    env.hosts = ['127.0.0.1']
+
+    create()
+
+
+def wget(path):
+    sudo("wget -r -nH --cut-dirs=999 %s" % path)
+
 
 @contextmanager
 def virtualenv():
@@ -268,11 +304,14 @@ def postgres(command):
 
 
 @task
-def psql(sql, show=True):
+def psql(sql, show=True, withUser=False):
     """
     Runs SQL against the project's database.
     """
-    out = postgres('psql -c "%s"' % sql)
+    if not withUser:
+        out = postgres('psql -c "%s"' % sql)
+    else:
+        out = postgres('psql -d %s -c "%s"' % (env.proj_name, sql))
     if show:
         print_command(sql)
     return out
@@ -339,20 +378,69 @@ def install():
         if locale not in sudo("cat /etc/default/locale"):
             sudo("update-locale %s" % locale)
             run("exit")
-    #sudo("apt-get update -y -q")
+    sudo("apt-get update -y -q")
     apt("nginx python-dev python-setuptools git-core "
-        "postgresql libpq-dev memcached supervisor")
+        "postgresql libpq-dev memcached supervisor make g++ libbz2-dev")
 
     sudo("easy_install pip")
     sudo("pip install virtualenv")
     sudo("mkdir -p %s" % env.python_dir)
     sudo("chown %s %s" % (env.user, env.python_dir))
+
+    bzipDir = "%s/bzip2" % env.venv_home
+    # install bz2
+    sudo("mkdir -p %s" % bzipDir)
+    with cd(bzipDir):
+        wget("http://bzip.org/1.0.6/bzip2-1.0.6.tar.gz")
+        sudo("tar zxvf bzip2-1.0.6.tar.gz")
+        with cd("bzip2-1.0.6"):
+            sudo(" make -f Makefile-libbz2_so")
+            sudo("make")
+            sudo("make install")
+
+    # install python
     with cd("%s" % env.python_dir):
-        sudo("wget http://www.python.org/ftp/python/3.3.5/Python-3.3.5.tar.xz")
+        sudo("wget -r -nH --cut-dirs=999 http://www.python.org/ftp/python/3.3.5/Python-3.3.5.tar.xz")
         sudo("tar xJf ./Python-3.3.5.tar.xz")
         with cd("Python-3.3.5"):
-            sudo("./configure --prefix=%s" % env.python_dir)
+            sudo("./configure --prefix=%s --with-bz2=/usr/local/include" % env.python_dir)
             sudo("make && sudo make install")
+
+    sudo("apt-get install binutils libproj-dev libpq-dev postgresql-server-dev-9.3 libgeos-dev")
+    sudo("apt-get install python-software-properties libxml2-dev")
+
+    # install GDAL
+    sudo("mkdir -p %s/gdal" % env.venv_home)
+    with cd("%s/gdal" % env.venv_home):
+        sudo("wget -r -nH --cut-dirs=999 http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz")
+        sudo("tar xzf gdal-1.10.1.tar.gz")
+        with cd("gdal-1.10.1"):
+            sudo("./configure")
+            sudo("make")
+            sudo("make install")
+
+    #install postgis - takes at least 20 minutes
+    sudo("mkdir -p %s/postgis" % env.venv_home)
+    with cd("%s/postgis" % env.venv_home):
+        sudo("wget -r -nH --cut-dirs=999 http://download.osgeo.org/postgis/source/postgis-2.1.2.tar.gz")
+        sudo("tar xzf postgis-2.1.2.tar.gz")
+        with cd("postgis-2.1.2"):
+            sudo("./configure --with-pgconfig=/usr/bin/pg_config")
+            sudo("make")
+            sudo("make install")
+
+    with cd("%s/postgis/postgis-2.1.2/extensions/postgis" % env.venv_home):
+        sudo("make clean")
+        sudo("make")
+        sudo("make install")
+
+    with cd("%s/postgis/postgis-2.1.2/extensions/postgis_topology" % env.venv_home):
+        sudo("make clean")
+        sudo("make")
+        sudo("make install")
+
+    sudo("ldconfig")
+    #
 
 
 @task
@@ -369,7 +457,7 @@ def create():
     sudo("mkdir -p %s" % env.venv_home, True)
     sudo("chown %s %s" % (env.user, env.venv_home), True)
     sudo("chown -R %s %s" % (env.user, env.python_dir), True)
-    sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
+    #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
             prompt = raw_input("\nVirtualenv exists: %s\nWould you like "
@@ -383,57 +471,60 @@ def create():
         run("%s clone %s %s" % (vcs, env.repo_url, env.proj_path))
 
     # Create DB and DB user.
+
     pw = db_pass()
     user_sql_args = (env.proj_name, pw.replace("'", "\'"))
-    user_sql = "CREATE USER %s WITH ENCRYPTED PASSWORD '%s';" % user_sql_args
-    psql(user_sql, show=False)
+    with warn_only():
+        user_sql = "CREATE USER %s WITH ENCRYPTED PASSWORD '%s';" % user_sql_args
+        psql(user_sql, show=False)
+        psql("ALTER USER %s CREATEDB;" % env.proj_name)
+        psql("ALTER USER %s SUPERUSER;" % env.proj_name)
     shadowed = "*" * len(pw)
     print_command(user_sql.replace("'%s'" % pw, "'%s'" % shadowed))
-    psql("CREATE DATABASE %s WITH OWNER %s ENCODING = 'UTF8' "
-         "LC_CTYPE = '%s' LC_COLLATE = '%s' TEMPLATE template0;" %
-         (env.proj_name, env.proj_name, env.locale, env.locale))
 
-    # Set up SSL certificate.
-    conf_path = "/etc/nginx/conf"
-    if not exists(conf_path):
-        sudo("mkdir %s" % conf_path)
-    with cd(conf_path):
-        crt_file = env.proj_name + ".crt"
-        key_file = env.proj_name + ".key"
-        if not exists(crt_file) and not exists(key_file):
-            try:
-                crt_local, = glob(os.path.join("deploy", "*.crt"))
-                key_local, = glob(os.path.join("deploy", "*.key"))
-            except ValueError:
-                parts = (crt_file, key_file, env.live_host)
-                sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
-                     "-subj '/CN=%s' -days 3650" % parts)
-            else:
-                upload_template(crt_local, crt_file, use_sudo=True)
-                upload_template(key_local, key_file, use_sudo=True)
+    #postgres("createuser --createdb %s;" % env.proj_name)
+    #postgres("createdb %s;" % env.proj_name)
+    with warn_only():
+        psql("CREATE DATABASE %s WITH OWNER %s ENCODING = 'UTF8' "
+            "LC_CTYPE = '%s' LC_COLLATE = '%s' TEMPLATE template0;" %
+            (env.proj_name, env.proj_name, env.locale, env.locale))
+        psql("CREATE EXTENSION postgis;" , True, True)
+        psql("CREATE EXTENSION postgis_topology;", True, True)
 
+    #
+    # # Set up SSL certificate.
+    # conf_path = "/etc/nginx/conf"
+    # if not exists(conf_path):
+    #     sudo("mkdir %s" % conf_path)
+    # with cd(conf_path):
+    #     crt_file = env.proj_name + ".crt"
+    #     key_file = env.proj_name + ".key"
+    #     if not exists(crt_file) and not exists(key_file):
+    #         try:
+    #             crt_local, = glob(os.path.join("deploy", "*.crt"))
+    #             key_local, = glob(os.path.join("deploy", "*.key"))
+    #         except ValueError:
+    #             parts = (crt_file, key_file, env.live_host)
+    #             sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
+    #                  "-subj '/CN=%s' -days 3650" % parts)
+    #         else:
+    #             upload_template(crt_local, crt_file, use_sudo=True)
+    #             upload_template(key_local, key_file, use_sudo=True)
+    #
     # Set up project.
     upload_template_and_reload("settings")
     with project():
         if env.reqs_path:
             pip("setuptools")
             pip("-r %s/%s --allow-all-external" % (env.proj_path, env.reqs_path))
-        pip("gunicorn setproctitle south psycopg2 ")
-        manage("createdb --noinput --nodata")
+        pip("gunicorn setproctitle south psycopg2 python3-memcached")
+        manage("syncdb --noinput")
+        manage("migrate --noinput")
         #python("from django.conf import settings;"
          #      "from django.contrib.sites.models import Site;"
           #     "site, _ = Site.objects.get_or_create(id=settings.SITE_ID);"
            #    "site.domain = '" + env.live_host + "';"
             #   "site.save();")
-        #if env.admin_pass:
-         #   pw = env.admin_pass
-          #  user_py = ("from mezzanine.utils.models import get_user_model;"
-           #            "User = get_user_model();"
-            #           "u, _ = User.objects.get_or_create(username='admin');"
-             #          "u.is_staff = u.is_superuser = True;"
-              #         "u.set_password('%s');"
-               #        "u.save();" % pw)
-            #python(user_py, show=False)
             #shadowed = "*" * len(pw)
             #print_command(user_py.replace("'%s'" % pw, "'%s'" % shadowed))
 
@@ -446,14 +537,16 @@ def remove():
     """
     Blow away the current project.
     """
-    if exists(env.venv_path):
-        sudo("rm -rf %s" % env.venv_path)
-    for template in get_templates().values():
-        remote_path = template["remote_path"]
-        if exists(remote_path):
-            sudo("rm %s" % remote_path)
-    psql("DROP DATABASE %s;" % env.proj_name)
-    psql("DROP USER %s;" % env.proj_name)
+    with warn_only():
+        if exists(env.venv_path):
+            sudo("rm -rf %s" % env.venv_path)
+        for template in get_templates().values():
+            remote_path = template["remote_path"]
+            if exists(remote_path):
+                sudo("rm %s" % remote_path)
+        psql("DROP DATABASE %s;" % env.proj_name)
+        psql("DROP DATABASE test_%s;" % env.proj_name)
+        psql("DROP USER %s;" % env.proj_name)
 
 
 @task
