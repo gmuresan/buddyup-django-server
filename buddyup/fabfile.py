@@ -76,7 +76,7 @@ templates = {
     "supervisor": {
         "local_path": "deploy/supervisor.conf",
         "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
-        "reload_command": "supervisorctl reread",
+        "reload_command": "supervisorctl reread; supervisorctl reload",
     },
     "cron": {
         "local_path": "deploy/crontab",
@@ -581,12 +581,13 @@ def restart():
     """
     Restart gunicorn worker processes for the project.
     """
-    pid_path = "%s/gunicorn.pid" % env.proj_path
-    if exists(pid_path):
-        #sudo("kill -HUP `cat %s`" % pid_path)
-        sudo("supervisorctl restart")
-    else:
-        sudo("supervisorctl start %gunicorn_%s" % env.proj_name)
+    with cd(env.venv_path):
+        pid_path = "%s/gunicorn.pid" % env.proj_path
+        if exists(pid_path):
+            #sudo("kill -HUP `cat %s`" % pid_path)
+            sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
+        else:
+            sudo("supervisorctl start gunicorn_%s" % env.proj_name)
 
 
 @task
