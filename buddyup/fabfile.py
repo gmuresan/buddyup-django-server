@@ -76,7 +76,7 @@ templates = {
     "supervisor": {
         "local_path": "deploy/supervisor.conf",
         "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
-        "reload_command": "supervisorctl reread; supervisorctl reload",
+        "reload_command": "supervisorctl reread; supervisorctl update",
     },
     "cron": {
         "local_path": "deploy/crontab",
@@ -140,7 +140,6 @@ def virtualenv():
     with cd(env.venv_path):
         with prefix("source %s/bin/activate" % env.venv_path):
             yield
-
 
 @contextmanager
 def project():
@@ -207,6 +206,10 @@ def run(command, show=True):
     with hide("running"):
         return _run(command)
 
+@task
+def proj(command):
+    with cd(env.proj_path):
+        return  sudo(command)
 
 @task
 def sudo(command, show=True):
