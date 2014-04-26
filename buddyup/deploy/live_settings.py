@@ -16,6 +16,8 @@ DATABASES = {
     }
 }
 
+STATIC_ROOT = "%(venv_path)s/static"
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTOCOL", "https")
 
 CACHE_MIDDLEWARE_SECONDS = 60
