@@ -1,6 +1,4 @@
 import os
-import pdb
-import sys
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -217,7 +215,7 @@ FABRIC = {
 }
 
 try:
-    from local_settings import *
+    from buddyup.local_settings import *
 except ImportError as e:
     pass
 

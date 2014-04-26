@@ -56,6 +56,8 @@ env.gunicorn_port = conf.get("GUNICORN_PORT", 8000)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.python_dir = "/opt/lib/python3.3"
 
+env.num_workers = (os.sysconf("SC_NPROCESSORS_ONLN") * 2) + 1
+
 
 ##################
 # Template setup #
@@ -74,7 +76,7 @@ templates = {
     "supervisor": {
         "local_path": "deploy/supervisor.conf",
         "remote_path": "/etc/supervisor/conf.d/%(proj_name)s.conf",
-        "reload_command": "supervisorctl reload",
+        "reload_command": "supervisorctl reread",
     },
     "cron": {
         "local_path": "deploy/crontab",
@@ -83,12 +85,13 @@ templates = {
         "mode": "600",
     },
     "gunicorn": {
-        "local_path": "deploy/gunicorn.conf.py",
-        "remote_path": "%(proj_path)s/gunicorn.conf.py",
+        "local_path": "deploy/gunicorn_start",
+        "remote_path": "%(proj_path)s/gunicorn_start",
+        "mode": "u+x",
     },
     "settings": {
         "local_path": "deploy/live_settings.py",
-        "remote_path": "%(proj_path)s/local_settings.py",
+        "remote_path": "%(proj_path)s/buddyup/local_settings.py",
     },
 }
 
@@ -349,12 +352,11 @@ def python(code, show=True):
 
 
 def static():
-    pass
     """
     Returns the live STATIC_ROOT directory.
     """
-    #return python("from django.conf import settings;"
-                 # "print settings.STATIC_ROOT").split("\n")[-1]
+    return python("from django.conf import settings;"
+                  "print settings.STATIC_ROOT").split("\n")[-1]
 
 
 @task
@@ -530,6 +532,9 @@ def create():
             #shadowed = "*" * len(pw)
             #print_command(user_py.replace("'%s'" % pw, "'%s'" % shadowed))
 
+    sudo("mkdir -p %s/logs" % env.venv_path)
+    sudo("touch %s/logs/gunicorn_supervisor.log" % env.venv_path)
+
     return True
 
 
@@ -578,10 +583,10 @@ def restart():
     """
     pid_path = "%s/gunicorn.pid" % env.proj_path
     if exists(pid_path):
-        sudo("kill -HUP `cat %s`" % pid_path)
+        #sudo("kill -HUP `cat %s`" % pid_path)
+        sudo("supervisorctl restart")
     else:
-        start_args = (env.proj_name, env.proj_name)
-        sudo("supervisorctl start %s:gunicorn_%s" % start_args)
+        sudo("supervisorctl start %gunicorn_%s" % env.proj_name)
 
 
 @task
