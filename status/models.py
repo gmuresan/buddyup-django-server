@@ -25,7 +25,7 @@ class Status(geomodels.Model):
 
     def __unicode__(self):
         username = self.user.user.username
-        return "{0} - {1}".format(username, unicode(self.text))
+        return "{0} - {1}".format(username, str(self.text))
 
     user = geomodels.ForeignKey(UserProfile, related_name='statuses')
     date = geomodels.DateTimeField(auto_now=True, db_index=True)
