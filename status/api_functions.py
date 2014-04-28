@@ -167,6 +167,7 @@ def postStatus(request):
     visibility = request.REQUEST.get('visibility', 'friends')
     visibilityFriends = request.REQUEST.get('visibilityfriends', '[]')
     imageUrl = request.REQUEST.get('imageurl', None)
+    imageOrientation = request.REQUEST.get('imageorientation', None)
 
     groupids = json.loads(groupids)
     locationData = json.loads(locationData)
@@ -200,6 +201,7 @@ def postStatus(request):
     status.starts = starts
     status.statusType = statusType
     status.visibility = visibility
+    status.imageOrientation = imageOrientation
 
     if imageUrl:
         status.imageUrl = imageUrl

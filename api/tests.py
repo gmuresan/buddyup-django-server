@@ -384,7 +384,8 @@ class PostStatusTests(TestCase):
             'userid': self.user.id,
             'expires': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text,
-            'type': 'sports'
+            'type': 'sports',
+            'imageorientation':'d'
         })
 
         responseObj = loadJson(response.content)
@@ -396,6 +397,7 @@ class PostStatusTests(TestCase):
         self.assertEqual(status.user, self.user)
         #self.assertEqual(status.expires, self.expires)
         self.assertEqual(status.text, self.text)
+        self.assertEqual(status.imageOrientation, 'd')
 
     def testPostWithLocation(self):
         print("PostWithLocation")
@@ -779,7 +781,7 @@ class getStatusesTest(TestCase):
 
         status1 = Status.objects.create(user=self.user1, expires=self.expirationDate, text='Hang out',
                                         location=self.location, starts=self.startDate,
-                                        visibility=Status.VIS_FRIENDS, statusType=self.statusType)
+                                        visibility=Status.VIS_FRIENDS, statusType=self.statusType, imageOrientation='d')
 
         myLat = 42.321620
         myLng = -83.507794
@@ -800,6 +802,7 @@ class getStatusesTest(TestCase):
         self.assertEqual(status['text'], status1.text)
         self.assertEqual(status['dateexpires'], self.expirationDate.strftime(DATETIME_FORMAT))
         self.assertEqual(status['datestarts'], self.startDate.strftime(DATETIME_FORMAT))
+        self.assertEqual(status['imageorientation'], status1.imageOrientation)
 
         statusDate = status['datecreated']
         self.assertEqual(statusDate, status1.date.strftime(DATETIME_FORMAT))

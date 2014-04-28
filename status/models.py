@@ -18,6 +18,8 @@ class Status(geomodels.Model):
     VISIBILITY = ((VIS_FRIENDS, 'friends'), (VIS_PUBLIC, 'public'), (VIS_FRIENDS_OF_FRIENDS, 'friends of friends'),
                   (VIS_CUSTOM, 'custom'))
 
+    ORIENTATION = (('u', 'u'), ('u', 'u'), ('u', 'u'), ('u', 'u'),)
+
     class Meta:
         ordering = ['-date']
 
@@ -39,6 +41,8 @@ class Status(geomodels.Model):
     visibility = geomodels.CharField(max_length=20, db_index=True, choices=VISIBILITY, default='friends', null=True,
                                      blank=True)
     imageUrl = geomodels.URLField(null=True, blank=True)
+
+    imageOrientation = geomodels.CharField(max_length=1, choices=ORIENTATION, default='u', null=True, blank=True)
 
     friendsVisible = geomodels.ManyToManyField(UserProfile, related_name='statusesVisible', null=True, blank=True)
     fbFriendsVisible = geomodels.ManyToManyField(FacebookUser, related_name='statusesVisible', null=True, blank=True)
