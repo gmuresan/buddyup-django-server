@@ -115,12 +115,19 @@ def localSSH():
 
 @task
 def localInstall():
+    """
+    Installs the base server requirements to localhost. Need to have ssh-server installed
+    and an ssh user created that matches the user from the fab config
+    """
     env.host_string = '127.0.0.1'
     env.hosts = ['127.0.0.1']
     install()
 
 @task
 def localCreate():
+    """
+    Creates the virtualenv on localhost.
+    """
     localSSH()
     env.host_string = '127.0.0.1'
     env.hosts = ['127.0.0.1']
