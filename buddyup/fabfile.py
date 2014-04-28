@@ -413,8 +413,8 @@ def install():
             sudo("./configure --prefix=%s --with-bz2=/usr/local/include" % env.python_dir)
             sudo("make && sudo make install")
 
-    sudo("apt-get install binutils libproj-dev libpq-dev postgresql-server-dev-9.3 libgeos-dev")
-    sudo("apt-get install python-software-properties libxml2-dev")
+    sudo("apt-get install -y -q binutils libproj-dev libpq-dev postgresql-server-dev-9.3 libgeos-dev")
+    sudo("apt-get install -y -q python-software-properties libxml2-dev")
 
     # install GDAL
     sudo("mkdir -p %s/gdal" % env.venv_home)

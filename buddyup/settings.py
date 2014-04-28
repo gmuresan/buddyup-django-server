@@ -200,18 +200,16 @@ FABRIC = {
      "SSH_USER": "ubuntu", # SSH username
 #    "SSH_PASS":  "", # SSH password (consider key-based authentication)
      "SSH_KEY_PATH":  "buddyupaws.pem", # Local path to SSH key file, for key-based auth
-     "HOSTS": ['ec2-54-85-155-132.compute-1.amazonaws.com'], # List of hosts to deploy to
-     "VIRTUALENV_HOME":  "/home/george/buddyup2", # Absolute remote path for virtualenvs
+     "HOSTS": ['ec2-54-84-89-170.compute-1.amazonaws.com'], # List of hosts to deploy to
+     "VIRTUALENV_HOME":  "/opt/buddyup", # Absolute remote path for virtualenvs
      "PROJECT_NAME": "buddyup", # Unique identifier for project
      "REQUIREMENTS_PATH": "requirements.txt", # Path to pip requirements, relative to project
      "GUNICORN_PORT": 8000, # Port gunicorn will listen on
      "LOCALE": "en_US.UTF-8", # Should end with ".UTF-8"
-     "LIVE_HOSTNAME": "ec2-54-85-155-132.compute-1.amazonaws.com", # Host for public site.
+     "LIVE_HOSTNAME": "ec2-54-84-89-170.compute-1.amazonaws.com", # Host for public site.
      "REPO_URL": "https://gmuresan:20040591@bitbucket.org/gmuresan/buddyup-server.git", # Git or Mercurial remote repo URL for the project
      "DB_PASS": "buddyup", # Live database password
      "ADMIN_PASS": "admin", # Live admin user password
-
-
 }
 
 try:
