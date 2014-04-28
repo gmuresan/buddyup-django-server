@@ -125,6 +125,8 @@ def createStatusJsonObject(status):
     statusData['attending'] = attending
     statusData['users'] = userDetails
 
+    statusData['imageorientation'] = status.imageOrientation
+
     if status.imageUrl:
         statusData['imageurl'] = status.imageUrl
 
