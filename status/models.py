@@ -18,7 +18,7 @@ class Status(geomodels.Model):
     VISIBILITY = ((VIS_FRIENDS, 'friends'), (VIS_PUBLIC, 'public'), (VIS_FRIENDS_OF_FRIENDS, 'friends of friends'),
                   (VIS_CUSTOM, 'custom'))
 
-    ORIENTATION = (('u', 'u'), ('u', 'u'), ('u', 'u'), ('u', 'u'),)
+    ORIENTATION = (('u', 'u'), ('d', 'd'), ('l', 'l'), ('r', 'r'),)
 
     class Meta:
         ordering = ['-date']
