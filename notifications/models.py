@@ -16,7 +16,7 @@ class Device(models.Model):
     class Meta:
         abstract = True
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name or str(self.device_id or "") or "%s for %s" % (
             self.__class__.__name__, self.user or "unknown user")
 
@@ -109,7 +109,7 @@ class Notification(models.Model):
     message = models.ForeignKey(StatusMessage, null=True, blank=True)
     notificationType = models.IntegerField(choices=NOTIF_TYPE_CHOICES, db_index=True)
 
-    def __unicode__(self):
+    def __str__(self):
         if self.notificationType == self.NOTIF_FRIEND_JOINED:
             return "{} {} has joined BuddyUp".format(self.initiatingUser.user.first_name,
                                                      self.initiatingUser.user.last_name)

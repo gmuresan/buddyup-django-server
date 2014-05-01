@@ -4,7 +4,7 @@ from userprofile.models import UserProfile
 
 class Conversation(models.Model):
 
-    def __unicode__(self):
+    def __str__(self):
         membersString = ''
 
         for member in self.members.all():
@@ -22,7 +22,7 @@ class Message(models.Model):
     class Meta:
         ordering = ['-created']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.text
 
     user = models.ForeignKey(UserProfile, related_name='messages')
