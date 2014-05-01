@@ -191,10 +191,12 @@ def postStatus(request):
         try:
             status = Status.objects.get(pk=statusid)
             createStatusChangedNotification(status)
+            shouldPostNotification = False
         except Status.DoesNotExist:
             return errorResponse('status does not exist with that id')
     else:
         status = Status(user=userprofile)
+        shouldPostNotification = True
 
     status.expires = expires
     status.text = text
@@ -250,7 +252,8 @@ def postStatus(request):
             fbProfile = FacebookProfile(userprofile, accessToken)
             fbProfile.shareStatus(status, request)
 
-    sendFavoritesStatusPushNotification(status.id)
+    if shouldPostNotification:
+        sendFavoritesStatusPushNotification(status.id)
 
     response['success'] = True
     response['statusid'] = status.id
