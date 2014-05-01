@@ -51,3 +51,12 @@ def createInvitedToStatusNotification(invitedUsers, invitingUser, status):
     notification = Notification.objects.create(notificationType=Notification.NOTIF_INVITED, initiatingUser=invitingUser,
                                                status=status)
     notification.users.add(*invitedUsers)
+
+
+def createDeleteStatusNotification(status):
+    attending = status.attending.all().exclude(id=status.user.id)
+
+    notification = Notification.objects.create(notificationType=Notification.NOTIF_DELETED, initiatingUser=status.user,
+                                               status=status)
+
+    notification.users.add(*attending)

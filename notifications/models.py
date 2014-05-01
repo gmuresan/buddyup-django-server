@@ -97,10 +97,11 @@ class Notification(models.Model):
     NOTIF_STATUS_CHANGED = 3
     NOTIF_STATUS_MEMBERS_ADDED = 4
     NOTIF_INVITED = 5
+    NOTIF_DELETED = 6
 
     NOTIF_TYPE_CHOICES = ((NOTIF_FRIEND_JOINED, "Friend Joined"), (NOTIF_INVITED, "Invited To Activity"),
                           (NOTIF_STATUS_CHANGED, "Activity Changed"), (NOTIF_STATUS_MESSAGE, "New Activity Message"),
-                          (NOTIF_STATUS_MEMBERS_ADDED, "Activity Members Added"))
+                          (NOTIF_STATUS_MEMBERS_ADDED, "Activity Members Added"), (NOTIF_DELETED, "Activity Deleted"))
 
     users = models.ManyToManyField(UserProfile, related_name='notifications', null=True, blank=True)
     initiatingUser = models.ForeignKey(UserProfile, related_name='notificationsInitiated')
@@ -132,3 +133,8 @@ class Notification(models.Model):
             return "You have been invited to {} by {} {}".format(str(self.status.text),
                                                                  self.initiatingUser.user.first_name,
                                                                  self.initiatingUser.user.last_name)
+
+        elif self.notificationType == self.NOTIF_DELETED:
+            return "{} {} has deleted {}".format(self.initiatingUser.user.first_name,
+                                                 self.initiatingUser.user.last_name,
+                                                 self.status.text)

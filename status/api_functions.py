@@ -5,7 +5,7 @@ import pytz
 from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
-from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
+from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification, createDeleteStatusNotification
 from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification, sendDeleteStatusNotfication
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingAndInvitedAndUserDetailsJsonResponse
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
@@ -33,6 +33,7 @@ def deleteStatus(request):
         status.deleted = True
         status.save()
         response['success'] = True
+        createDeleteStatusNotification(status)
         sendDeleteStatusNotfication(statusid)
     else:
         response['success'] = False
