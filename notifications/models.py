@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from chat.models import Message
 from notifications.fields import UUIDField
 from status.models import Status, StatusMessage
 
@@ -138,3 +139,50 @@ class Notification(models.Model):
             return "{} {} has deleted {}".format(self.initiatingUser.user.first_name,
                                                  self.initiatingUser.user.last_name,
                                                  self.status.text)
+
+class PushNotifications(models.Model):
+
+    PUSH_NOTIF_STATUS_MESSAGE = 1
+    PUSH_NOTIF_STATUS_CHANGED = 2
+    PUSH_NOTIF_STATUS_MEMBERS_ADDED = 3
+    PUSH_NOTIF_INVITED = 4
+    PUSH_NOTIF_DELETED = 5
+    PUSH_NOTIF_CHAT = 6
+
+    PUSH_NOTIF_TYPE_CHOICES = ((PUSH_NOTIF_STATUS_MESSAGE, "Push New Activity Message"),
+                               (PUSH_NOTIF_STATUS_CHANGED, "Push Activity Changed"),
+                               (PUSH_NOTIF_STATUS_MEMBERS_ADDED, "Push Activity Member Added"),
+                               (PUSH_NOTIF_INVITED, "Push Invited To Activity"),
+                               (PUSH_NOTIF_DELETED, "Push Activity Deleted"),
+                               (PUSH_NOTIF_CHAT, "Push New Chat Message"))
+
+    date = models.DateTimeField(auto_now=True)
+    sendingUser = models.ForeignKey(UserProfile)
+    receivingUsers = models.ManyToManyField(UserProfile, related_name='pushNotifications')
+    pushNotificationType = models.IntegerField(choices=PUSH_NOTIF_TYPE_CHOICES, db_index=True)
+    status = models.ForeignKey(Status, null=True, blank=True)
+    message = models.ForeignKey(StatusMessage, null=True, blank=True)
+    chatMessage = models.ForeignKey(Message, null=True, blank=True)
+
+    def __str__(self):
+        if self.notificationType == self.PUSH_NOTIF_STATUS_MESSAGE:
+            return self.message.user.user.first_name + " " + self.message.user.user.last_name + " commented on " + \
+                          self.message.status.text + " : " + self.message.text
+
+        elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_CHANGED:
+            return self.status.user.user.first_name + " " + self.status.user.user.last_name + "has made changes to" + \
+                        self.status.status.text
+
+        elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_MEMBERS_ADDED:
+            return "{} {} is now attending {}".format(self.sendingUser.user.first_name,
+                                                      self.sendingUser.user.last_name, str(self.status.text))
+
+        elif self.pushNotificationType == self.PUSH_NOTIF_INVITED:
+            return self.sendingUser.user.first_name + " " + self.sendingUser.user.last_name + " invited you to " + self.status.text
+
+        elif self.pushNotificationType == self.PUSH_NOTIF_DELETED:
+            return self.status.user.user.first_name + " " + self.status.user.user.last_name + " deleted " + \
+                          self.status.text
+
+        elif self.pushNotificationType == self.PUSH_NOTIF_CHAT:
+            return self.sendingUser.user.first_name + " " + self.sendingUser.user.last_name + ": " + self.chatMessage.text

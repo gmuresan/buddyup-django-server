@@ -3,7 +3,7 @@ import _thread as thread
 import datetime
 from django.contrib.auth.models import User
 from chat.models import Message
-from notifications.models import GCMDevice, APNSDevice
+from notifications.models import GCMDevice, APNSDevice, PushNotifications
 from status.helpers import isStatusVisibleToUser
 from status.models import StatusMessage, Status
 from userprofile.models import UserProfile, Group
@@ -62,21 +62,28 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
         return None, None
 
     try:
-        messageContents = attendingUser.user.first_name + " " + attendingUser.user.last_name + " is now attending " + \
-                          status.text
-        extra = {'id': status.id, 'statusid': status.id, 'type': 'attending', 'userid': attendingUser.id,
-                 'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
+        pushNotification = PushNotifications.objects.get(status=status, sendingUser=attendingUser)
+    except PushNotifications.DoesNotExist:
+        pushNotification = PushNotifications.objects.create(sendingUser=attendingUser, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED, status=status)
+        pushNotification.receivingUsers.add(status.user)
 
-        androidDevices = GCMDevice.objects.filter(user=status.user)
-        iosDevices = APNSDevice.objects.filter(user=status.user)
+        try:
+            messageContents = str(pushNotification)
+            extra = {'id': status.id, 'statusid': status.id, 'type': 'attending', 'userid': attendingUser.id,
+                     'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
 
-        androidResponse = androidDevices.send_message(messageContents, extra=extra)
-        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+            androidDevices = GCMDevice.objects.filter(user=status.user)
+            iosDevices = APNSDevice.objects.filter(user=status.user)
 
-        return androidResponse, iosResponse
+            androidResponse = androidDevices.send_message(messageContents, extra=extra)
+            iosResponse = iosDevices.send_message(messageContents, extra=extra)
 
-    except User.DoesNotExist:
-        return None, None
+            return androidResponse, iosResponse
+
+        except User.DoesNotExist:
+            return None, None
+
+    return None, None
 
 
 def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
