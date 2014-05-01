@@ -8,7 +8,7 @@ MAX_NOTIFICATION_AGE_DAYS = 5
 
 def getNotificationsJson(user, since=None):
     notifications = Notification.objects.filter(users=user)
-    notifications = notifications.filter(Q(status__isnull=True) | Q(status__deleted=False))
+    notifications = notifications.filter(Q(status__isnull=True) | Q(status__deleted=False) | Q(notificationType=Notification.NOTIF_DELETED))
     if since is not None:
         notifications = notifications.filter(date__gt=since)
     else:
