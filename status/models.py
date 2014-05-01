@@ -18,14 +18,14 @@ class Status(geomodels.Model):
     VISIBILITY = ((VIS_FRIENDS, 'friends'), (VIS_PUBLIC, 'public'), (VIS_FRIENDS_OF_FRIENDS, 'friends of friends'),
                   (VIS_CUSTOM, 'custom'))
 
-    ORIENTATION = (('u', 'u'), ('u', 'u'), ('u', 'u'), ('u', 'u'),)
+    ORIENTATION = (('u', 'u'), ('d', 'd'), ('l', 'l'), ('r', 'r'),)
 
     class Meta:
         ordering = ['-date']
 
     def __unicode__(self):
         username = self.user.user.username
-        return "{0} - {1}".format(username, unicode(self.text))
+        return "{0} - {1}".format(username, str(self.text))
 
     user = geomodels.ForeignKey(UserProfile, related_name='statuses')
     date = geomodels.DateTimeField(auto_now=True, db_index=True)
