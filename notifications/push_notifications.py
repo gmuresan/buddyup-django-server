@@ -144,6 +144,33 @@ def sendStatusMessageNotificationSynchronous(messageId):
     except User.DoesNotExist:
         return None, None
 
+def sendDeleteStatusNotfication(statusId):
+    thread.start_new_thread(sendDeleteStatusNotficationSynchronous, (statusId, ))
+
+def sendDeleteStatusNotficationSynchronous(statusId):
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
+        return None
+
+    try:
+        audience = status.attending.all().exclude(pk=status.user.pk)
+
+        messageContents = status.user.user.first_name + " " + status.user.user.last_name + " deleted " + \
+                          status.text
+
+        extra = {'id': status.id, 'statusid': status.id}
+
+        androidDevices = GCMDevice.objects.filter(user__in=audience)
+        iosDevices = APNSDevice.objects.filter(user__in=audience)
+
+        androidResponse = androidDevices.send_message(messageContents, extra=extra)
+        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+
+        return androidResponse, iosResponse
+
+    except User.DoesNotExist:
+        return None, None
 
 def sendPokeNotifcation(pokeObj):
     thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
