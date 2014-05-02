@@ -92,3 +92,4 @@ class DeviceAdmin(admin.ModelAdmin):
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, DeviceAdmin)
 admin.site.register(Notification)
+admin.site.register(PushNotifications)

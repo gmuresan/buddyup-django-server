@@ -61,8 +61,9 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
     except UserProfile.DoesNotExist:
         return None, None
 
+
     try:
-        pushNotification = PushNotifications.objects.get(status=status, sendingUser=attendingUser)
+        pushNotification = PushNotifications.objects.get(status=status, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED, sendingUser=attendingUser)
     except PushNotifications.DoesNotExist:
         pushNotification = PushNotifications.objects.create(sendingUser=attendingUser, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED, status=status)
         pushNotification.receivingUsers.add(status.user)

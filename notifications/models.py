@@ -165,7 +165,7 @@ class PushNotifications(models.Model):
     chatMessage = models.ForeignKey(Message, null=True, blank=True)
 
     def __str__(self):
-        if self.notificationType == self.PUSH_NOTIF_STATUS_MESSAGE:
+        if self.pushNotificationType == self.PUSH_NOTIF_STATUS_MESSAGE:
             return self.message.user.user.first_name + " " + self.message.user.user.last_name + " commented on " + \
                           self.message.status.text + " : " + self.message.text
 
