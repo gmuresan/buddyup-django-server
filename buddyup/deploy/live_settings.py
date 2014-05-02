@@ -17,7 +17,7 @@ DATABASES = {
 }
 
 STATIC_ROOT = "%(venv_path)s/static"
-STATIC_URL = "%(live_host)s/static"
+STATIC_URL = "%(live_host)s/static/"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTOCOL", "https")
 
