@@ -9,7 +9,7 @@ from status.models import Poke
 
 
 class DeviceAdmin(admin.ModelAdmin):
-    list_display = ("__unicode__", "device_id", "user", "active")
+    list_display = ("__str__", "device_id", "user", "active")
     search_fields = ("name", "device_id", "user__username")
     list_filter = ("active", )
     actions = ("sendTestPokeNotification", "sendTestChatNotification", "send_message", "send_bulk_message", "enable", "disable")
@@ -92,3 +92,4 @@ class DeviceAdmin(admin.ModelAdmin):
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, DeviceAdmin)
 admin.site.register(Notification)
+admin.site.register(PushNotifications)

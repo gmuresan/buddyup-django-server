@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 
 
 class UserProfile(models.Model):
-    def __unicode__(self):
+    def __str__(self):
         return self.user.username
 
     user = models.OneToOneField(User)
@@ -28,14 +28,14 @@ class UserProfile(models.Model):
 class FacebookUser(models.Model):
     facebookUID = models.CharField(max_length=64, db_index=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.facebookUID
 
 
 class Group(models.Model):
     FAVORITES_GROUP_NAME = "Favorites"
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name + " - " + self.user.user.username
 
     name = models.CharField(max_length=64, db_index=True)
@@ -45,7 +45,7 @@ class Group(models.Model):
 
 
 class Feedback(models.Model):
-    def __unicode__(self):
+    def __str__(self):
         return self.user.user.email + " - " + self.text
 
     user = models.ForeignKey(UserProfile, related_name='submittedFeedback')

@@ -23,7 +23,7 @@ class Status(geomodels.Model):
     class Meta:
         ordering = ['-date']
 
-    def __unicode__(self):
+    def __str__(self):
         username = self.user.user.username
         return "{0} - {1}".format(username, str(self.text))
 
@@ -75,7 +75,7 @@ class StatusMessage(geomodels.Model):
 
 
 class Location(geomodels.Model):
-    def __unicode__(self):
+    def __str__(self):
         unicode = u"{0}, {1}".format(self.lat, self.lng)
         if self.venue:
             unicode += u" {0}".format(self.venue)

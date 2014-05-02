@@ -5,8 +5,9 @@ import pytz
 from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
-from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification
-from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification
+from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification, createDeleteStatusNotification
+from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification, sendDeleteStatusNotfication, \
+    sendAttendingStatusPushNotificationSynchronous
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingAndInvitedAndUserDetailsJsonResponse
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
@@ -33,6 +34,8 @@ def deleteStatus(request):
         status.deleted = True
         status.save()
         response['success'] = True
+        createDeleteStatusNotification(status)
+        sendDeleteStatusNotfication(statusid)
     else:
         response['success'] = False
         response['error'] = "Can not delete another user's status"
@@ -191,10 +194,12 @@ def postStatus(request):
         try:
             status = Status.objects.get(pk=statusid)
             createStatusChangedNotification(status)
+            shouldPostNotification = False
         except Status.DoesNotExist:
             return errorResponse('status does not exist with that id')
     else:
         status = Status(user=userprofile)
+        shouldPostNotification = True
 
     status.expires = expires
     status.text = text
@@ -250,7 +255,8 @@ def postStatus(request):
             fbProfile = FacebookProfile(userprofile, accessToken)
             fbProfile.shareStatus(status, request)
 
-    sendFavoritesStatusPushNotification(status.id)
+    if shouldPostNotification:
+        sendFavoritesStatusPushNotification(status.id)
 
     response['success'] = True
     response['statusid'] = status.id

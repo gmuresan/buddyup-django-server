@@ -14,14 +14,11 @@ except (ImportError, AttributeError):
 
 
 class StringUUID(uuid.UUID):
-    def __unicode__(self):
-        return self.hex
-
     def __str__(self):
         return self.hex
 
     def __len__(self):
-        return len(self.__unicode__())
+        return len(self.__str__())
 
 
 class UUIDField(Field):

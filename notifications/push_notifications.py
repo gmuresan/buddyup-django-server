@@ -3,7 +3,7 @@ import _thread as thread
 import datetime
 from django.contrib.auth.models import User
 from chat.models import Message
-from notifications.models import GCMDevice, APNSDevice
+from notifications.models import GCMDevice, APNSDevice, PushNotifications
 from status.helpers import isStatusVisibleToUser
 from status.models import StatusMessage, Status
 from userprofile.models import UserProfile, Group
@@ -61,22 +61,30 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
     except UserProfile.DoesNotExist:
         return None, None
 
+
     try:
-        messageContents = attendingUser.user.first_name + " " + attendingUser.user.last_name + " is now attending " + \
-                          status.text
-        extra = {'id': status.id, 'statusid': status.id, 'type': 'attending', 'userid': attendingUser.id,
-                 'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
+        pushNotification = PushNotifications.objects.get(status=status, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED, sendingUser=attendingUser)
+    except PushNotifications.DoesNotExist:
+        pushNotification = PushNotifications.objects.create(sendingUser=attendingUser, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED, status=status)
+        pushNotification.receivingUsers.add(status.user)
 
-        androidDevices = GCMDevice.objects.filter(user=status.user)
-        iosDevices = APNSDevice.objects.filter(user=status.user)
+        try:
+            messageContents = str(pushNotification)
+            extra = {'id': status.id, 'statusid': status.id, 'type': 'attending', 'userid': attendingUser.id,
+                     'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
 
-        androidResponse = androidDevices.send_message(messageContents, extra=extra)
-        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+            androidDevices = GCMDevice.objects.filter(user=status.user)
+            iosDevices = APNSDevice.objects.filter(user=status.user)
 
-        return androidResponse, iosResponse
+            androidResponse = androidDevices.send_message(messageContents, extra=extra)
+            iosResponse = iosDevices.send_message(messageContents, extra=extra)
 
-    except User.DoesNotExist:
-        return None, None
+            return androidResponse, iosResponse
+
+        except User.DoesNotExist:
+            return None, None
+
+    return None, None
 
 
 def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
@@ -144,6 +152,33 @@ def sendStatusMessageNotificationSynchronous(messageId):
     except User.DoesNotExist:
         return None, None
 
+def sendDeleteStatusNotfication(statusId):
+    thread.start_new_thread(sendDeleteStatusNotficationSynchronous, (statusId, ))
+
+def sendDeleteStatusNotficationSynchronous(statusId):
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
+        return None
+
+    try:
+        audience = status.attending.all().exclude(pk=status.user.pk)
+
+        messageContents = status.user.user.first_name + " " + status.user.user.last_name + " deleted " + \
+                          status.text
+
+        extra = {'id': status.id, 'statusid': status.id}
+
+        androidDevices = GCMDevice.objects.filter(user__in=audience)
+        iosDevices = APNSDevice.objects.filter(user__in=audience)
+
+        androidResponse = androidDevices.send_message(messageContents, extra=extra)
+        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+
+        return androidResponse, iosResponse
+
+    except User.DoesNotExist:
+        return None, None
 
 def sendPokeNotifcation(pokeObj):
     thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
