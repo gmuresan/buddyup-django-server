@@ -470,8 +470,7 @@ def create():
     # Create virtualenv
     sudo("mkdir -p %s" % env.venv_home, True)
     sudo("chown %s %s" % (env.user, env.venv_home), True)
-    sudo("chown -R %s %s" % (env.user, env.python_dir), True
-    )
+    sudo("chown -R %s %s" % (env.user, env.python_dir), True)
     #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
@@ -506,25 +505,25 @@ def create():
         psql("CREATE EXTENSION postgis_topology;", True, True)
 
     #
-    # # Set up SSL certificate.
-    # conf_path = "/etc/nginx/conf"
-    # if not exists(conf_path):
-    #     sudo("mkdir %s" % conf_path)
-    # with cd(conf_path):
-    #     crt_file = env.proj_name + ".crt"
-    #     key_file = env.proj_name + ".key"
-    #     if not exists(crt_file) and not exists(key_file):
-    #         try:
-    #             crt_local, = glob(os.path.join("deploy", "*.crt"))
-    #             key_local, = glob(os.path.join("deploy", "*.key"))
-    #         except ValueError:
-    #             parts = (crt_file, key_file, env.live_host)
-    #             sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
-    #                  "-subj '/CN=%s' -days 3650" % parts)
-    #         else:
-    #             upload_template(crt_local, crt_file, use_sudo=True)
-    #             upload_template(key_local, key_file, use_sudo=True)
-    #
+    # Set up SSL certificate.
+    conf_path = "/etc/nginx/conf"
+    if not exists(conf_path):
+        sudo("mkdir %s" % conf_path)
+    with cd(conf_path):
+        crt_file = env.proj_name + ".crt"
+        key_file = env.proj_name + ".key"
+        if not exists(crt_file) and not exists(key_file):
+            try:
+                crt_local, = glob(os.path.join("deploy", "*.crt"))
+                key_local, = glob(os.path.join("deploy", "*.key"))
+            except ValueError:
+                parts = (crt_file, key_file, env.live_host)
+                sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
+                     "-subj '/CN=%s' -days 3650" % parts)
+            else:
+                upload_template(crt_local, crt_file, use_sudo=True)
+                upload_template(key_local, key_file, use_sudo=True)
+
     # Set up project.
     upload_template_and_reload("settings")
     with project():
