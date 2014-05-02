@@ -104,23 +104,34 @@ def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invited
     except Status.DoesNotExist:
         return None, None
 
-    try:
-        audience = invitedUsers
+    invitedUsersCopy = invitedUsers.clone()
 
-        messageContents = invitingUser.user.first_name + " " + invitingUser.user.last_name + " invited you to " + status.text
-        extra = {'id': status.id, 'statusid': status.id, 'type': 'invite', 'userid': invitingUser.id,
-                 'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
+    for user in invitedUsersCopy:
+        try:
+            pushNotification = PushNotifications.objects.get(status=status, pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED, receivingUser=user, sendingUser=invitingUser)
+            invitedUsers = invitedUsers.exclude(pk=user.pk)
+        except PushNotifications.DoesNotExist:
+            pushNotification = PushNotifications.objects.create(sendingUser=invitingUser, pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED, status=status)
+            pushNotification.receivingUsers.add(user)
+    if(invitedUsers.len()):
+        try:
+            audience = invitedUsers
 
-        androidDevices = GCMDevice.objects.filter(user__in=audience)
-        iosDevices = APNSDevice.objects.filter(user__in=audience)
+            messageContents = str(pushNotification)
+            extra = {'id': status.id, 'statusid': status.id, 'type': 'invite', 'userid': invitingUser.id,
+                     'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
 
-        androidResponse = androidDevices.send_message(messageContents, extra=extra)
-        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+            androidDevices = GCMDevice.objects.filter(user__in=audience)
+            iosDevices = APNSDevice.objects.filter(user__in=audience)
 
-        return androidResponse, iosResponse
+            androidResponse = androidDevices.send_message(messageContents, extra=extra)
+            iosResponse = iosDevices.send_message(messageContents, extra=extra)
 
-    except User.DoesNotExist:
-        return None, None
+            return androidResponse, iosResponse
+
+        except User.DoesNotExist:
+            return None, None
+    return None, None
 
 
 def sendStatusMessageNotification(messageId):
