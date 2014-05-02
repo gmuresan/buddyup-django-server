@@ -510,11 +510,11 @@ def create():
     if not exists(conf_path):
         sudo("mkdir %s" % conf_path)
     with cd(conf_path):
-        crt_file = env.proj_name + ".crt"
+        crt_file = env.proj_name + ".pem"
         key_file = env.proj_name + ".key"
-        if not exists(crt_file) and not exists(key_file):
+        if not exists(crt_file) or not exists(key_file):
             try:
-                crt_local, = glob(os.path.join("deploy", "*.crt"))
+                crt_local, = glob(os.path.join("deploy", "*.pem"))
                 key_local, = glob(os.path.join("deploy", "*.key"))
             except ValueError:
                 parts = (crt_file, key_file, env.live_host)
