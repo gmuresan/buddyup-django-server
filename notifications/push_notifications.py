@@ -104,16 +104,16 @@ def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invited
     except Status.DoesNotExist:
         return None, None
 
-    invitedUsersCopy = invitedUsers.clone()
+    invitedUsersCopy = list(invitedUsers)
 
     for user in invitedUsersCopy:
         try:
-            pushNotification = PushNotifications.objects.get(status=status, pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED, receivingUser=user, sendingUser=invitingUser)
+            pushNotification = PushNotifications.objects.get(status=status, pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED, receivingUsers=user, sendingUser=invitingUser)
             invitedUsers = invitedUsers.exclude(pk=user.pk)
         except PushNotifications.DoesNotExist:
             pushNotification = PushNotifications.objects.create(sendingUser=invitingUser, pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED, status=status)
             pushNotification.receivingUsers.add(user)
-    if(invitedUsers.len()):
+    if(len(invitedUsers)):
         try:
             audience = invitedUsers
 
