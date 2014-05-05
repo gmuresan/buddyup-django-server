@@ -418,6 +418,7 @@ def getStatusDetails(request):
     response['users'] = userDetails
     response['locationsuggestions'] = locationSuggestions
     response['timesuggestions'] = timeSuggestions
+    response['deleted'] = status.deleted
 
     response.update(createStatusJsonObject(status))
 
