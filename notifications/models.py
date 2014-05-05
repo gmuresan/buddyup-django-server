@@ -173,7 +173,7 @@ class PushNotifications(models.Model):
 
         elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_CHANGED:
             return self.status.user.user.first_name + " " + self.status.user.user.last_name + "has made changes to" + \
-                        self.status.status.text
+                        self.status.text
 
         elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_MEMBERS_ADDED:
             return "{} {} is now attending {}".format(self.sendingUser.user.first_name,
