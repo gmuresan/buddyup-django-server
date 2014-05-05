@@ -157,7 +157,7 @@ def sendStatusMessageNotificationSynchronous(messageId):
 
     try:
         audience = messageObj.status.attending.all().exclude(pk=messageObj.user.pk)
-        pushNotification.receivingUsers.add(audience)
+        pushNotification.receivingUsers.add(*audience)
 
         messageContents = str(pushNotification)
         extra = {'id': messageObj.status.id, 'statusid': messageObj.status.id,
