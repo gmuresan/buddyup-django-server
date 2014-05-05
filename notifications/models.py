@@ -172,7 +172,7 @@ class PushNotifications(models.Model):
                           self.message.status.text + " : " + self.message.text
 
         elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_CHANGED:
-            return self.status.user.user.first_name + " " + self.status.user.user.last_name + "has made changes to" + \
+            return self.status.user.user.first_name + " " + self.status.user.user.last_name + "has made changes to " + \
                         self.status.text
 
         elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_MEMBERS_ADDED:
