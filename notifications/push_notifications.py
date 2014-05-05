@@ -245,11 +245,17 @@ def sendChatNotificationsSynchronous(messageId):
     except Message.DoesNotExist:
         return None, None
 
+    pushNotification, isCreated = PushNotifications.objects.get_or_create(chatMessage=message,
+                                                                      pushNotificationType=PushNotifications.PUSH_NOTIF_CHAT,
+                                                                      sendingUser=message.user)
+
     try:
         userProfile = message.user
 
         audience = conversation.members.all()
         audience = audience.exclude(pk=userProfile.pk)
+
+        pushNotification.receivingUsers.add(*audience)
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
