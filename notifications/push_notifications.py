@@ -185,8 +185,13 @@ def sendDeleteStatusNotficationSynchronous(statusId):
     except Status.DoesNotExist:
         return None
 
+    pushNotification, isCreated = PushNotifications.objects.get_or_create(status=status,
+                                                                          pushNotificationType=PushNotifications.PUSH_NOTIF_DELETED,
+                                                                          sendingUser=status.user)
+
     try:
         audience = status.attending.all().exclude(pk=status.user.pk)
+        pushNotification.receivingUsers.add(*audience)
 
         messageContents = status.user.user.first_name + " " + status.user.user.last_name + " deleted " + \
                           status.text
