@@ -144,11 +144,12 @@ def sendStatusMessageNotificationSynchronous(messageId):
     except StatusMessage.DoesNotExist:
         return None, None
 
+    pushNotification, isCreated = PushNotifications.objects.get_or_create(message = messageObj)
+
     try:
         audience = messageObj.status.attending.all().exclude(pk=messageObj.user.pk)
 
-        messageContents = messageObj.user.user.first_name + " " + messageObj.user.user.last_name + " commented on " + \
-                          messageObj.status.text + " : " + messageObj.text
+        messageContents = str(pushNotification)
         extra = {'id': messageObj.status.id, 'statusid': messageObj.status.id,
                  'date': messageObj.date.strftime(DATETIME_FORMAT),
                  'text': messageObj.text, 'type': 'statuscomment', 'userid': messageObj.user.id}
