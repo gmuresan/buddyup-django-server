@@ -144,7 +144,7 @@ def sendStatusMessageNotificationSynchronous(messageId):
     except StatusMessage.DoesNotExist:
         return None, None
 
-    pushNotification, isCreated = PushNotifications.objects.get_or_create(message = messageObj)
+    pushNotification, isCreated = PushNotifications.objects.get_or_create(message = messageObj, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MESSAGE)
 
     try:
         audience = messageObj.status.attending.all().exclude(pk=messageObj.user.pk)
