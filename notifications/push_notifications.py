@@ -183,7 +183,7 @@ def sendDeleteStatusNotficationSynchronous(statusId):
     try:
         status = Status.objects.get(pk=statusId)
     except Status.DoesNotExist:
-        return None
+        return None, None
 
     pushNotification, isCreated = PushNotifications.objects.get_or_create(status=status,
                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_DELETED,
@@ -193,10 +193,42 @@ def sendDeleteStatusNotficationSynchronous(statusId):
         audience = status.attending.all().exclude(pk=status.user.pk)
         pushNotification.receivingUsers.add(*audience)
 
-        messageContents = status.user.user.first_name + " " + status.user.user.last_name + " deleted " + \
-                          status.text
+        messageContents = str(pushNotification)
 
         extra = {'id': status.id, 'statusid': status.id}
+
+        androidDevices = GCMDevice.objects.filter(user__in=audience)
+        iosDevices = APNSDevice.objects.filter(user__in=audience)
+
+        androidResponse = androidDevices.send_message(messageContents, extra=extra)
+        iosResponse = iosDevices.send_message(messageContents, extra=extra)
+
+        return androidResponse, iosResponse
+
+
+    except User.DoesNotExist:
+        return None, None
+
+def sendEditStatusNotification(statusId):
+    thread.start_new_thread(sendEditStatusNotificationSynchronous, (statusId, ))
+
+def sendEditStatusNotificationSynchronous(statusId):
+    try:
+        status = Status.objects.get(pk=statusId)
+    except Status.DoesNotExist:
+        return None, None
+
+    pushNotification, isCreated = PushNotifications.objects.get_or_create(status=status,
+                                                                          pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_CHANGED,
+                                                                          sendingUser=status.user)
+
+    try:
+        audience = status.attending.all().exclude(pk=status.user.pk)
+        pushNotification.receivingUsers.add(*audience)
+
+        messageContents = str(pushNotification)
+
+        extra = {'id': status.id, 'statusid': status.id,  'type': 'statusedited'}
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
