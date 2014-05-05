@@ -61,11 +61,14 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
     except UserProfile.DoesNotExist:
         return None, None
 
-
     try:
-        pushNotification = PushNotifications.objects.get(status=status, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED, sendingUser=attendingUser)
+        pushNotification = PushNotifications.objects.get(status=status,
+                                                         pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED,
+                                                         sendingUser=attendingUser)
     except PushNotifications.DoesNotExist:
-        pushNotification = PushNotifications.objects.create(sendingUser=attendingUser, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED, status=status)
+        pushNotification = PushNotifications.objects.create(sendingUser=attendingUser,
+                                                            pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MEMBERS_ADDED,
+                                                            status=status)
         pushNotification.receivingUsers.add(status.user)
 
         try:
@@ -108,12 +111,16 @@ def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invited
 
     for user in invitedUsersCopy:
         try:
-            pushNotification = PushNotifications.objects.get(status=status, pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED, receivingUsers=user, sendingUser=invitingUser)
+            pushNotification = PushNotifications.objects.get(status=status,
+                                                             pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED,
+                                                             receivingUsers=user, sendingUser=invitingUser)
             invitedUsers = invitedUsers.exclude(pk=user.pk)
         except PushNotifications.DoesNotExist:
-            pushNotification = PushNotifications.objects.create(sendingUser=invitingUser, pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED, status=status)
+            pushNotification = PushNotifications.objects.create(sendingUser=invitingUser,
+                                                                pushNotificationType=PushNotifications.PUSH_NOTIF_INVITED,
+                                                                status=status)
             pushNotification.receivingUsers.add(user)
-    if(len(invitedUsers)):
+    if (len(invitedUsers)):
         try:
             audience = invitedUsers
 
@@ -144,10 +151,13 @@ def sendStatusMessageNotificationSynchronous(messageId):
     except StatusMessage.DoesNotExist:
         return None, None
 
-    pushNotification, isCreated = PushNotifications.objects.get_or_create(message = messageObj, pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MESSAGE)
+    pushNotification, isCreated = PushNotifications.objects.get_or_create(message=messageObj,
+                                                                          pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MESSAGE,
+                                                                          sendingUser=messageObj.user)
 
     try:
         audience = messageObj.status.attending.all().exclude(pk=messageObj.user.pk)
+        pushNotification.receivingUsers.add(audience)
 
         messageContents = str(pushNotification)
         extra = {'id': messageObj.status.id, 'statusid': messageObj.status.id,
@@ -164,8 +174,10 @@ def sendStatusMessageNotificationSynchronous(messageId):
     except User.DoesNotExist:
         return None, None
 
+
 def sendDeleteStatusNotfication(statusId):
     thread.start_new_thread(sendDeleteStatusNotficationSynchronous, (statusId, ))
+
 
 def sendDeleteStatusNotficationSynchronous(statusId):
     try:
@@ -191,6 +203,7 @@ def sendDeleteStatusNotficationSynchronous(statusId):
 
     except User.DoesNotExist:
         return None, None
+
 
 def sendPokeNotifcation(pokeObj):
     thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
