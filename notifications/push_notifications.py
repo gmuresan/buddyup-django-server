@@ -261,6 +261,7 @@ def sendChatNotificationsSynchronous(messageId):
         iosDevices = APNSDevice.objects.filter(user__in=audience)
 
         messageContents = str(pushNotification)
+        extra = {'id': conversation.id, 'type': 'chat', 'userid': message.user.id}
 
         androidResponse = androidDevices.send_message(messageContents, extra=extra)
         iosResponse = iosDevices.send_message(messageContents, extra=extra)
