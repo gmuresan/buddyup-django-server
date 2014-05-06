@@ -33,7 +33,13 @@ def sendFavoritesStatusPushNotificationSynchronous(statusId):
         if isStatusVisibleToUser(status, user):
             usersToNotify.append(user)
 
-    messageContents = status.user.user.first_name + " " + status.user.user.last_name + " posted an activity: " + status.text
+    pushNotification, isCreated = PushNotifications.objects.get_or_create(status=status,
+                                                                          pushNotificationType=PushNotifications.PUSH_NOTIF_FAVORITES,
+                                                                          sendingUser=status.user)
+    pushNotification.receivingUsers.add(*usersToNotify)
+
+
+    messageContents = str(pushNotification)
     extra = {'id': status.id, 'statusid': status.id, 'type': 'statuspost', 'userid': status.user.id,
              'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
 

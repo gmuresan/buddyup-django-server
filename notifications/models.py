@@ -156,7 +156,7 @@ class PushNotifications(models.Model):
                                (PUSH_NOTIF_INVITED, "Push Invited To Activity"),
                                (PUSH_NOTIF_DELETED, "Push Activity Deleted"),
                                (PUSH_NOTIF_CHAT, "Push New Chat Message"),
-                               (PUSH_NOTIF_STATUS_CHANGED, "Push Activity Changed") )
+                               (PUSH_NOTIF_FAVORITES, "Push Post Activity Favorites") )
 
     date = models.DateTimeField(auto_now=True)
     sendingUser = models.ForeignKey(UserProfile)
@@ -188,3 +188,6 @@ class PushNotifications(models.Model):
 
         elif self.pushNotificationType == self.PUSH_NOTIF_CHAT:
             return self.sendingUser.user.first_name + " " + self.sendingUser.user.last_name + ": " + self.chatMessage.text
+
+        elif self.pushNotificationType == self.PUSH_NOTIF_FAVORITES:
+            return self.status.user.user.first_name + " " + self.status.user.user.last_name + " posted an activity: " + self.status.text
