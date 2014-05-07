@@ -545,6 +545,9 @@ class PostStatusTests(TestCase):
         for facebookId in fbfriends:
             self.assertIn(facebookId, fbFriendIds)
 
+    def testStatusCaching(self):
+        pass
+
 
 class facebookShareStatusTests(TestCase):
     def setUp(self):

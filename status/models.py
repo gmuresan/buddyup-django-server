@@ -63,8 +63,12 @@ class Status(geomodels.Model):
         else:
             return self.user.friends.all()
 
-    def getCacheKey(self):
-        return 'status_' + str(self.id)
+    def getCacheKeyNoneStatic(self):
+        return self.getCacheKey(self.id)
+
+    @staticmethod
+    def getCacheKey(statusId):
+        return 'status_' + str(statusId)
 
     def getStatusDuration(self):
         return (self.expires.replace(tzinfo=None) - self.starts.replace(tzinfo=None)).total_seconds()
