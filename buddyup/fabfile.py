@@ -1,25 +1,22 @@
 import os
-import pdb
 import re
 import sys
 from functools import wraps
 from getpass import getpass, getuser
 from glob import glob
 from contextlib import contextmanager
-import getpass as _getpass
 
 from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
+from fabric.operations import run
 
-from fabric.operations import local, run
 
 
 ################
 # Config setup #
 ################
-from virtualenv import mkdir
 
 conf = {}
 if sys.argv[0].split(os.sep)[-1] == "fab":
@@ -474,7 +471,7 @@ def create():
     #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
-            prompt = raw_input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
+            prompt = input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
             if prompt.lower() != "yes":
                 print("\nAborting!")
                 return False
@@ -504,25 +501,7 @@ def create():
         psql("CREATE EXTENSION postgis;" , True, True)
         psql("CREATE EXTENSION postgis_topology;", True, True)
 
-    #
-    # Set up SSL certificate.
-    conf_path = "/etc/nginx/conf"
-    if not exists(conf_path):
-        sudo("mkdir %s" % conf_path)
-    with cd(conf_path):
-        crt_file = env.proj_name + ".pem"
-        key_file = env.proj_name + ".key"
-        if not exists(crt_file) or not exists(key_file):
-            try:
-                crt_local, = glob(os.path.join("deploy", "*.pem"))
-                key_local, = glob(os.path.join("deploy", "*.key"))
-            except ValueError:
-                parts = (crt_file, key_file, env.live_host)
-                sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
-                     "-subj '/CN=%s' -days 3650" % parts)
-            else:
-                upload_template(crt_local, crt_file, use_sudo=True)
-                upload_template(key_local, key_file, use_sudo=True)
+    uploadSSLCerts()
 
     # Set up project.
     upload_template_and_reload("settings")
@@ -545,6 +524,28 @@ def create():
     sudo("touch %s/logs/gunicorn_supervisor.log" % env.venv_path)
 
     return True
+
+@task
+@log_call
+def uploadSSLCerts():
+     # Set up SSL certificate.
+    conf_path = "/etc/nginx/conf"
+    if not exists(conf_path):
+        sudo("mkdir %s" % conf_path)
+    with cd(conf_path):
+        crt_file = env.proj_name + ".pem"
+        key_file = env.proj_name + ".key"
+        if not exists(crt_file) or not exists(key_file):
+            try:
+                crt_local, = glob(os.path.join("deploy", "*.pem"))
+                key_local, = glob(os.path.join("deploy", "*.key"))
+            except ValueError:
+                parts = (crt_file, key_file, env.live_host)
+                sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
+                     "-subj '/CN=%s' -days 3650" % parts)
+            else:
+                upload_template(crt_local, crt_file, use_sudo=True)
+                upload_template(key_local, key_file, use_sudo=True)
 
 
 @task
@@ -592,11 +593,11 @@ def restart():
     """
     with cd(env.venv_path):
         pid_path = "%s/gunicorn.pid" % env.proj_path
-        if exists(pid_path):
+        #if exists(pid_path):
             #sudo("kill -HUP `cat %s`" % pid_path)
-            sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
-        else:
-            sudo("supervisorctl start gunicorn_%s" % env.proj_name)
+        sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
+        #else:
+            #sudo("supervisorctl start gunicorn_%s" % env.proj_name)
 
 
 @task
@@ -610,7 +611,7 @@ def deploy():
     processes for the project.
     """
     if not exists(env.venv_path):
-        prompt = raw_input("\nVirtualenv doesn't exist: %s\nWould you like "
+        prompt = input("\nVirtualenv doesn't exist: %s\nWould you like "
                            "to create it? (yes/no) " % env.proj_name)
         if prompt.lower() != "yes":
             print("\nAborting!")
