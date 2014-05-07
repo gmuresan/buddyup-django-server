@@ -1,13 +1,15 @@
 import pdb
 from django.contrib.gis.geos import Point
 from django.views.decorators.csrf import csrf_exempt
+from django.core.cache import caches
 import pytz
 from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification, createDeleteStatusNotification
 from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification, sendDeleteStatusNotfication, \
-    sendAttendingStatusPushNotificationSynchronous, sendInvitedToStatusNotificationSynchronous
+    sendAttendingStatusPushNotificationSynchronous, sendInvitedToStatusNotificationSynchronous, \
+    sendEditStatusNotification
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingAndInvitedAndUserDetailsJsonResponse
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
@@ -257,9 +259,15 @@ def postStatus(request):
 
     if shouldPostNotification:
         sendFavoritesStatusPushNotification(status.id)
+    else:
+        sendEditStatusNotification(status.id)
 
     response['success'] = True
     response['statusid'] = status.id
+
+    cacheKey = status.getCacheKey()
+
+    cache.get(cacheKey, status)
 
     return HttpResponse(json.dumps(response))
 
@@ -418,6 +426,7 @@ def getStatusDetails(request):
     response['users'] = userDetails
     response['locationsuggestions'] = locationSuggestions
     response['timesuggestions'] = timeSuggestions
+    response['deleted'] = status.deleted
 
     response.update(createStatusJsonObject(status))
 

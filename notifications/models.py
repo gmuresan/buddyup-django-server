@@ -148,13 +148,15 @@ class PushNotifications(models.Model):
     PUSH_NOTIF_INVITED = 4
     PUSH_NOTIF_DELETED = 5
     PUSH_NOTIF_CHAT = 6
+    PUSH_NOTIF_FAVORITES = 7
 
     PUSH_NOTIF_TYPE_CHOICES = ((PUSH_NOTIF_STATUS_MESSAGE, "Push New Activity Message"),
                                (PUSH_NOTIF_STATUS_CHANGED, "Push Activity Changed"),
                                (PUSH_NOTIF_STATUS_MEMBERS_ADDED, "Push Activity Member Added"),
                                (PUSH_NOTIF_INVITED, "Push Invited To Activity"),
                                (PUSH_NOTIF_DELETED, "Push Activity Deleted"),
-                               (PUSH_NOTIF_CHAT, "Push New Chat Message"))
+                               (PUSH_NOTIF_CHAT, "Push New Chat Message"),
+                               (PUSH_NOTIF_FAVORITES, "Push Post Activity Favorites") )
 
     date = models.DateTimeField(auto_now=True)
     sendingUser = models.ForeignKey(UserProfile)
@@ -170,8 +172,8 @@ class PushNotifications(models.Model):
                           self.message.status.text + " : " + self.message.text
 
         elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_CHANGED:
-            return self.status.user.user.first_name + " " + self.status.user.user.last_name + "has made changes to" + \
-                        self.status.status.text
+            return self.status.user.user.first_name + " " + self.status.user.user.last_name + "has made changes to " + \
+                        self.status.text
 
         elif self.pushNotificationType == self.PUSH_NOTIF_STATUS_MEMBERS_ADDED:
             return "{} {} is now attending {}".format(self.sendingUser.user.first_name,
@@ -186,3 +188,6 @@ class PushNotifications(models.Model):
 
         elif self.pushNotificationType == self.PUSH_NOTIF_CHAT:
             return self.sendingUser.user.first_name + " " + self.sendingUser.user.last_name + ": " + self.chatMessage.text
+
+        elif self.pushNotificationType == self.PUSH_NOTIF_FAVORITES:
+            return self.status.user.user.first_name + " " + self.status.user.user.last_name + " posted an activity: " + self.status.text
