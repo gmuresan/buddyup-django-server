@@ -14,7 +14,7 @@ def createChat(request):
 
     userid = request.REQUEST['userid']
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User ID is not valid")
 
@@ -32,7 +32,7 @@ def createChat(request):
     for friendid in friendids:
 
         try:
-            friendProfile = UserProfile.objects.get(pk=friendid)
+            friendProfile = UserProfile.getUser(friendid)
         except UserProfile.DoesNotExist:
             return errorResponse("User with id " + str(friendid) + " does not exist")
 
@@ -82,7 +82,7 @@ def inviteToChat(request):
 
     userid = request.REQUEST['userid']
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User ID is not valid")
 
@@ -105,7 +105,7 @@ def inviteToChat(request):
 
     for friendid in friendids:
         try:
-            friendProfile = UserProfile.objects.get(pk=friendid)
+            friendProfile = UserProfile.getUser(friendid)
         except UserProfile.DoesNotExist:
             return errorResponse("Friend ID is not valid")
 
@@ -142,7 +142,7 @@ def leaveChat(request):
     chatid = request.REQUEST['chatid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -180,7 +180,7 @@ def sendMessage(request):
         since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -218,7 +218,7 @@ def getMessages(request):
         since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -241,7 +241,7 @@ def getChatPage(request):
     chatId = request.REQUEST['chatid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userId)
+        userProfile = UserProfile.getUser(userId)
         chat = Conversation.objects.get(pk=chatId)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")

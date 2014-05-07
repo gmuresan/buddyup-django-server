@@ -105,7 +105,7 @@ def getUserDetails(request):
 
     if userid is not None:
         try:
-            userProfile = UserProfile.objects.get(pk=userid)
+            userProfile = UserProfile.getUser(userid)
         except UserProfile.DoesNotExist:
             return errorResponse("Invalid user id")
 
@@ -117,7 +117,7 @@ def getUserDetails(request):
     elif len(userids) > 0:
         for userid in userids:
             try:
-                userProfile = UserProfile.objects.get(pk=userid)
+                userProfile = UserProfile.getUser(userid)
             except UserProfile.DoesNotExist:
                 return errorResponse("Invalid user id")
 
@@ -142,7 +142,7 @@ def createGroup(request):
     groupName = request.REQUEST['groupname']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -162,7 +162,7 @@ def deleteGroup(request):
     groupid = request.REQUEST['groupid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -190,7 +190,7 @@ def editGroupName(request):
     groupid = request.REQUEST['groupid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -220,7 +220,7 @@ def setGroups(request):
     groupids = json.loads(groupids)
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -236,7 +236,7 @@ def setGroups(request):
                     friendProfile = FacebookUser.objects.create(facebookUID=friendid)
     else:
         try:
-            friendProfile = UserProfile.objects.get(pk=friendid)
+            friendProfile = UserProfile.getUser(friendid)
         except UserProfile.DoesNotExist:
             return errorResponse("Friend user does not exist")
 
@@ -286,7 +286,7 @@ def addGroupMember(request):
     groupid = request.REQUEST['groupid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -311,7 +311,7 @@ def addGroupMember(request):
             group.fbMembers.add(facebookUser)
     else:
         try:
-            friend = UserProfile.objects.get(pk=friendid)
+            friend = UserProfile.getUser(friendid)
             group.members.add(friend)
         except User.DoesNotExist:
             return errorResponse("Friend does not exist")
@@ -330,7 +330,7 @@ def removeGroupMember(request):
     groupid = request.REQUEST['groupid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -356,7 +356,7 @@ def removeGroupMember(request):
                 group.fbMembers.remove(facebookUser)
     else:
         try:
-            friend = UserProfile.objects.get(pk=friendid)
+            friend = UserProfile.getUser(friendid)
             group.members.remove(friend)
         except User.DoesNotExist:
             return errorResponse("Friend does not exist")
@@ -373,7 +373,7 @@ def getGroups(request):
     userid = request.REQUEST['userid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -395,7 +395,7 @@ def setGroupMembers(request):
     friendids = json.loads(friendids)
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -427,7 +427,7 @@ def setGroupMembers(request):
                     group.fbMembers.add(facebookUser)
         else:
             try:
-                friend = UserProfile.objects.get(pk=friendid)
+                friend = UserProfile.getUser(friendid)
             except User.DoesNotExist:
                 return errorResponse("Friend does not exist")
 
@@ -450,7 +450,7 @@ def getFriends(request):
     userid = request.REQUEST['userid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -478,12 +478,12 @@ def blockFriend(request):
     friendid = request.REQUEST['friendid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
     try:
-        friendProfile = UserProfile.objects.get(pk=friendid)
+        friendProfile = UserProfile.getUser(friendid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid friend id")
 
@@ -506,12 +506,12 @@ def unblockFriend(request):
     friendid = request.REQUEST['friendid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
     try:
-        friendProfile = UserProfile.objects.get(pk=friendid)
+        friendProfile = UserProfile.getUser(friendid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid friend id")
 
@@ -535,7 +535,7 @@ def submitFeedback(request):
     text = request.REQUEST['text']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -556,7 +556,7 @@ def getNewData(request):
         since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -582,7 +582,7 @@ def goOffline(request):
     userid = request.REQUEST['userid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User does not exist")
 
@@ -610,7 +610,7 @@ def setSetting(request):
         return errorResponse("unknown key. Must be statusradius or imboredtext")
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User does not exist")
 
@@ -634,7 +634,7 @@ def getSetting(request):
     key = request.REQUEST['key']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User does not exist")
 
@@ -659,7 +659,7 @@ def registerForPushNotifications(request):
     platform = request.REQUEST['platform']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User does not exist")
 
@@ -691,7 +691,7 @@ def setFavoritesNotifications(request):
     value = request.REQUEST['value']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userId)
+        userProfile = UserProfile.getUser(userId)
     except UserProfile.DoesNotExist:
         return errorResponse("User does not exist")
 

@@ -17,7 +17,7 @@ def sendFavoritesStatusPushNotification(statusId):
 
 def sendFavoritesStatusPushNotificationSynchronous(statusId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None
 
@@ -58,12 +58,12 @@ def sendAttendingStatusPushNotification(statusId, attendingUserId):
 
 def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 
     try:
-        attendingUser = UserProfile.objects.get(pk=attendingUserId)
+        attendingUser = UserProfile.getUser(attendingUserId)
     except UserProfile.DoesNotExist:
         return None, None
 
@@ -102,14 +102,14 @@ def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
 
 def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invitedUserIds):
     try:
-        invitingUser = UserProfile.objects.get(pk=invitingUserId)
+        invitingUser = UserProfile.getUser(invitingUserId)
         invitedUsers = UserProfile.objects.filter(pk__in=invitedUserIds)
 
     except UserProfile.DoesNotExist:
         return None, None
 
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 
@@ -187,7 +187,7 @@ def sendDeleteStatusNotfication(statusId):
 
 def sendDeleteStatusNotficationSynchronous(statusId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 
@@ -220,7 +220,7 @@ def sendEditStatusNotification(statusId):
 
 def sendEditStatusNotificationSynchronous(statusId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 
