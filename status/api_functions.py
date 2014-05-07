@@ -194,7 +194,7 @@ def postStatus(request):
         expires = starts + timedelta(hours=8)
 
     try:
-        userprofile = UserProfile.objects.get(pk=userid)
+        userprofile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("User Id not valid")
 
@@ -248,7 +248,7 @@ def postStatus(request):
                     status.fbFriendsVisible.add(facebookUser)
             else:
                 try:
-                    friendProfile = UserProfile.objects.get(pk=friendId)
+                    friendProfile = UserProfile.getUser(friendId)
                     status.friendsVisible.add(friendProfile)
                 except UserProfile.DoesNotExist:
                     pass

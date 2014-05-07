@@ -63,7 +63,7 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
         return None, None
 
     try:
-        attendingUser = UserProfile.objects.get(pk=attendingUserId)
+        attendingUser = UserProfile.getUser(attendingUserId)
     except UserProfile.DoesNotExist:
         return None, None
 
@@ -102,7 +102,7 @@ def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
 
 def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invitedUserIds):
     try:
-        invitingUser = UserProfile.objects.get(pk=invitingUserId)
+        invitingUser = UserProfile.getUser(invitingUserId)
         invitedUsers = UserProfile.objects.filter(pk__in=invitedUserIds)
 
     except UserProfile.DoesNotExist:

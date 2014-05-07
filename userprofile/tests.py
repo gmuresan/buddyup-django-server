@@ -72,3 +72,8 @@ class UserDetailsTests(TestCase):
 
         self.assertTrue(userA['firstname'] == self.userProfile.user.first_name or userA['firstname'] == self.userProfile2.user.first_name)
         self.assertTrue(userB['lastname'] == self.userProfile.user.last_name or userB['lastname'] == self.userProfile2.user.last_name)
+
+    def testUserNotFound(self):
+        print("User Not Found")
+        with self.assertRaises(UserProfile.DoesNotExist):
+            UserProfile.getUser(111232323223232)
