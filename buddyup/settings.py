@@ -89,7 +89,7 @@ STATIC_ROOT = '/opt/buddyup/static/'
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
-STATIC_URL = 'http://epreneur.webfactional.com/static/'
+STATIC_URL = '/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (

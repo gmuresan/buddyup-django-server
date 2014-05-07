@@ -679,8 +679,10 @@ dl dd {
 }
 
 section.intro {
+    position:relative;
   width: 100%;
   height: 100%;
+  min-height: 485px;
   background-color: #fb9586;
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fb9586), color-stop(100%, #af1c06));
   background-image: -webkit-linear-gradient(#fb9586, #af1c06);
@@ -775,9 +777,9 @@ section.feature.feature-1 .iphone:last-child, section.feature.feature-3 .iphone:
   margin-right: 0;
 }
 section.feature.feature-1 .description, section.feature.feature-3 .description {
-  float: left;
+  float: right;
   display: block;
-  margin-right: 2.35765%;
+  margin-right: 12.35765%;
   width: 31.76157%;
   margin-top: 9.375em;
 }
@@ -786,7 +788,7 @@ section.feature.feature-1 .description:last-child, section.feature.feature-3 .de
 }
 @media screen and (max-width: 47.9375em) {
   section.feature.feature-1 .description, section.feature.feature-3 .description {
-    float: left;
+    float: right;
     display: block;
     margin-right: 2.35765%;
     width: 100%;
@@ -798,6 +800,7 @@ section.feature.feature-1 .description:last-child, section.feature.feature-3 .de
     margin-right: 0;
   }
 }
+
 section.feature.feature-2, section.feature.feature-4 {
   background-color: #f2f2f2;
 }
@@ -810,6 +813,7 @@ section.feature.feature-2 .iphone, section.feature.feature-4 .iphone {
   height: 31.25em;
   min-width: 16.25em;
   margin-top: 3.125em;
+
 }
 section.feature.feature-2 .iphone:last-child, section.feature.feature-4 .iphone:last-child {
   margin-right: 0;
@@ -838,6 +842,10 @@ section.feature.feature-2 .description:last-child, section.feature.feature-4 .de
   }
   section.feature.feature-2 .description:last-child, section.feature.feature-4 .description:last-child {
     margin-right: 0;
+  }
+
+  section.feature.feature-2 .iphone, section.feature.feature-4 .iphone {
+      margin-left: 17.05961%;
   }
 }
 
