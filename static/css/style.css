@@ -738,6 +738,7 @@ section.intro nav {
   bottom: 0.625em;
   width: 100%;
   text-align: center;
+  left: 0;
 }
 section.intro nav a {
   color: white;
