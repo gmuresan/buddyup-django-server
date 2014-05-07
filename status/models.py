@@ -64,7 +64,10 @@ class Status(geomodels.Model):
             return self.user.friends.all()
 
     def getCacheKey(self):
-        return 'status_' + self.id
+        return 'status_' + str(self.id)
+
+    def getStatusDuration(self):
+        return (self.expires.replace(tzinfo=None) - self.starts.replace(tzinfo=None)).total_seconds()
 
 
 class StatusMessage(geomodels.Model):
