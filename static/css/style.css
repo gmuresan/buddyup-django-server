@@ -887,8 +887,8 @@ footer nav a {
   }
 }
 
-@media screen and (max-width: 47.9375em) {
-  .iphone {
-    display: none !important;
-  }
-}
+/*@media screen and (max-width: 47.9375em) {*/
+  /*.iphone {*/
+    /*display: none !important;*/
+  /*}*/
+/*}*/
