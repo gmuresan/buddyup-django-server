@@ -265,11 +265,12 @@ def postStatus(request):
     response['success'] = True
     response['statusid'] = status.id
 
-    cacheKey = status.getCacheKey()
+    cacheKey = status.getCacheKeyNoneStatic()
 
     statusDuration = status.getStatusDuration()
 
-    cache.get(cacheKey, status, statusDuration)
+    cache.set(cacheKey, status, statusDuration)
+
 
     return HttpResponse(json.dumps(response))
 
@@ -289,7 +290,10 @@ def inviteToStatus(request):
         return errorResponse('Invalid User')
 
     try:
-        status = Status.objects.get(pk=statusId)
+        cacheKey = Status.getCacheKey(statusId)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusId)
     except Status.DoesNotExist:
         return errorResponse('Invalid Status')
 
@@ -352,7 +356,10 @@ def rsvpStatus(request):
         return errorResponse('Invalid User')
 
     try:
-        status = Status.objects.get(pk=statusId)
+        cacheKey = Status.getCacheKey(statusId)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusId)
     except Status.DoesNotExist:
         return errorResponse('Invalid Status')
 
@@ -385,7 +392,10 @@ def sendStatusMessage(request):
         return errorResponse('Invalid User')
 
     try:
-        status = Status.objects.get(pk=statusid)
+        cacheKey = Status.getCacheKey(statusid)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusid)
     except Status.DoesNotExist:
         return errorResponse('Invalid status id')
 
@@ -407,7 +417,10 @@ def getStatusDetails(request):
     lastmessageid = request.REQUEST.get('lastmessageid', None)
 
     try:
-        status = Status.objects.get(pk=statusid)
+        cacheKey = Status.getCacheKey(statusid)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusid)
     except Status.DoesNotExist:
         return errorResponse("Invalid status")
 
@@ -454,7 +467,10 @@ def suggestLocationTime(request):
         return errorResponse('Invalid User')
 
     try:
-        status = Status.objects.get(pk=statusid)
+        cacheKey = Status.getCacheKey(statusid)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusid)
     except Status.DoesNotExist:
         return errorResponse('Invalid status id')
 
