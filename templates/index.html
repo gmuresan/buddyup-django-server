@@ -1,0 +1,86 @@
+<html>
+<head>
+    {% load static %}
+  <title>BuddyUp</title>
+  <meta name="apple-itunes-app" content="app-id=867832619"/> <!-- smart app banner -->
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}">
+  <link rel="shortcut icon" href="{% static "img/favicon.ico" %}" />
+  <link rel="stylesheet" type="text/css" href="{% static "css/animate.css" %}" >
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800|Leckerli+One' rel='stylesheet' type='text/css'>
+</head>
+
+<body>
+ <section class="intro animated fadeIn">
+  <div class="center">
+    <img class="icon" src="{% static "img/icon.png" %}" alt="logo">
+    <h1>BuddyUp</h1>
+    <div class="tagline">
+      <h2>Helping you meet up in real life.</h2>
+    </div>
+    <a href="#"><img class="app-store-button" src="{% static "img/app-store-button.svg" %}" alt="Download BuddyUp from the App Store"></a>
+  </div>
+  <nav>
+    <a href='#' id="scroll">Scroll to Learn More</a>
+  </nav>
+ </section>
+ <section class="feature feature-1">
+  <div class="iphone">
+    <img src="{% static "img/iphone-white.png" %}" alt="logo">
+  </div>
+  <div class="description">
+    <h1>Never be bored again</h1>
+    <p>Discover what your friends want to do.<br> On a map.<br> In real time.</p>
+  </div>
+ </section>
+ <section class="feature feature-2">
+  <div class="description">
+    <h1>Just press <img class="plus" src="{% static "img/plus.png" %}" alt="Plus"></h1>
+    <p>Let your friends know what you want do. Whenever.<br> Choose from seven universal activity types.<br>
+Control who sees every activity.</p>
+  </div>
+  <div class="iphone">
+    <img src="img/iphone-white.png" alt="logo">
+  </div>
+ </section>
+ <section class="feature feature-3">
+  <div class="iphone">
+    <img src="{% static "img/iphone-white.png" %}" alt="logo">
+  </div>
+  <div class="description">
+    <h1>Better your friendships, rekindle old ones</h1>
+    <p>Spend more time with the people you love.<br>
+      Connect with friends you haven't seen in a while.<br>
+      Expand your network by meeting new friends.</p>
+  </div>
+ </section>
+ <section class="feature feature-4">
+  <div class="description">
+    <div>
+      <h1>Chat with friends</h1>
+    </div>
+    <p>Activities need a little planning.<br>
+      So, we built in chatting to help you out.<br>
+      Message the people attending, or anyone else you want to.</p>
+  </div>
+  <div class="iphone">
+    <img src="{% static "img/iphone-white.png" %}" alt="logo">
+  </div>
+ </section>
+</body>
+
+<footer>
+  <section class="cta">
+     <a href="#"><img class="app-store-button" src="{% static "img/app-store-button.svg" %}" alt="Download BuddyUp from the App Store"></a>
+  </section>
+  <nav>
+    <a href="#">About</a>
+    <a href="#">Terms of Service</a>
+    <a href="#">Privacy Policy</a>
+    <a href="#">Holler at Us!</a>
+  </nav>
+</footer>
+<script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+</html>
