@@ -1,25 +1,22 @@
 import os
-import pdb
 import re
 import sys
 from functools import wraps
 from getpass import getpass, getuser
 from glob import glob
 from contextlib import contextmanager
-import getpass as _getpass
 
 from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
+from fabric.operations import run
 
-from fabric.operations import local, run
 
 
 ################
 # Config setup #
 ################
-from virtualenv import mkdir
 
 conf = {}
 if sys.argv[0].split(os.sep)[-1] == "fab":
@@ -474,7 +471,7 @@ def create():
     #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
-            prompt = raw_input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
+            prompt = input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
             if prompt.lower() != "yes":
                 print("\nAborting!")
                 return False
@@ -610,7 +607,7 @@ def deploy():
     processes for the project.
     """
     if not exists(env.venv_path):
-        prompt = raw_input("\nVirtualenv doesn't exist: %s\nWould you like "
+        prompt = input("\nVirtualenv doesn't exist: %s\nWould you like "
                            "to create it? (yes/no) " % env.proj_name)
         if prompt.lower() != "yes":
             print("\nAborting!")
