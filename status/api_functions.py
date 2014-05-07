@@ -25,8 +25,11 @@ def deleteStatus(request):
     statusid = request.REQUEST['statusid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
-        status = Status.objects.get(pk=statusid)
+        userProfile = UserProfile.getUser(userid)
+        cacheKey = Status.getCacheKey(statusid)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
     except Status.DoesNotExist:
@@ -53,8 +56,11 @@ def cancelStatus(request):
     statusid = request.REQUEST['statusid']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
-        status = Status.objects.get(pk=statusid)
+        userProfile = UserProfile.getUser(userid)
+        cacheKey = Status.getCacheKey(statusid)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
     except Status.DoesNotExist:
@@ -89,7 +95,7 @@ def getStatuses(request):
         since = datetime.strptime(since, MICROSECOND_DATETIME_FORMAT)
 
     try:
-        userprofile = UserProfile.objects.get(pk=userid)
+        userprofile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User Id')
 
@@ -109,7 +115,7 @@ def getMyStatuses(request):
     userid = request.REQUEST['userid']
 
     try:
-        user = UserProfile.objects.get(pk=userid)
+        user = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
@@ -130,12 +136,12 @@ def poke(request):
     lastHour = datetime.utcnow().replace(tzinfo=pytz.utc) - timedelta(hours=1)
 
     try:
-        user = UserProfile.objects.get(pk=userid)
+        user = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
     try:
-        targetUser = UserProfile.objects.get(pk=friendid)
+        targetUser = UserProfile.getUser(friendid)
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid target user id")
 
@@ -194,7 +200,10 @@ def postStatus(request):
 
     if statusid:
         try:
-            status = Status.objects.get(pk=statusid)
+            cacheKey = Status.getCacheKey(statusid)
+            status = cache.get(cacheKey)
+            if status is None:
+                status = Status.objects.get(pk=statusid)
             createStatusChangedNotification(status)
             shouldPostNotification = False
         except Status.DoesNotExist:
@@ -285,7 +294,7 @@ def inviteToStatus(request):
     friends = json.loads(friends)
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User')
 
@@ -320,7 +329,7 @@ def inviteToStatus(request):
 
         else:
             try:
-                friend = UserProfile.objects.get(pk=friendId)
+                friend = UserProfile.getUser(friendId)
                 buddyupFriends.append(friend)
 
             except UserProfile.DoesNotExist:
@@ -351,7 +360,7 @@ def rsvpStatus(request):
     attending = request.REQUEST['attending']
 
     try:
-        userProfile = UserProfile.objects.get(pk=userId)
+        userProfile = UserProfile.getUser(userId)
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User')
 
@@ -387,7 +396,7 @@ def sendStatusMessage(request):
     lastMessageId = request.REQUEST.get('lastmessageid', None)
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User')
 
@@ -462,7 +471,7 @@ def suggestLocationTime(request):
         return errorResponse('type must be location or time')
 
     try:
-        userProfile = UserProfile.objects.get(pk=userid)
+        userProfile = UserProfile.getUser(userid)
     except UserProfile.DoesNotExist:
         return errorResponse('Invalid User')
 

@@ -506,7 +506,6 @@ class PostStatusTests(TestCase):
     def testInviteUsersToStatus(self):
         print("Invite Users To Status")
         client = Client()
-
         friends = [self.friend1.id, self.friend2.id]
         fbfriends = ['asfafafsafs', '1u989h108f1f']
         allFriends = list(friends)

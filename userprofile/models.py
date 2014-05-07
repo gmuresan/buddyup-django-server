@@ -1,7 +1,9 @@
 from datetime import datetime
 from django.db import models
+import pdb
 from buddyup import settings
 from django.contrib.auth.models import User
+from django.core.cache import cache
 
 
 class UserProfile(models.Model):
@@ -23,6 +25,20 @@ class UserProfile(models.Model):
     def getActiveStatuses(self):
         now = datetime.utcnow()
         return self.statuses.filter(expires__gt=now)
+
+    @staticmethod
+    def getCacheId(userId):
+        return "user_" + str(userId)
+
+    @staticmethod
+    def getUser(userId):
+        cacheKey= UserProfile.getCacheId(userId)
+        user = cache.get(cacheKey)
+        if user is None:
+            user = UserProfile.objects.get(pk=userId)
+            cache.set(cacheKey, user)
+            return user
+        return user
 
 
 class FacebookUser(models.Model):
