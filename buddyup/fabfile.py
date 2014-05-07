@@ -501,25 +501,7 @@ def create():
         psql("CREATE EXTENSION postgis;" , True, True)
         psql("CREATE EXTENSION postgis_topology;", True, True)
 
-    #
-    # Set up SSL certificate.
-    conf_path = "/etc/nginx/conf"
-    if not exists(conf_path):
-        sudo("mkdir %s" % conf_path)
-    with cd(conf_path):
-        crt_file = env.proj_name + ".pem"
-        key_file = env.proj_name + ".key"
-        if not exists(crt_file) or not exists(key_file):
-            try:
-                crt_local, = glob(os.path.join("deploy", "*.pem"))
-                key_local, = glob(os.path.join("deploy", "*.key"))
-            except ValueError:
-                parts = (crt_file, key_file, env.live_host)
-                sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
-                     "-subj '/CN=%s' -days 3650" % parts)
-            else:
-                upload_template(crt_local, crt_file, use_sudo=True)
-                upload_template(key_local, key_file, use_sudo=True)
+    uploadSSLCerts()
 
     # Set up project.
     upload_template_and_reload("settings")
@@ -542,6 +524,28 @@ def create():
     sudo("touch %s/logs/gunicorn_supervisor.log" % env.venv_path)
 
     return True
+
+@task
+@log_call
+def uploadSSLCerts():
+     # Set up SSL certificate.
+    conf_path = "/etc/nginx/conf"
+    if not exists(conf_path):
+        sudo("mkdir %s" % conf_path)
+    with cd(conf_path):
+        crt_file = env.proj_name + ".pem"
+        key_file = env.proj_name + ".key"
+        if not exists(crt_file) or not exists(key_file):
+            try:
+                crt_local, = glob(os.path.join("deploy", "*.pem"))
+                key_local, = glob(os.path.join("deploy", "*.key"))
+            except ValueError:
+                parts = (crt_file, key_file, env.live_host)
+                sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
+                     "-subj '/CN=%s' -days 3650" % parts)
+            else:
+                upload_template(crt_local, crt_file, use_sudo=True)
+                upload_template(key_local, key_file, use_sudo=True)
 
 
 @task
@@ -589,11 +593,11 @@ def restart():
     """
     with cd(env.venv_path):
         pid_path = "%s/gunicorn.pid" % env.proj_path
-        if exists(pid_path):
+        #if exists(pid_path):
             #sudo("kill -HUP `cat %s`" % pid_path)
-            sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
-        else:
-            sudo("supervisorctl start gunicorn_%s" % env.proj_name)
+        sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
+        #else:
+            #sudo("supervisorctl start gunicorn_%s" % env.proj_name)
 
 
 @task
