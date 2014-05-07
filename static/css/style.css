@@ -799,6 +799,13 @@ section.feature.feature-1 .description:last-child, section.feature.feature-3 .de
   section.feature.feature-1 .description:last-child, section.feature.feature-3 .description:last-child {
     margin-right: 0;
   }
+
+  section.feature.feature-1 .iphone, section.feature.feature-3 .iphone {
+      /*margin-left: 17.05961%;*/
+      /*margin: auto;*/
+      /*float:none;*/
+      margin-top: 0;
+  }
 }
 
 section.feature.feature-2, section.feature.feature-4 {
@@ -845,7 +852,10 @@ section.feature.feature-2 .description:last-child, section.feature.feature-4 .de
   }
 
   section.feature.feature-2 .iphone, section.feature.feature-4 .iphone {
-      margin-left: 17.05961%;
+      /*margin-left: 17.05961%;*/
+      /*margin: auto;*/
+      /*float:none;*/
+      margin-top: 0;
   }
 }
 
