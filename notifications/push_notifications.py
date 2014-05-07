@@ -17,7 +17,7 @@ def sendFavoritesStatusPushNotification(statusId):
 
 def sendFavoritesStatusPushNotificationSynchronous(statusId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None
 
@@ -58,7 +58,7 @@ def sendAttendingStatusPushNotification(statusId, attendingUserId):
 
 def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 
@@ -109,7 +109,7 @@ def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invited
         return None, None
 
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 
@@ -187,7 +187,7 @@ def sendDeleteStatusNotfication(statusId):
 
 def sendDeleteStatusNotficationSynchronous(statusId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 
@@ -220,7 +220,7 @@ def sendEditStatusNotification(statusId):
 
 def sendEditStatusNotificationSynchronous(statusId):
     try:
-        status = Status.objects.get(pk=statusId)
+        status = Status.getStatus(statusId)
     except Status.DoesNotExist:
         return None, None
 

@@ -5,6 +5,7 @@ from django.utils.encoding import smart_str
 from chat.models import Message
 from userprofile.models import UserProfile, Group, FacebookUser
 from django.contrib.gis.db import models as geomodels
+from django.core.cache import cache
 
 
 class Status(geomodels.Model):
@@ -69,6 +70,15 @@ class Status(geomodels.Model):
     @staticmethod
     def getCacheKey(statusId):
         return 'status_' + str(statusId)
+
+    @staticmethod
+    def getStatus(statusId):
+        cacheKey = Status.getCacheKey(statusId)
+        status = cache.get(cacheKey)
+        if status is None:
+            status = Status.objects.get(pk=statusId)
+            return status
+        return status
 
     def getStatusDuration(self):
         return (self.expires.replace(tzinfo=None) - self.starts.replace(tzinfo=None)).total_seconds()
