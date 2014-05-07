@@ -63,6 +63,9 @@ class Status(geomodels.Model):
         else:
             return self.user.friends.all()
 
+    def getCacheKey(self):
+        return 'status_' + self.id
+
 
 class StatusMessage(geomodels.Model):
     class Meta:

@@ -1,6 +1,7 @@
 import pdb
 from django.contrib.gis.geos import Point
 from django.views.decorators.csrf import csrf_exempt
+from django.core.cache import caches
 import pytz
 from api.FacebookProfile import FacebookProfile
 from api.views import *
@@ -263,6 +264,10 @@ def postStatus(request):
 
     response['success'] = True
     response['statusid'] = status.id
+
+    cacheKey = status.getCacheKey()
+
+    cache.get(cacheKey, status)
 
     return HttpResponse(json.dumps(response))
 
