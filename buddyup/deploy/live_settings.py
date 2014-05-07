@@ -16,7 +16,7 @@ DATABASES = {
     }
 }
 
-STATIC_ROOT = "%(proj_path)s/static"
+STATIC_ROOT = "%(venv_path)s/static"
 STATIC_URL = "/static/"
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTOCOL", "https")
