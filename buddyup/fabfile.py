@@ -99,6 +99,7 @@ templates = {
 # Context for virtualenv and project #
 ######################################
 
+
 @task
 def localServer():
     env.host_string = '127.0.0.1'
