@@ -717,9 +717,10 @@ def createTestUser(request):
     numberOfFriends = request.REQUEST['numfriends']
     response = dict()
 
-    email = str("%s@buddyup.im" % binascii.b2a_hex(os.urandom(15))[:10])
-    firstName = str(binascii.b2a_hex(os.urandom(15))[:10])
-    lastName = str(binascii.b2a_hex(os.urandom(15))[:10])
+    name = "test%d@buddyup.im" % random.randint(1, 100000)
+    email = "%s@buddyup.im"
+    firstName = name
+    lastName = name
     user = User(username=email, email=email, first_name=firstName,
                 last_name=lastName, password=0)
 
@@ -727,10 +728,8 @@ def createTestUser(request):
     userProfile = UserProfile(user=user, device='ios')
     userProfile.save()
 
-    totalUserCount = UserProfile.objects.all().count() - 1
-    numberOfFriends = min(totalUserCount, int(numberOfFriends))
-    friendsIds = random.sample(range(totalUserCount), numberOfFriends)
-    friends = UserProfile.objects.filter(pk__in=friendsIds).exclude(pk=userProfile.pk)
+    numberOfFriends = int(numberOfFriends)
+    friends = UserProfile.objects.all().order_by('-id')[:numberOfFriends]
 
     blockedFriends = userProfile.blockedFriends.all()
     for friend in friends:
