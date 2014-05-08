@@ -39,3 +39,5 @@ CACHES = {
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 SESSION_COOKIE_SECURE = True
+
+CONN_MAX_AGE = 60
