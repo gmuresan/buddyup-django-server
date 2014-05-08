@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 import sys
@@ -56,6 +57,10 @@ env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.python_dir = "/opt/lib/python3.3"
 
 env.pgbouncer_port = 6432
+
+m = hashlib.md5()
+m.update(env.db_pass)
+env.md5_db_pass = m.hexdigest()
 
 env.num_workers = (os.sysconf("SC_NPROCESSORS_ONLN") * 2) + 1
 

@@ -1,6 +1,7 @@
 import os
 import pdb
 import binascii
+import random
 from django.contrib.auth.models import User
 import facebook
 from api.FacebookProfile import FacebookProfile
@@ -716,9 +717,9 @@ def createTestUser(request):
     numberOfFriends = request.REQUEST['numfriends']
     response = dict()
 
-    email = str("%s@buddyup.im" % binascii.b2a_hex(os.urandom(15))[:15])
-    firstName = str(binascii.b2a_hex(os.urandom(15))[:15])
-    lastName = str(binascii.b2a_hex(os.urandom(15))[:15])
+    email = str("%s@buddyup.im" % binascii.b2a_hex(os.urandom(15))[:10])
+    firstName = str(binascii.b2a_hex(os.urandom(15))[:10])
+    lastName = str(binascii.b2a_hex(os.urandom(15))[:10])
     user = User(username=email, email=email, first_name=firstName,
                 last_name=lastName, password=0)
 
@@ -726,7 +727,10 @@ def createTestUser(request):
     userProfile = UserProfile(user=user, device='ios')
     userProfile.save()
 
-    friends = UserProfile.objects.all().exclude(pk=userProfile.pk).order_by('?')[:int(numberOfFriends)]
+    totalUserCount = UserProfile.objects.all().count() - 1
+    numberOfFriends = min(totalUserCount, int(numberOfFriends))
+    friendsIds = random.sample(range(totalUserCount), numberOfFriends)
+    friends = UserProfile.objects.filter(pk__in=friendsIds).exclude(pk=userProfile.pk)
 
     blockedFriends = userProfile.blockedFriends.all()
     for friend in friends:
