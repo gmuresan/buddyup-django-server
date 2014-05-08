@@ -12,7 +12,8 @@ DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
 
 def sendFavoritesStatusPushNotification(statusId):
-    thread.start_new_thread(sendFavoritesStatusPushNotificationSynchronous, (statusId, ))
+    pass
+    #thread.start_new_thread(sendFavoritesStatusPushNotificationSynchronous, (statusId, ))
 
 
 def sendFavoritesStatusPushNotificationSynchronous(statusId):
@@ -53,7 +54,8 @@ def sendFavoritesStatusPushNotificationSynchronous(statusId):
 
 
 def sendAttendingStatusPushNotification(statusId, attendingUserId):
-    thread.start_new_thread(sendAttendingStatusPushNotificationSynchronous, (statusId, attendingUserId))
+    pass
+    #thread.start_new_thread(sendAttendingStatusPushNotificationSynchronous, (statusId, attendingUserId))
 
 
 def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
@@ -97,7 +99,8 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
 
 
 def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
-    thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (statusId, invitingUserId, invitedUserIds))
+    pass
+   # thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (statusId, invitingUserId, invitedUserIds))
 
 
 def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invitedUserIds):
@@ -148,7 +151,8 @@ def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invited
 
 
 def sendStatusMessageNotification(messageId):
-    thread.start_new_thread(sendStatusMessageNotificationSynchronous, (messageId, ))
+    pass
+    #thread.start_new_thread(sendStatusMessageNotificationSynchronous, (messageId, ))
 
 
 def sendStatusMessageNotificationSynchronous(messageId):
@@ -182,7 +186,8 @@ def sendStatusMessageNotificationSynchronous(messageId):
 
 
 def sendDeleteStatusNotfication(statusId):
-    thread.start_new_thread(sendDeleteStatusNotficationSynchronous, (statusId, ))
+    pass
+    #thread.start_new_thread(sendDeleteStatusNotficationSynchronous, (statusId, ))
 
 
 def sendDeleteStatusNotficationSynchronous(statusId):
@@ -216,7 +221,8 @@ def sendDeleteStatusNotficationSynchronous(statusId):
         return None, None
 
 def sendEditStatusNotification(statusId):
-    thread.start_new_thread(sendEditStatusNotificationSynchronous, (statusId, ))
+    pass
+    #thread.start_new_thread(sendEditStatusNotificationSynchronous, (statusId, ))
 
 def sendEditStatusNotificationSynchronous(statusId):
     try:
@@ -249,7 +255,8 @@ def sendEditStatusNotificationSynchronous(statusId):
 
 
 def sendPokeNotifcation(pokeObj):
-    thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
+    pass
+    #thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
 
 
 def sendPokeNotificationSynchronous(pokeObj):
@@ -273,7 +280,8 @@ def sendPokeNotificationSynchronous(pokeObj):
 
 
 def sendChatNotifications(messageId):
-    thread.start_new_thread(sendChatNotificationsSynchronous, (messageId, ))
+    pass
+    #thread.start_new_thread(sendChatNotificationsSynchronous, (messageId, ))
 
 
 def sendChatNotificationsSynchronous(messageId):

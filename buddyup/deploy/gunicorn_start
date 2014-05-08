@@ -26,6 +26,8 @@ test -d $RUNDIR || mkdir -p $RUNDIR
 exec %(venv_path)s/bin/gunicorn ${DJANGO_WSGI_MODULE}:application \
   --name $NAME \
   --workers $NUM_WORKERS \
+  --worker-class tornado \
   --user=$USER --group=$GROUP \
   --log-level=debug \
-  --bind=unix:$SOCKFILE
+  --bind=unix:$SOCKFILE \
+  --timeout 3600

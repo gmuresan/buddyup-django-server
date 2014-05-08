@@ -515,7 +515,7 @@ def create():
         if env.reqs_path:
             pip("setuptools")
             pip("-r %s/%s --allow-all-external" % (env.proj_path, env.reqs_path))
-        pip("gunicorn setproctitle south psycopg2 python3-memcached")
+        pip("gunicorn setproctitle south psycopg2 python3-memcached gevent")
         manage("syncdb --noinput")
         manage("migrate --noinput")
         #python("from django.conf import settings;"
