@@ -77,3 +77,21 @@ class UserDetailsTests(TestCase):
         print("User Not Found")
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.getUser(111232323223232)
+
+
+class CreateTestUserTests(TestCase):
+    def setUp(self):
+        pass
+
+    def testCreateTestUser(self):
+        print("Create Test User")
+        client = Client()
+
+        response = client.post(reverse('createTestUserAPI'), {
+            'numfriends': 100
+        })
+
+        response = loadJson(response.content)
+
+        self.assertTrue(response['success'])
+

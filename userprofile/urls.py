@@ -35,4 +35,6 @@ urlpatterns = patterns('',
 
                         url(r'^setfavnotif/$', setFavoritesNotifications, {}, 'setFavNotificationsAPI'),
 
+                        url(r'^createtestuser/$', createTestUser, {}, 'createTestUserAPI'),
+
                        )

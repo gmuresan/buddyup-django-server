@@ -1,4 +1,6 @@
+import os
 import pdb
+import binascii
 from django.contrib.auth.models import User
 import facebook
 from api.FacebookProfile import FacebookProfile
@@ -90,6 +92,7 @@ def facebookLogin(request):
 
     return HttpResponse(json.dumps(response))
 
+
 @csrf_exempt
 def getUserDetails(request):
     response = dict()
@@ -133,6 +136,7 @@ def getUserDetails(request):
 
     response['success'] = True
     return HttpResponse(json.dumps(response))
+
 
 @csrf_exempt
 def createGroup(request):
@@ -684,9 +688,9 @@ def registerForPushNotifications(request):
 
     return HttpResponse(json.dumps(response))
 
+
 @csrf_exempt
 def setFavoritesNotifications(request):
-
     userId = request.REQUEST['userid']
     value = request.REQUEST['value']
 
@@ -703,5 +707,59 @@ def setFavoritesNotifications(request):
 
     response = dict()
     response['success'] = True
+
+    return HttpResponse(json.dumps(response))
+
+
+@csrf_exempt
+def createTestUser(request):
+    numberOfFriends = request.REQUEST['numfriends']
+    response = dict()
+
+    email = str("%s@buddyup.im" % binascii.b2a_hex(os.urandom(15))[:15])
+    firstName = str(binascii.b2a_hex(os.urandom(15))[:15])
+    lastName = str(binascii.b2a_hex(os.urandom(15))[:15])
+    user = User(username=email, email=email, first_name=firstName,
+                last_name=lastName, password=0)
+
+    user.save()
+    userProfile = UserProfile(user=user, device='ios')
+    userProfile.save()
+
+    friends = UserProfile.objects.all().exclude(pk=userProfile.pk).order_by('?')[:int(numberOfFriends)]
+
+    blockedFriends = userProfile.blockedFriends.all()
+    for friend in friends:
+        friend.friends.add(userProfile)
+        userProfile.friends.add(friend)
+
+    friends = userProfile.friends.all()
+    for friend in friends:
+        friendData = getUserProfileDetailsJson(friend)
+        response['friends'].append(friendData)
+
+    statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None, None, None)
+    myStatusesResponse = getMyStatusesJsonResponse(userProfile)
+    groupsData = getMyGroupsJsonResponse(userProfile)
+
+    buddyupSettings = getSettingsData(userProfile)
+
+    newSince = datetime.now().strftime(MICROSECOND_DATETIME_FORMAT)
+    notifications = getNotificationsJson(userProfile)
+    chatData = getNewChatsData(userProfile)
+
+    response['success'] = True
+    response['firstname'] = userProfile.user.first_name
+    response['lastname'] = userProfile.user.last_name
+    response['userid'] = userProfile.id
+    response['facebookid'] = userProfile.facebookUID
+    response['statuses'] = statusesResponse
+    response['groups'] = groupsData
+    response['mystatuses'] = myStatusesResponse
+    response['chats'] = chatData
+    response['newsince'] = newSince
+    response['settings'] = buddyupSettings
+    response['notifications'] = notifications
+    response['favoritesnotifications'] = userProfile.favoritesNotifications
 
     return HttpResponse(json.dumps(response))
