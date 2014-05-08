@@ -27,7 +27,9 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-# ('Your Name', 'your_email@example.com'),
+    ('BuddyUp', 'buddyupapp@gmail.com'),
+    ('George Muresan', 'gmuresan3@gmail.com'),
+    ('Ahsan Sohail', 'ahsansohail22@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -202,6 +204,7 @@ FABRIC = {
 #    "SSH_PASS":  "", # SSH password (consider key-based authentication)
      "SSH_KEY_PATH":  "buddyupaws.pem", # Local path to SSH key file, for key-based auth
      "HOSTS": ['buddyup.im'], # List of hosts to deploy to
+     "TEST_HOST": "ec2-54-86-101-5.compute-1.amazonaws.com",
      "VIRTUALENV_HOME":  "/opt/buddyup", # Absolute remote path for virtualenvs
      "PROJECT_NAME": "buddyup", # Unique identifier for project
      "REQUIREMENTS_PATH": "requirements.txt", # Path to pip requirements, relative to project

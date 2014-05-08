@@ -45,6 +45,8 @@ env.proj_dirname = "project"
 env.proj_path = "%s/%s" % (env.venv_path, env.proj_dirname)
 env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path,
                                                      env.venv_path)
+
+env.test_host = conf.get("TEST_HOST", None)
 env.live_host = conf.get("LIVE_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.repo_url = conf.get("REPO_URL", "")
 env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
@@ -98,38 +100,15 @@ templates = {
 ######################################
 
 @task
-def localSSH():
-    pass
-   ### run the following commands ###
-    # sudo ssh-add ubuntu (remember the password)
-    # sudo visudo (paste the following under user privilege : "ubuntu ALL=(ALL) NOPASSWD: ALL"
-
-    #ssh_file = "~/.ssh/id_dsa_buddyup"
-    #local("ssh-keygen -t dsa -P '' -f %s" % ssh_file)
-    #local("cat %s.pub >> ~/.ssh/authorized_keys" % ssh_file)
-    #env.key_filename = ssh_file
-    #env.user = _getpass.getuser()
-
-@task
-def localInstall():
-    """
-    Installs the base server requirements to localhost. Need to have ssh-server installed
-    and an ssh user created that matches the user from the fab config
-    """
-    env.host_string = '127.0.0.1'
-    env.hosts = ['127.0.0.1']
-    install()
-
-@task
-def localCreate():
-    """
-    Creates the virtualenv on localhost.
-    """
-    localSSH()
+def localServer():
     env.host_string = '127.0.0.1'
     env.hosts = ['127.0.0.1']
 
-    create()
+
+@task
+def testServer():
+    env.host_string = env.test_host
+    env.hosts = [env.host_string]
 
 
 def wget(path):
@@ -144,6 +123,7 @@ def virtualenv():
     with cd(env.venv_path):
         with prefix("source %s/bin/activate" % env.venv_path):
             yield
+
 
 @contextmanager
 def project():
@@ -189,9 +169,9 @@ def update_changed_requirements():
 ###########################################
 
 def _print(output):
-    print()
+    print("")
     print(output)
-    print()
+    print("")
 
 
 def print_command(command):
@@ -210,10 +190,12 @@ def run(command, show=True):
     with hide("running"):
         return _run(command)
 
+
 @task
 def proj(command):
     with cd(env.proj_path):
-        return  sudo(command)
+        return sudo(command)
+
 
 @task
 def sudo(command, show=True):
@@ -232,6 +214,7 @@ def log_call(func):
         header = "-" * len(func.__name__)
         _print(green("\n".join([header, func.__name__, header]), bold=True))
         return func(*args, **kawrgs)
+
     return logged
 
 
@@ -471,7 +454,7 @@ def create():
     #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
     with cd(env.venv_home):
         if exists(env.proj_name):
-            prompt = input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
+            prompt = raw_input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
             if prompt.lower() != "yes":
                 print("\nAborting!")
                 return False
@@ -496,9 +479,9 @@ def create():
     #postgres("createdb %s;" % env.proj_name)
     with warn_only():
         psql("CREATE DATABASE %s WITH OWNER %s ENCODING = 'UTF8' "
-            "LC_CTYPE = '%s' LC_COLLATE = '%s' TEMPLATE template0;" %
-            (env.proj_name, env.proj_name, env.locale, env.locale))
-        psql("CREATE EXTENSION postgis;" , True, True)
+             "LC_CTYPE = '%s' LC_COLLATE = '%s' TEMPLATE template0;" %
+             (env.proj_name, env.proj_name, env.locale, env.locale))
+        psql("CREATE EXTENSION postgis;", True, True)
         psql("CREATE EXTENSION postgis_topology;", True, True)
 
     uploadSSLCerts()
@@ -513,22 +496,23 @@ def create():
         manage("syncdb --noinput")
         manage("migrate --noinput")
         #python("from django.conf import settings;"
-         #      "from django.contrib.sites.models import Site;"
-          #     "site, _ = Site.objects.get_or_create(id=settings.SITE_ID);"
-           #    "site.domain = '" + env.live_host + "';"
-            #   "site.save();")
-            #shadowed = "*" * len(pw)
-            #print_command(user_py.replace("'%s'" % pw, "'%s'" % shadowed))
+        #      "from django.contrib.sites.models import Site;"
+        #     "site, _ = Site.objects.get_or_create(id=settings.SITE_ID);"
+        #    "site.domain = '" + env.live_host + "';"
+        #   "site.save();")
+        #shadowed = "*" * len(pw)
+        #print_command(user_py.replace("'%s'" % pw, "'%s'" % shadowed))
 
     sudo("mkdir -p %s/logs" % env.venv_path)
     sudo("touch %s/logs/gunicorn_supervisor.log" % env.venv_path)
 
     return True
 
+
 @task
 @log_call
 def uploadSSLCerts():
-     # Set up SSL certificate.
+    # Set up SSL certificate.
     conf_path = "/etc/nginx/conf"
     if not exists(conf_path):
         sudo("mkdir %s" % conf_path)
@@ -594,10 +578,10 @@ def restart():
     with cd(env.venv_path):
         pid_path = "%s/gunicorn.pid" % env.proj_path
         #if exists(pid_path):
-            #sudo("kill -HUP `cat %s`" % pid_path)
+        #sudo("kill -HUP `cat %s`" % pid_path)
         sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
         #else:
-            #sudo("supervisorctl start gunicorn_%s" % env.proj_name)
+        #sudo("supervisorctl start gunicorn_%s" % env.proj_name)
 
 
 @task
@@ -611,7 +595,7 @@ def deploy():
     processes for the project.
     """
     if not exists(env.venv_path):
-        prompt = input("\nVirtualenv doesn't exist: %s\nWould you like "
+        prompt = raw_input("\nVirtualenv doesn't exist: %s\nWould you like "
                            "to create it? (yes/no) " % env.proj_name)
         if prompt.lower() != "yes":
             print("\nAborting!")
