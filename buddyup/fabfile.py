@@ -55,6 +55,8 @@ env.gunicorn_port = conf.get("GUNICORN_PORT", 8000)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.python_dir = "/opt/lib/python3.3"
 
+env.pgbouncer_port = 6432
+
 env.num_workers = (os.sysconf("SC_NPROCESSORS_ONLN") * 2) + 1
 
 
@@ -91,6 +93,21 @@ templates = {
     "settings": {
         "local_path": "deploy/live_settings.py",
         "remote_path": "%(proj_path)s/buddyup/local_settings.py",
+    },
+    "pgbouncer_settings": {
+        "local_path": "deploy/pgbouncer.ini",
+        "remote_path": "/etc/pgbouncer/pgbouncer.ini",
+        "reload_command": "/etc/init.d/pgbouncer reload"
+    },
+    "pgbouncer_users": {
+        "local_path": "deploy/userlist.txt",
+        "remote_path": "/etc/pgbouncer/userlist.txt",
+        "reload_command": "/etc/init.d/pgbouncer reload"
+    },
+    "pgbouncer": {
+        "local_path": "deploy/pgbouncer",
+        "remote_path": "/etc/default/pgbouncer",
+        "reload_command": "/etc/init.d/pgbouncer reload"
     },
 }
 
@@ -375,7 +392,7 @@ def install():
             run("exit")
     sudo("apt-get update -y -q")
     apt("nginx python-dev python-setuptools git-core "
-        "postgresql libpq-dev memcached supervisor make g++ libbz2-dev")
+        "postgresql libpq-dev memcached supervisor make g++ libbz2-dev pgbouncer")
 
     sudo("easy_install pip")
     sudo("pip install virtualenv")
