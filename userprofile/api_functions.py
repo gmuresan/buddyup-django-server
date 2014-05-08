@@ -734,6 +734,7 @@ def createTestUser(request):
         userProfile.friends.add(friend)
 
     friends = userProfile.friends.all()
+    response['friends'] = list()
     for friend in friends:
         friendData = getUserProfileDetailsJson(friend)
         response['friends'].append(friendData)
