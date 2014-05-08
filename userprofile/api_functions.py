@@ -717,8 +717,8 @@ def createTestUser(request):
     numberOfFriends = request.REQUEST['numfriends']
     response = dict()
 
-    name = "test%d@buddyup.im" % random.randint(1, 100000)
-    email = "%s@buddyup.im"
+    name = "test%d" % random.randint(1, 10000000)
+    email = "%s@buddyup.im" % name
     firstName = name
     lastName = name
     user = User(username=email, email=email, first_name=firstName,
