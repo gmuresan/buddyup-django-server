@@ -31,3 +31,6 @@ exec %(venv_path)s/bin/gunicorn ${DJANGO_WSGI_MODULE}:application \
   --log-level=debug \
   --bind=unix:$SOCKFILE \
   --timeout 3600
+  --config gunicorn.conf.py
+
+

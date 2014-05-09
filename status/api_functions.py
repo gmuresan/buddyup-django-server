@@ -7,7 +7,7 @@ from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification, createDeleteStatusNotification
-from notifications.push_notifications import sendPokeNotifcation, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification, sendDeleteStatusNotfication, \
+from notifications.push_notifications import sendPokeNotification, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification, sendDeleteStatusNotfication, \
     sendAttendingStatusPushNotificationSynchronous, sendInvitedToStatusNotificationSynchronous, \
     sendEditStatusNotification
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingAndInvitedAndUserDetailsJsonResponse
@@ -154,7 +154,7 @@ def poke(request):
         return errorResponse("Already poked user in the last hour")
     poke = Poke.objects.create(sender=user, recipient=targetUser)
 
-    sendPokeNotifcation(poke)
+    sendPokeNotification(poke)
 
     response['success'] = True
 

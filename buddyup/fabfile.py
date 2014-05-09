@@ -75,7 +75,7 @@ env.num_workers = (os.sysconf("SC_NPROCESSORS_ONLN") * 2) + 1
 
 templates = {
     "nginx": {
-        "local_path": "deploy/nginx.conf",
+        "local_path": "deploy/nginx_buddyup.conf",
         "remote_path": "/etc/nginx/sites-enabled/%(proj_name)s.conf",
         "reload_command": "service nginx restart",
     },
@@ -95,6 +95,10 @@ templates = {
         "remote_path": "%(proj_path)s/gunicorn_start",
         "mode": "u+x",
     },
+    "gunicorn_conf": {
+        "local_path": "deploy/gunicorn.conf.py",
+        "remote_path": "%(proj_path)s/gunicorn.conf.py"
+    },
     "settings": {
         "local_path": "deploy/live_settings.py",
         "remote_path": "%(proj_path)s/buddyup/local_settings.py",
@@ -113,6 +117,11 @@ templates = {
         "local_path": "deploy/pgbouncer",
         "remote_path": "/etc/default/pgbouncer",
         "reload_command": "/etc/init.d/pgbouncer reload"
+    },
+    "nginx_conf": {
+        "local_path": "deploy/nginx.conf",
+        "remote_path": "/etc/nginx/nginx.conf",
+        "reload_command": "service nginx restart",
     },
 }
 
@@ -398,6 +407,10 @@ def install():
     sudo("apt-get update -y -q")
     apt("nginx python-dev python-setuptools git-core "
         "postgresql libpq-dev memcached supervisor make g++ libbz2-dev pgbouncer")
+
+    upload_template_and_reload('pgbouncer')
+    upload_template_and_reload('pgbouncer_settings')
+    upload_template_and_reload('pgbouncer_users')
 
     sudo("easy_install pip")
     sudo("pip install virtualenv")
