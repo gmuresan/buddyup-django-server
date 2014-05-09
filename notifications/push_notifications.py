@@ -18,7 +18,7 @@ THREAD_EXECUTOR = ThreadPoolExecutor(max_workers=MAX_POOL_WORKERS)
 
 
 def sendFavoritesStatusPushNotification(statusId):
-    THREAD_EXECUTOR.submit(sendFavoritesStatusPushNotificationSynchronous, statusId)
+    pass
     #thread.start_new_thread(sendFavoritesStatusPushNotificationSynchronous, (statusId, ))
 
 
@@ -59,7 +59,7 @@ def sendFavoritesStatusPushNotificationSynchronous(statusId):
 
 
 def sendAttendingStatusPushNotification(statusId, attendingUserId):
-    THREAD_EXECUTOR.submit(sendAttendingStatusPushNotificationSynchronous, statusId, attendingUserId)
+    pass
     #thread.start_new_thread(sendAttendingStatusPushNotificationSynchronous, (statusId, attendingUserId))
 
 
@@ -104,7 +104,7 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
 
 
 def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
-    THREAD_EXECUTOR.submit(sendInvitedToStatusNotificationSynchronous, statusId, invitingUserId, invitedUserIds)
+    pass
     # thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (statusId, invitingUserId, invitedUserIds))
 
 
@@ -156,7 +156,7 @@ def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invited
 
 
 def sendStatusMessageNotification(messageId):
-    THREAD_EXECUTOR.submit(sendStatusMessageNotificationSynchronous, messageId)
+    pass
     #thread.start_new_thread(sendStatusMessageNotificationSynchronous, (messageId, ))
 
 
@@ -191,7 +191,7 @@ def sendStatusMessageNotificationSynchronous(messageId):
 
 
 def sendDeleteStatusNotfication(statusId):
-    THREAD_EXECUTOR.submit(sendDeleteStatusNotficationSynchronous, statusId)
+    pass
     #thread.start_new_thread(sendDeleteStatusNotficationSynchronous, (statusId, ))
 
 
@@ -227,7 +227,7 @@ def sendDeleteStatusNotficationSynchronous(statusId):
 
 
 def sendEditStatusNotification(statusId):
-    THREAD_EXECUTOR.submit(sendEditStatusNotificationSynchronous, statusId)
+    pass
     #thread.start_new_thread(sendEditStatusNotificationSynchronous, (statusId, ))
 
 
@@ -262,7 +262,7 @@ def sendEditStatusNotificationSynchronous(statusId):
 
 
 def sendPokeNotification(pokeObj):
-    THREAD_EXECUTOR.submit(sendPokeNotificationSynchronous, pokeObj)
+    pass
     #thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
 
 
@@ -287,7 +287,7 @@ def sendPokeNotificationSynchronous(pokeObj):
 
 
 def sendChatNotifications(messageId):
-    THREAD_EXECUTOR.submit(sendChatNotificationsSynchronous, messageId)
+    pass
     #thread.start_new_thread(sendChatNotificationsSynchronous, (messageId, ))
 
 
