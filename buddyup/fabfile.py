@@ -412,6 +412,8 @@ def install():
     upload_template_and_reload('pgbouncer_settings')
     upload_template_and_reload('pgbouncer_create')
 
+    sudo("service pgbouncer start")
+
     sudo("easy_install pip")
     sudo("pip install virtualenv")
     sudo("mkdir -p %s" % env.python_dir)
@@ -438,6 +440,10 @@ def install():
 
     sudo("apt-get install -y -q binutils libproj-dev libpq-dev postgresql-server-dev-9.3 libgeos-dev")
     sudo("apt-get install -y -q python-software-properties libxml2-dev")
+
+    #install rabbitmq
+    sudo('apt-add-repository "deb http://www.rabbitmq.com/debian/ testing main"')
+    sudo("apt-get install -y -q rabbitmq-server")
 
     # install GDAL
     sudo("mkdir -p %s/gdal" % env.venv_home)
@@ -528,7 +534,7 @@ def create():
         if env.reqs_path:
             pip("setuptools")
             pip("-r %s/%s --allow-all-external" % (env.proj_path, env.reqs_path))
-        pip("gunicorn setproctitle south psycopg2 python3-memcached gevent")
+        pip("gunicorn setproctitle south psycopg2 python3-memcached gevent tornado")
         manage("syncdb --noinput")
         manage("migrate --noinput")
         #python("from django.conf import settings;"
@@ -649,7 +655,7 @@ def deploy():
         run("%s > last.commit" % last_commit)
         with update_changed_requirements():
             run("git pull origin master -f" if git else "hg pull && hg up -C")
-        manage("collectstatic -v 0 --noinput")
+        manage("collectstatic -v 3 --noinput")
         manage("syncdb --noinput")
         manage("migrate --noinput")
     restart()
