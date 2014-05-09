@@ -48,6 +48,7 @@ env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path,
                                                      env.venv_path)
 
 env.test_host = conf.get("TEST_HOST", None)
+env.load_host = conf.get("LOAD_HOST", None)
 env.live_host = conf.get("LIVE_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.repo_url = conf.get("REPO_URL", "")
 env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
@@ -135,12 +136,20 @@ templates = {
 def localServer():
     env.host_string = '127.0.0.1'
     env.hosts = ['127.0.0.1']
+    env.live_host = env.host_string
 
 
 @task
 def testServer():
     env.host_string = env.test_host
     env.hosts = [env.host_string]
+    env.live_host = env.host_string
+
+@task
+def loadServer():
+    env.host_string = env.load_host
+    env.hosts = [env.host_string]
+    env.live_host = env.host_string	
 
 
 def wget(path):
@@ -410,7 +419,7 @@ def install():
 
     upload_template_and_reload('pgbouncer')
     upload_template_and_reload('pgbouncer_settings')
-    upload_template_and_reload('pgbouncer_create')
+    upload_template_and_reload('pgbouncer_users')
 
     sudo("service pgbouncer start")
 
