@@ -408,6 +408,10 @@ def install():
     apt("nginx python-dev python-setuptools git-core "
         "postgresql libpq-dev memcached supervisor make g++ libbz2-dev pgbouncer")
 
+    upload_template_and_reload('pgbouncer')
+    upload_template_and_reload('pgbouncer_settings')
+    upload_template_and_reload('pgbouncer_create')
+
     sudo("easy_install pip")
     sudo("pip install virtualenv")
     sudo("mkdir -p %s" % env.python_dir)
