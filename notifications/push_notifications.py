@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import pdb
 import _thread as thread
 import datetime
@@ -10,9 +11,14 @@ from userprofile.models import UserProfile, Group
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
+MAX_POOL_WORKERS = 10
+
+
+THREAD_EXECUTOR = ThreadPoolExecutor(max_workers=MAX_POOL_WORKERS)
+
 
 def sendFavoritesStatusPushNotification(statusId):
-    pass
+    THREAD_EXECUTOR.submit(sendFavoritesStatusPushNotificationSynchronous, (statusId, ))
     #thread.start_new_thread(sendFavoritesStatusPushNotificationSynchronous, (statusId, ))
 
 
@@ -39,7 +45,6 @@ def sendFavoritesStatusPushNotificationSynchronous(statusId):
                                                                           sendingUser=status.user)
     pushNotification.receivingUsers.add(*usersToNotify)
 
-
     messageContents = str(pushNotification)
     extra = {'id': status.id, 'statusid': status.id, 'type': 'statuspost', 'userid': status.user.id,
              'date': datetime.datetime.now().strftime(DATETIME_FORMAT)}
@@ -54,7 +59,7 @@ def sendFavoritesStatusPushNotificationSynchronous(statusId):
 
 
 def sendAttendingStatusPushNotification(statusId, attendingUserId):
-    pass
+    THREAD_EXECUTOR.submit(sendAttendingStatusPushNotificationSynchronous, (statusId, attendingUserId))
     #thread.start_new_thread(sendAttendingStatusPushNotificationSynchronous, (statusId, attendingUserId))
 
 
@@ -99,8 +104,8 @@ def sendAttendingStatusPushNotificationSynchronous(statusId, attendingUserId):
 
 
 def sendInvitedToStatusNotification(statusId, invitingUserId, invitedUserIds):
-    pass
-   # thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (statusId, invitingUserId, invitedUserIds))
+    THREAD_EXECUTOR.submit(sendInvitedToStatusNotificationSynchronous, (statusId, invitingUserId, invitedUserIds))
+    # thread.start_new_thread(sendInvitedToStatusNotificationSynchronous, (statusId, invitingUserId, invitedUserIds))
 
 
 def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invitedUserIds):
@@ -151,7 +156,7 @@ def sendInvitedToStatusNotificationSynchronous(statusId, invitingUserId, invited
 
 
 def sendStatusMessageNotification(messageId):
-    pass
+    THREAD_EXECUTOR.submit(sendStatusMessageNotificationSynchronous, (messageId, ))
     #thread.start_new_thread(sendStatusMessageNotificationSynchronous, (messageId, ))
 
 
@@ -186,7 +191,7 @@ def sendStatusMessageNotificationSynchronous(messageId):
 
 
 def sendDeleteStatusNotfication(statusId):
-    pass
+    THREAD_EXECUTOR.submit(sendDeleteStatusNotficationSynchronous, (statusId, ))
     #thread.start_new_thread(sendDeleteStatusNotficationSynchronous, (statusId, ))
 
 
@@ -220,9 +225,11 @@ def sendDeleteStatusNotficationSynchronous(statusId):
     except User.DoesNotExist:
         return None, None
 
+
 def sendEditStatusNotification(statusId):
-    pass
+    THREAD_EXECUTOR.submit(sendEditStatusNotificationSynchronous, (statusId, ))
     #thread.start_new_thread(sendEditStatusNotificationSynchronous, (statusId, ))
+
 
 def sendEditStatusNotificationSynchronous(statusId):
     try:
@@ -240,7 +247,7 @@ def sendEditStatusNotificationSynchronous(statusId):
 
         messageContents = str(pushNotification)
 
-        extra = {'id': status.id, 'statusid': status.id,  'type': 'statusedited'}
+        extra = {'id': status.id, 'statusid': status.id, 'type': 'statusedited'}
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
@@ -254,8 +261,8 @@ def sendEditStatusNotificationSynchronous(statusId):
         return None, None
 
 
-def sendPokeNotifcation(pokeObj):
-    pass
+def sendPokeNotification(pokeObj):
+    THREAD_EXECUTOR.submit(sendPokeNotificationSynchronous, (pokeObj, ))
     #thread.start_new_thread(sendPokeNotificationSynchronous, (pokeObj, ))
 
 
@@ -280,7 +287,7 @@ def sendPokeNotificationSynchronous(pokeObj):
 
 
 def sendChatNotifications(messageId):
-    pass
+    THREAD_EXECUTOR.submit(sendChatNotificationsSynchronous, (messageId, ))
     #thread.start_new_thread(sendChatNotificationsSynchronous, (messageId, ))
 
 
@@ -292,8 +299,8 @@ def sendChatNotificationsSynchronous(messageId):
         return None, None
 
     pushNotification, isCreated = PushNotifications.objects.get_or_create(chatMessage=message,
-                                                                      pushNotificationType=PushNotifications.PUSH_NOTIF_CHAT,
-                                                                      sendingUser=message.user)
+                                                                          pushNotificationType=PushNotifications.PUSH_NOTIF_CHAT,
+                                                                          sendingUser=message.user)
 
     try:
         userProfile = message.user
