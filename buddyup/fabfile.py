@@ -410,7 +410,7 @@ def install():
 
     upload_template_and_reload('pgbouncer')
     upload_template_and_reload('pgbouncer_settings')
-    upload_template_and_reload('pgbouncer_create')
+    upload_template_and_reload('pgbouncer_users')
 
     sudo("easy_install pip")
     sudo("pip install virtualenv")
