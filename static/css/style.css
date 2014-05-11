@@ -849,7 +849,7 @@ section.feature.feature-1 .description:last-child, section.feature.feature-3 .de
     }
 
     section.feature.feature-1 .iphone, section.feature.feature-3 .iphone {
-        margin-left: 15%;
+        margin-left: 14%;
         /*margin: auto;*/
         /*float:none;*/
         margin-top: 0;
@@ -906,7 +906,7 @@ section.feature.feature-2 .description:last-child, section.feature.feature-4 .de
     }
 
     section.feature.feature-2 .iphone, section.feature.feature-4 .iphone {
-        margin-left: 10%;
+        margin-left: 8%;
         /*margin: auto;*/
         /*float:none;*/
         margin-top: 0;
