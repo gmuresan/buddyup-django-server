@@ -716,6 +716,7 @@ section.intro {
         margin-right: -0.25em;
         /* Adjusts for spacing */
     }
+
 }
 
 @media screen and (max-width: 47.9375em) {
@@ -807,7 +808,7 @@ section.feature.feature-1 .iphone, section.feature.feature-3 .iphone {
     display: block;
     margin-right: 2.35765%;
     width: 31.76157%;
-    margin-left: 17.05961%;
+    margin-left: 24.05961%;
     height: 31.25em;
     min-width: 16.25em;
     margin-top: 3.125em;
@@ -864,11 +865,11 @@ section.feature.feature-2 .iphone, section.feature.feature-4 .iphone {
     float: left;
     display: block;
     margin-right: 2.35765%;
-    width: 31.76157%;
     text-align: right;
     height: 31.25em;
     min-width: 16.25em;
     margin-top: 3.125em;
+    margin-left: 35px;
 
 }
 
@@ -881,7 +882,7 @@ section.feature.feature-2 .description, section.feature.feature-4 .description {
     display: block;
     margin-right: 2.35765%;
     width: 31.76157%;
-    margin-left: 17.05961%;
+    margin-left: 24.05961%;
     margin-top: 9.375em;
 }
 
