@@ -830,6 +830,10 @@ section.feature.feature-1 .description:last-child, section.feature.feature-3 .de
 }
 
 @media screen and (max-width: 47.9375em) {
+
+    section.feature {
+        padding-bottom: 30px;
+    }
     section.feature.feature-1 .description, section.feature.feature-3 .description {
         float: right;
         display: block;
@@ -845,7 +849,7 @@ section.feature.feature-1 .description:last-child, section.feature.feature-3 .de
     }
 
     section.feature.feature-1 .iphone, section.feature.feature-3 .iphone {
-        margin-left: 10%;
+        margin-left: 15%;
         /*margin: auto;*/
         /*float:none;*/
         margin-top: 0;
