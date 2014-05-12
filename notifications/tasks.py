@@ -8,6 +8,8 @@ from notifications.models import PushNotifications, GCMDevice, APNSDevice
 def handlePushNotification(pushNotificationId):
     try:
         pushNotification = PushNotifications.objects.get(pk=pushNotificationId)
+        print(pushNotificationId)
+        print(pushNotification)
 
         if pushNotification.pushNotificationType == PushNotifications.PUSH_NOTIF_CHAT:
             sendChatNotification(pushNotification)
@@ -17,9 +19,13 @@ def handlePushNotification(pushNotificationId):
 
 def sendChatNotification(pushNotification):
     try:
+        print("handling chat")
+
         message = pushNotification.chatMessage
         conversation = message.conversation
         userProfile = message.user
+
+        print(userProfile)
 
         audience = conversation.members.all()
         audience = audience.exclude(pk=userProfile.pk)
