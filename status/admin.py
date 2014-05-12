@@ -3,7 +3,7 @@ from status.models import Status, Location, Poke
 from django.core.urlresolvers import reverse
 
 class StatusAdmin(admin.ModelAdmin):
-    list_display = ('user',)
+    list_display = ('text', 'user')
     list_select_related = True
 
     def object_link(self, obj):
