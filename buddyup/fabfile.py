@@ -14,12 +14,9 @@ from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
 from fabric.operations import run
-<<<<<<< HEAD
 from ilogue import fexpect
 from ilogue.fexpect import expect
 from ilogue.fexpect import expecting
-=======
->>>>>>> a08275f33a2edfb491cd37f990d5d6b139015cad
 
 
 ################
