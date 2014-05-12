@@ -8,7 +8,7 @@ admin.site.register(UserProfile, UserProileAdmin)
 admin.site.register(Group)
 
 class FeedBackAdmin(admin.ModelAdmin):
-    readonly_fields = ('date')
+    readonly_fields = ('date',)
 
 admin.site.register(Feedback, FeedBackAdmin)
 admin.site.register(Setting)
