@@ -9,7 +9,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     # Examples:
-    url(r'^home/$', index,{},'index'),
+    url(r'^$', index,{},'index'),
     url(r'^about/$', about, {}, 'about'),
     url(r'^tos/$', tos, {}, 'tos'),
     url(r'^privacypolicy/$', privacyPolicy, {}, 'privacypolicy'),
