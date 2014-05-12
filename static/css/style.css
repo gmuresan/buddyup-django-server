@@ -835,6 +835,10 @@ section.feature.feature-1 .description:last-child, section.feature.feature-3 .de
     section.feature {
         padding-bottom: 30px;
     }
+
+    section.feature.feature-1 .description {
+        padding-top: 10px;
+    }
     section.feature.feature-1 .description, section.feature.feature-3 .description {
         float: right;
         display: block;
