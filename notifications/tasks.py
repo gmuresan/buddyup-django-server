@@ -30,16 +30,25 @@ def sendChatNotification(pushNotification):
         audience = conversation.members.all()
         audience = audience.exclude(pk=userProfile.pk)
 
+        print(audience)
+
         pushNotification.receivingUsers.add(*audience)
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
 
+        print(iosDevices)
+
         messageContents = str(pushNotification)
         extra = {'id': conversation.id, 'type': 'chat', 'userid': message.user.id}
 
+        print(messageContents)
+        print(extra)
+
         androidResponse = androidDevices.send_message(messageContents, extra=extra)
         iosResponse = iosDevices.send_message(messageContents, extra=extra)
+
+        print(iosResponse)
 
         return androidResponse, iosResponse
 
