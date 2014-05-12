@@ -1,23 +1,29 @@
 import hashlib
 import os
+import pdb
 import re
 import sys
 from functools import wraps
 from getpass import getpass, getuser
 from glob import glob
 from contextlib import contextmanager
+import fabric
 
 from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
 from fabric.operations import run
-
+from ilogue import fexpect
+from ilogue.fexpect import expect
+from ilogue.fexpect import expecting
 
 
 ################
 # Config setup #
 ################
+from ilogue.fexpect.internals import createScript
+import shortuuid
 
 conf = {}
 if sys.argv[0].split(os.sep)[-1] == "fab":
@@ -48,7 +54,7 @@ env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path,
                                                      env.venv_path)
 
 env.test_host = conf.get("TEST_HOST", None)
-env.load_host = conf.get("LOAD_HOST", None)
+env.load_host = conf.get("LOAD_TEST_HOST", None)
 env.live_host = conf.get("LIVE_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.repo_url = conf.get("REPO_URL", "")
 env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
@@ -56,6 +62,7 @@ env.reqs_path = conf.get("REQUIREMENTS_PATH", None)
 env.gunicorn_port = conf.get("GUNICORN_PORT", 8000)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.python_dir = "/opt/lib/python3.3"
+env.is_live_host = True
 
 env.pgbouncer_port = 6432
 
@@ -137,6 +144,7 @@ def localServer():
     env.host_string = '127.0.0.1'
     env.hosts = ['127.0.0.1']
     env.live_host = env.host_string
+    env.is_live_host = False
 
 
 @task
@@ -144,12 +152,14 @@ def testServer():
     env.host_string = env.test_host
     env.hosts = [env.host_string]
     env.live_host = env.host_string
+    env.is_live_host = False
 
 @task
 def loadServer():
     env.host_string = env.load_host
     env.hosts = [env.host_string]
-    env.live_host = env.host_string	
+    env.live_host = env.host_string
+    env.is_live_host = False
 
 
 def wget(path):
@@ -395,9 +405,17 @@ def manage(command):
     """
     Runs a Django management command.
     """
+    # if isfexpect:
+    #     return fexpect.run(command)
     return run("%s %s" % (env.manage, command))
 
-
+# def wrapExpectations(cmd,env):
+#     script = createScript(cmd,env)
+#     remoteScript = '/tmp/fexpect_'+shortuuid.uuid()
+#     fabric.api.put(resource('pexpect.py'),'/tmp/')
+#     fabric.api.put(StringIO(script),remoteScript)
+#     wrappedCmd = 'python '+remoteScript
+#     return wrappedCmd
 #########################
 # Install and configure #
 #########################
@@ -420,6 +438,8 @@ def install():
     upload_template_and_reload('pgbouncer')
     upload_template_and_reload('pgbouncer_settings')
     upload_template_and_reload('pgbouncer_users')
+
+    sudo("service pgbouncer start")
 
     sudo("easy_install pip")
     sudo("pip install virtualenv")
@@ -447,6 +467,10 @@ def install():
 
     sudo("apt-get install -y -q binutils libproj-dev libpq-dev postgresql-server-dev-9.3 libgeos-dev")
     sudo("apt-get install -y -q python-software-properties libxml2-dev")
+
+    #install rabbitmq
+    sudo('apt-add-repository "deb http://www.rabbitmq.com/debian/ testing main"')
+    sudo("apt-get install -y -q rabbitmq-server")
 
     # install GDAL
     sudo("mkdir -p %s/gdal" % env.venv_home)
@@ -492,7 +516,7 @@ def create():
     live host.
     """
 
-    # Create virtualenv
+    #Create virtualenv
     sudo("mkdir -p %s" % env.venv_home, True)
     sudo("chown %s %s" % (env.user, env.venv_home), True)
     sudo("chown -R %s %s" % (env.user, env.python_dir), True)
@@ -537,8 +561,17 @@ def create():
         if env.reqs_path:
             pip("setuptools")
             pip("-r %s/%s --allow-all-external" % (env.proj_path, env.reqs_path))
-        pip("gunicorn setproctitle south psycopg2 python3-memcached gevent")
+        pip("gunicorn setproctitle south psycopg2 python3-memcached gevent tornado")
         manage("syncdb --noinput")
+        # prompts = []
+        # prompts += expect('Password:','waverly4025')
+        # prompts += expect('Password (again): ','waverly4025')
+
+        #with expecting(prompts):
+        with warn_only():
+            manage("createsuperuser --user buddyup --email buddyupapp@gmail.com")
+
+
         manage("migrate --noinput")
         #python("from django.conf import settings;"
         #      "from django.contrib.sites.models import Site;"
@@ -550,6 +583,8 @@ def create():
 
     sudo("mkdir -p %s/logs" % env.venv_path)
     sudo("touch %s/logs/gunicorn_supervisor.log" % env.venv_path)
+    sudo("mkdir %s/logs/celery")
+    sudo("touch %s/logs/celery/worker.log")
 
     return True
 
@@ -558,6 +593,7 @@ def create():
 @log_call
 def uploadSSLCerts():
     # Set up SSL certificate.
+
     conf_path = "/etc/nginx/conf"
     if not exists(conf_path):
         sudo("mkdir %s" % conf_path)
@@ -566,6 +602,8 @@ def uploadSSLCerts():
         key_file = env.proj_name + ".key"
         if not exists(crt_file) or not exists(key_file):
             try:
+                if not env.is_live_host:
+                    raise ValueError()
                 crt_local, = glob(os.path.join("deploy", "*.pem"))
                 key_local, = glob(os.path.join("deploy", "*.key"))
             except ValueError:
@@ -624,6 +662,7 @@ def restart():
         pid_path = "%s/gunicorn.pid" % env.proj_path
         #if exists(pid_path):
         #sudo("kill -HUP `cat %s`" % pid_path)
+        sudo("supervisorctl restart celery_%s" % env.proj_name)
         sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
         #else:
         #sudo("supervisorctl start gunicorn_%s" % env.proj_name)
@@ -658,7 +697,7 @@ def deploy():
         run("%s > last.commit" % last_commit)
         with update_changed_requirements():
             run("git pull origin master -f" if git else "hg pull && hg up -C")
-        manage("collectstatic -v 0 --noinput")
+        manage("collectstatic -v 3 --noinput")
         manage("syncdb --noinput")
         manage("migrate --noinput")
     restart()

@@ -5,7 +5,6 @@ DJANGODIR=%(proj_path)s             # Django project directory
 SOCKFILE=%(venv_home)s/run/gunicorn.sock  # we will communicte using this unix socket
 USER=%(user)s                                        # the user to run as
 GROUP=%(user)s                                     # the group to run as
-NUM_WORKERS=%(num_workers)s                                     # how many worker processes should Gunicorn spawn
 DJANGO_SETTINGS_MODULE=buddyup.settings             # which settings file should Django use
 DJANGO_WSGI_MODULE=buddyup.wsgi                     # WSGI module name
 
@@ -25,7 +24,6 @@ test -d $RUNDIR || mkdir -p $RUNDIR
 # Programs meant to be run under supervisor should not daemonize themselves (do not use --daemon)
 exec %(venv_path)s/bin/gunicorn ${DJANGO_WSGI_MODULE}:application \
   --name $NAME \
-  --workers $NUM_WORKERS \
   --worker-class tornado \
   --user=$USER --group=$GROUP \
   --log-level=debug \

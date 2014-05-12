@@ -4,7 +4,7 @@ from api.helpers import *
 from api.views import *
 from chat.helpers import getNewChatsData, getChatMessagesPage
 from chat.models import Conversation, Message
-from notifications.push_notifications import sendChatNotifications, sendChatNotificationsSynchronous
+from notifications.push_notifications import sendChatNotifications
 from userprofile.models import *
 
 
@@ -203,7 +203,7 @@ def sendMessage(request):
     response['newsince'] = newSince
     response['success'] = True
 
-    sendChatNotifications(message.pk)
+    sendChatNotifications(message)
 
     return HttpResponse(json.dumps(response))
 
