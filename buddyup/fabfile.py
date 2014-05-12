@@ -1,5 +1,6 @@
 import hashlib
 import os
+import pdb
 import re
 import sys
 from functools import wraps
@@ -48,7 +49,7 @@ env.manage = "%s/bin/python %s/project/manage.py" % (env.venv_path,
                                                      env.venv_path)
 
 env.test_host = conf.get("TEST_HOST", None)
-env.load_host = conf.get("LOAD_HOST", None)
+env.load_host = conf.get("LOAD_TEST_HOST", None)
 env.live_host = conf.get("LIVE_HOSTNAME", env.hosts[0] if env.hosts else None)
 env.repo_url = conf.get("REPO_URL", "")
 env.git = env.repo_url.startswith("git") or env.repo_url.endswith(".git")
@@ -56,6 +57,7 @@ env.reqs_path = conf.get("REQUIREMENTS_PATH", None)
 env.gunicorn_port = conf.get("GUNICORN_PORT", 8000)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.python_dir = "/opt/lib/python3.3"
+env.is_live_host = True
 
 env.pgbouncer_port = 6432
 
@@ -137,6 +139,7 @@ def localServer():
     env.host_string = '127.0.0.1'
     env.hosts = ['127.0.0.1']
     env.live_host = env.host_string
+    env.is_live_host = False
 
 
 @task
@@ -144,12 +147,14 @@ def testServer():
     env.host_string = env.test_host
     env.hosts = [env.host_string]
     env.live_host = env.host_string
+    env.is_live_host = False
 
 @task
 def loadServer():
     env.host_string = env.load_host
     env.hosts = [env.host_string]
-    env.live_host = env.host_string	
+    env.live_host = env.host_string
+    env.is_live_host = False
 
 
 def wget(path):
@@ -564,6 +569,7 @@ def create():
 @log_call
 def uploadSSLCerts():
     # Set up SSL certificate.
+
     conf_path = "/etc/nginx/conf"
     if not exists(conf_path):
         sudo("mkdir %s" % conf_path)
@@ -572,6 +578,8 @@ def uploadSSLCerts():
         key_file = env.proj_name + ".key"
         if not exists(crt_file) or not exists(key_file):
             try:
+                if not env.is_live_host:
+                    raise ValueError()
                 crt_local, = glob(os.path.join("deploy", "*.pem"))
                 key_local, = glob(os.path.join("deploy", "*.key"))
             except ValueError:
