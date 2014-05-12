@@ -7,9 +7,9 @@ from api.FacebookProfile import FacebookProfile
 from api.views import *
 from api.helpers import *
 from notifications.app_notifications import createCreateStatusMessageNotification, createStatusChangedNotification, createAttendingStatusNotification, createInvitedToStatusNotification, createDeleteStatusNotification
-from notifications.push_notifications import sendPokeNotification, sendStatusMessageNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, sendFavoritesStatusPushNotification, sendDeleteStatusNotfication, \
-    sendAttendingStatusPushNotificationSynchronous, sendInvitedToStatusNotificationSynchronous, \
-    sendEditStatusNotification
+from notifications.push_notifications import sendDeleteStatusNotfication, sendFavoritesStatusPushNotification, \
+    sendEditStatusNotification, sendInvitedToStatusNotification, sendAttendingStatusPushNotification, \
+    sendStatusMessageNotification
 from status.helpers import getNewStatusMessages, getNewStatusesJsonResponse, getMyStatusesJsonResponse, getLocationObjectFromJson, createLocationJson, createLocationSuggestionJson, createTimeSuggestionJson, createStatusJsonObject, createAttendingAndInvitedAndUserDetailsJsonResponse
 from status.models import Location, StatusMessage, Status, LocationSuggestion, TimeSuggestion
 from userprofile.models import Group, UserProfile, FacebookUser
@@ -40,7 +40,7 @@ def deleteStatus(request):
         status.save()
         response['success'] = True
         createDeleteStatusNotification(status)
-        sendDeleteStatusNotfication(statusid)
+        sendDeleteStatusNotfication(status)
     else:
         response['success'] = False
         response['error'] = "Can not delete another user's status"
@@ -154,7 +154,7 @@ def poke(request):
         return errorResponse("Already poked user in the last hour")
     poke = Poke.objects.create(sender=user, recipient=targetUser)
 
-    sendPokeNotification(poke)
+    # sendPokeNotification(poke)
 
     response['success'] = True
 
@@ -264,9 +264,9 @@ def postStatus(request):
             fbProfile.shareStatus(status, request)
 
     if shouldPostNotification:
-        sendFavoritesStatusPushNotification(status.id)
+        sendFavoritesStatusPushNotification(status)
     else:
-        sendEditStatusNotification(status.id)
+        sendEditStatusNotification(status)
 
     response['success'] = True
     response['statusid'] = status.id
@@ -334,11 +334,7 @@ def inviteToStatus(request):
 
     createInvitedToStatusNotification(buddyupFriends, userProfile, status)
 
-    newInvitedIds = list()
-    for friend in buddyupFriends:
-        newInvitedIds.append(friend.pk)
-
-    sendInvitedToStatusNotification(status.pk, userProfile.pk, newInvitedIds)
+    sendInvitedToStatusNotification(status, userProfile, buddyupFriends)
 
     response['success'] = True
 
@@ -366,7 +362,7 @@ def rsvpStatus(request):
     if attending == 'true' or attending == 'True':
         status.attending.add(userProfile)
         createAttendingStatusNotification(status, userProfile)
-        sendAttendingStatusPushNotification(status.pk, userProfile.pk)
+        sendAttendingStatusPushNotification(status, userProfile)
     elif attending == 'false' or attending == 'False':
         status.attending.remove(userProfile)
     else:
@@ -397,7 +393,7 @@ def sendStatusMessage(request):
         return errorResponse('Invalid status id')
 
     message = StatusMessage.objects.create(user=userProfile, text=text, status=status)
-    sendStatusMessageNotification(message.pk)
+    sendStatusMessageNotification(message)
     createCreateStatusMessageNotification(message)
 
     response['success'] = True
