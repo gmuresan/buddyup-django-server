@@ -104,8 +104,7 @@ def sendInvitedToStatusNotificationTask(pushNotification):
 def sendStatusMessageNotificationTask(pushNotification):
     try:
         message = pushNotification.message
-        audience = message.status.attending.all().exclude(pk=message.user.pk)
-        pushNotification.receivingUsers.add(*audience)
+        audience = pushNotification.receivingUsers.all()
 
         messageContents = str(pushNotification)
         extra = {'id': message.status.id, 'statusid': message.status.id,
@@ -130,8 +129,7 @@ def sendChatNotificationTask(pushNotification):
         conversation = message.conversation
         userProfile = message.user
 
-        audience = conversation.members.all()
-        audience = audience.exclude(pk=userProfile.pk)
+        audience = pushNotification.receivingUsers.all()
 
         pushNotification.receivingUsers.add(*audience)
 
@@ -155,8 +153,7 @@ def sendEditStatusNotificationTask(pushNotification):
     try:
         status = pushNotification.status
 
-        audience = status.attending.all().exclude(pk=status.user.pk)
-        pushNotification.receivingUsers.add(*audience)
+        audience = pushNotification.receivingUsers.all()
 
         messageContents = str(pushNotification)
 
@@ -178,8 +175,7 @@ def sendDeleteStatusNotficationTask(pushNotification):
 
     try:
         status = pushNotification.id
-        audience = status.attending.all().exclude(pk=status.user.pk)
-        pushNotification.receivingUsers.add(*audience)
+        audience = pushNotification.receivingUsers.all()
 
         messageContents = str(pushNotification)
 
