@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}">
+    <title></title>
+</head>
+<body>
+<header>
+        <a href="{% url 'buddyup.views.index' %}"><img id="tosIcon" class="icon" src="{% static "img/icon.png" %}" alt="logo"/></a>
+</header>
+
+<div id="padH"><h1>Privacy Policy</h1></div>
+
+<p class="padP">This Privacy Policy was last updated on May 7, 2014. <br/>
+It is meant to let you know what information we collect from you and how we store/use that information. <br/>
+By using BuddyUp, you are agreeing to this Privacy Policy. <br/>
+*Note: In this Privacy Policy, “we”, “us”, and “our” are used to refer to BuddyUp. <br/>
+</p>
+<ul>
+    <li>You must log in with Facebook to access BuddyUp.</li><br/>
+    <li>When you log in through Facebook, you consent that your Facebook friends automatically become your BuddyUp friends.</li><br/>
+    <li>When you log in through Facebook, we collect certain personal information about you, such as your email, name, age, and friend’s list.</li><br/>
+    <li>By agreeing to this privacy policy, you provide BuddyUp consent to transmit and store such data on our own/authorized third-party servers. <br/></li>
+    <li>Any personal information you provide will never be shared with others in a personally identifiable fashion. However, we may share certain <br/>
+        non-personally identifiable information with other authorized third parties in order to improve our services and better your BuddyUp experience. </li><br/>
+    <li>We use analytics within our application to collect information such as time spent on a page, number of times a certain button is clicked, etc. <br/>
+        This information is intended to help us improve your BuddyUp experience in the future. </li><br/>
+    <li>BuddyUp does not intentionally or knowingly collect any personal information from children under the age of 13. If you are under the age <br/>
+        of 13, we advise against using BuddyUp. </li><br/>
+</ul>
+
+<p class="padP">
+We reserve the right to amend this Privacy Policy at any point in the future. If any changes to the Privacy Policy are made, we will make an announcement <br/>
+    through our website and/or another appropriate method we choose. <br/>
+<br/>
+For any questions, please contact us at any point. <br/>
+<br/>
+Thanks for taking the time to read this Privacy Policy, and you're trust!, and taking the time to read these Terms!
+    <br/><br/></p>
+
+</body>
+<footer>
+    <section class="cta">
+        <a href="#"><img class="app-store-button" src="{% static "img/app-store-button.svg" %}"
+                         alt="Download BuddyUp from the App Store"></a>
+    </section>
+    <nav>
+        <!--<a href="{% url 'buddyup.views.about' %}">About</a>-->
+        <a href="{% url 'buddyup.views.tos' %}">Terms of Service</a>
+        <a href="{% url 'buddyup.views.privacyPolicy' %}">Privacy Policy</a>
+        <a href="#">Contact us</a>
+        <a href="www.facebook.com/buddyuptheapp">Facebook</a>
+        <a href="www.twitter.com/buddyup">@BuddyUpApp</a>
+    </nav>
+</footer>
+</html>
