@@ -174,7 +174,7 @@ def sendEditStatusNotificationTask(pushNotification):
 def sendDeleteStatusNotficationTask(pushNotification):
 
     try:
-        status = pushNotification.id
+        status = pushNotification.status
         audience = pushNotification.receivingUsers.all()
 
         messageContents = str(pushNotification)
