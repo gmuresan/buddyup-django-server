@@ -14,16 +14,11 @@ from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
 from fabric.operations import run
-from ilogue import fexpect
-from ilogue.fexpect import expect
-from ilogue.fexpect import expecting
 
 
 ################
 # Config setup #
 ################
-from ilogue.fexpect.internals import createScript
-import shortuuid
 
 conf = {}
 if sys.argv[0].split(os.sep)[-1] == "fab":
