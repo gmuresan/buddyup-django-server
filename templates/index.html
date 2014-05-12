@@ -20,7 +20,7 @@
         <h1>BuddyUp</h1>
 
         <div class="tagline">
-            <h2>Helping you meet up in real life.</h2>
+            Helping you meet up in real life.
         </div>
         <a href="#"><img class="app-store-button" src="{% static "img/app-store-button.svg" %}"
                          alt="Download BuddyUp from the App Store"></a>
@@ -85,10 +85,12 @@
                          alt="Download BuddyUp from the App Store"></a>
     </section>
     <nav>
-        <a href="#">About</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Holler at Us!</a>
+        <!--<a href="{% url 'buddyup.views.about' %}">About</a>-->
+        <a href="{% url 'buddyup.views.tos' %}">Terms of Service</a>
+        <a href="{% url 'buddyup.views.privacyPolicy' %}">Privacy Policy</a>
+        <a href="#">Contact us</a>
+        <a href="www.facebook.com/buddyuptheapp">Facebook</a>
+        <a href="www.twitter.com/buddyup">@BuddyUpApp</a>
     </nav>
 </footer>
 <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>

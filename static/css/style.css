@@ -446,7 +446,6 @@ input[type="submit"]:disabled {
 }
 
 body {
-    color: white;
     font-family: "Open Sans", sans-serif;
     font-size: 1em;
     -webkit-font-smoothing: antialiased;
@@ -462,6 +461,20 @@ h1, h2, h3, h4, h5, h6 {
 
 h1 {
     font-size: 2.25em;
+}
+
+div#padH {
+    margin-top: 20px;
+    margin-left: 20px;
+    padding-bottom: 20px;
+    color: #f73f24;
+}
+
+div#termsBody{
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    text-align: center;
 }
 
 h2 {
@@ -487,6 +500,15 @@ h6 {
 
 p {
     margin: 0 0 0.75em;
+}
+
+p.padP{
+    padding-left:20px;
+}
+
+div#twitter{
+    position-relative:
+    right: 2px;
 }
 
 a {
@@ -669,12 +691,6 @@ tr, td, th {
     vertical-align: middle;
 }
 
-ul, ol {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
-
 dl {
     line-height: 1.5em;
     margin-bottom: 0.75em;
@@ -742,6 +758,8 @@ section.intro .center h1 {
 
 section.intro .center .tagline {
     margin-top: 3.125em;
+    color: white;
+    font-size: 2em;
 }
 
 section.intro .center .app-store-button {
@@ -958,6 +976,7 @@ footer nav a {
     padding: 0 1.875em;
 }
 
+
 @media screen and (max-width: 47.9375em) {
     footer nav {
         display: block;
@@ -974,3 +993,17 @@ footer nav a {
 /*display: none !important;*/
 /*}*/
 /*}*/
+
+/*ToS, PrivacyPolicy*/
+
+header {
+    height: 120px;
+    background-color: #f73f24;
+}
+
+img#tosIcon{
+    margin-left: 46%;
+}
+
+
+

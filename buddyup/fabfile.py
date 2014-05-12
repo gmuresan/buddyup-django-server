@@ -7,6 +7,7 @@ from functools import wraps
 from getpass import getpass, getuser
 from glob import glob
 from contextlib import contextmanager
+import fabric
 
 from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.context_managers import warn_only
@@ -399,9 +400,17 @@ def manage(command):
     """
     Runs a Django management command.
     """
+    # if isfexpect:
+    #     return fexpect.run(command)
     return run("%s %s" % (env.manage, command))
 
-
+# def wrapExpectations(cmd,env):
+#     script = createScript(cmd,env)
+#     remoteScript = '/tmp/fexpect_'+shortuuid.uuid()
+#     fabric.api.put(resource('pexpect.py'),'/tmp/')
+#     fabric.api.put(StringIO(script),remoteScript)
+#     wrappedCmd = 'python '+remoteScript
+#     return wrappedCmd
 #########################
 # Install and configure #
 #########################
@@ -502,7 +511,7 @@ def create():
     live host.
     """
 
-    # Create virtualenv
+    #Create virtualenv
     sudo("mkdir -p %s" % env.venv_home, True)
     sudo("chown %s %s" % (env.user, env.venv_home), True)
     sudo("chown -R %s %s" % (env.user, env.python_dir), True)
@@ -549,8 +558,15 @@ def create():
             pip("-r %s/%s --allow-all-external" % (env.proj_path, env.reqs_path))
         pip("gunicorn setproctitle south psycopg2 python3-memcached gevent tornado")
         manage("syncdb --noinput")
+        # prompts = []
+        # prompts += expect('Password:','waverly4025')
+        # prompts += expect('Password (again): ','waverly4025')
 
-        manage("createsuperuser --user buddyup --email buddyupapp@gmail.com")
+        #with expecting(prompts):
+        with warn_only():
+            manage("createsuperuser --user buddyup --email buddyupapp@gmail.com")
+
+
         manage("migrate --noinput")
         #python("from django.conf import settings;"
         #      "from django.contrib.sites.models import Site;"

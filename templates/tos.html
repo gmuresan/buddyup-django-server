@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}">
+    <title></title>
+</head>
+<body>
+<header>
+        <a href="{% url 'buddyup.views.index' %}"><img id="tosIcon" class="icon" src="{% static "img/icon.png" %}" alt="logo"/></a>
+</header>
+
+<div id="padH"><h1>Terms of Service</h1></div>
+
+<p class="padP">These Terms of Service were last updated on May 7, 2014. <br/>
+
+*Note: In this Terms of Service, “we”, “us”, and “our” are used to refer to BuddyUp. <br/>
+*Note: “Service” refers to the BuddyUp application.</p>
+
+<ul>
+    <li>By using our Service, you agree to be bound by these Terms of Service.</li><br/>
+    <li>Individuals under the age of 13 should not use BuddyUp.</li><br/>
+    <li>You agree to use BuddyUp in accordance with all applicable domestic and international laws and regulations.If we believe you have breached any of these laws <br/>
+    or regulations, we will investigate such violations and reserve the right to remove you from BuddyUp and report you to the appropriate authorities, if necessary. </li><br/>
+    <li>You are responsible for your use of BuddyUp. Misusing our service for purposes other than it is meant for is a breach of these Terms of Service, and we will <br/>
+    not be liable for any resulting consequences from such misuse. <br/></li>
+    <li>You, the user, are solely responsibly for your interactions with others within BuddyUp. Please understand that we do not screen users who sign up for our app, <br/>
+    and that you must exercise caution when/if interacting with people you don’t personally know. </li><br/>
+    <li>You may not use BuddyUp to share pornographic, libelous or defamatory content. </li><br/>
+    <li>You may not use BuddyUp to threaten others or incite violence in any way whatsoever. </li><br/>
+    <li>BuddyUp provides users with the ability & choice to publicly share their location and other details about themselves/their activities. If you choose to <br/>
+    provide personal information through any public features of BuddyUp, know that this information is public, and that we will not be liable for any consequences <br/>
+    resulting from a public disclosure of personal information. When using the “Public” feature in BuddyUp, users should be aware that any other user within BuddyUp <br/>
+    would be able to see their activities. </li>
+</ul>
+
+<p class="padP">
+    We reserve the right to amend these Terms of Service at any point in the future. If any changes to the Terms of Service are made, we will make an announcement <br/>
+    through our website and/or another appropriate method we choose. If you choose to continue using our service after any amendments, then you will have agreed to <br/>
+    the amended Terms of Service. <br/>
+<br/>
+For any questions, please contact us at any point. <br/>
+<br/>
+Thanks for agreeing, and taking the time to read these Terms!
+    <br/><br/></p>
+
+</body>
+<footer>
+    <section class="cta">
+        <a href="#"><img class="app-store-button" src="{% static "img/app-store-button.svg" %}"
+                         alt="Download BuddyUp from the App Store"></a>
+    </section>
+    <nav>
+        <!--<a href="{% url 'buddyup.views.about' %}">About</a>-->
+        <a href="{% url 'buddyup.views.tos' %}">Terms of Service</a>
+        <a href="{% url 'buddyup.views.privacyPolicy' %}">Privacy Policy</a>
+        <a href="#">Contact us</a>
+        <a href="www.facebook.com/buddyuptheapp">Facebook</a>
+        <a href="www.twitter.com/buddyup">@BuddyUpApp</a>
+    </nav>
+</footer>
+</html>
