@@ -638,6 +638,7 @@ def restart():
         pid_path = "%s/gunicorn.pid" % env.proj_path
         #if exists(pid_path):
         #sudo("kill -HUP `cat %s`" % pid_path)
+        sudo("supervisorctl restart celery_%s" % env.proj_name)
         sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
         #else:
         #sudo("supervisorctl start gunicorn_%s" % env.proj_name)

@@ -5,9 +5,11 @@ import datetime
 from django.contrib.auth.models import User
 from chat.models import Message
 from notifications.models import GCMDevice, APNSDevice, PushNotifications
+from notifications.tasks import handlePushNotification
 from status.helpers import isStatusVisibleToUser
 from status.models import StatusMessage, Status
 from userprofile.models import UserProfile, Group
+from celery import Celery
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
@@ -286,41 +288,44 @@ def sendPokeNotificationSynchronous(pokeObj):
         return None, None
 
 
-def sendChatNotifications(messageId):
-    pass
-    #thread.start_new_thread(sendChatNotificationsSynchronous, (messageId, ))
-
-
-def sendChatNotificationsSynchronous(messageId):
-    try:
-        message = Message.objects.get(pk=messageId)
-        conversation = message.conversation
-    except Message.DoesNotExist:
-        return None, None
-
+def sendChatNotifications(message):
     pushNotification, isCreated = PushNotifications.objects.get_or_create(chatMessage=message,
                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_CHAT,
                                                                           sendingUser=message.user)
+    handlePushNotification(pushNotification.id)
 
-    try:
-        userProfile = message.user
 
-        audience = conversation.members.all()
-        audience = audience.exclude(pk=userProfile.pk)
 
-        pushNotification.receivingUsers.add(*audience)
-
-        androidDevices = GCMDevice.objects.filter(user__in=audience)
-        iosDevices = APNSDevice.objects.filter(user__in=audience)
-
-        messageContents = str(pushNotification)
-        extra = {'id': conversation.id, 'type': 'chat', 'userid': message.user.id}
-
-        androidResponse = androidDevices.send_message(messageContents, extra=extra)
-        iosResponse = iosDevices.send_message(messageContents, extra=extra)
-
-        return androidResponse, iosResponse
-
-    except User.DoesNotExist:
-        return None, None
+# def sendChatNotificationsSynchronous(messageId):
+#     try:
+#         message = Message.objects.get(pk=messageId)
+#         conversation = message.conversation
+#     except Message.DoesNotExist:
+#         return None, None
+#
+#     pushNotification, isCreated = PushNotifications.objects.get_or_create(chatMessage=message,
+#                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_CHAT,
+#                                                                           sendingUser=message.user)
+#
+#     try:
+#         userProfile = message.user
+#
+#         audience = conversation.members.all()
+#         audience = audience.exclude(pk=userProfile.pk)
+#
+#         pushNotification.receivingUsers.add(*audience)
+#
+#         androidDevices = GCMDevice.objects.filter(user__in=audience)
+#         iosDevices = APNSDevice.objects.filter(user__in=audience)
+#
+#         messageContents = str(pushNotification)
+#         extra = {'id': conversation.id, 'type': 'chat', 'userid': message.user.id}
+#
+#         androidResponse = androidDevices.send_message(messageContents, extra=extra)
+#         iosResponse = iosDevices.send_message(messageContents, extra=extra)
+#
+#         return androidResponse, iosResponse
+#
+#     except User.DoesNotExist:
+#         return None, None
 
