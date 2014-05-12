@@ -13,8 +13,6 @@ from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
 from fabric.operations import run
-from fexpect import expect
-from fexpect import expecting
 
 
 ################
@@ -551,12 +549,8 @@ def create():
             pip("-r %s/%s --allow-all-external" % (env.proj_path, env.reqs_path))
         pip("gunicorn setproctitle south psycopg2 python3-memcached gevent tornado")
         manage("syncdb --noinput")
-        prompts = []
-        prompts += expect('Password:','waverly4025')
-        prompts += expect('Password (again):','waverly4025')
 
-        with expecting(prompts):
-            manage("createsuperuser --user buddyup --email buddyupapp@gmail.com")
+        manage("createsuperuser --user buddyup --email buddyupapp@gmail.com")
         manage("migrate --noinput")
         #python("from django.conf import settings;"
         #      "from django.contrib.sites.models import Site;"
@@ -568,6 +562,8 @@ def create():
 
     sudo("mkdir -p %s/logs" % env.venv_path)
     sudo("touch %s/logs/gunicorn_supervisor.log" % env.venv_path)
+    sudo("mkdir %s/logs/celery")
+    sudo("touch %s/logs/celery/worker.log")
 
     return True
 

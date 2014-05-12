@@ -292,7 +292,7 @@ def sendChatNotifications(message):
     pushNotification, isCreated = PushNotifications.objects.get_or_create(chatMessage=message,
                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_CHAT,
                                                                           sendingUser=message.user)
-    handlePushNotification(pushNotification.id)
+    handlePushNotification.delay(pushNotification.id)
 
 
 
