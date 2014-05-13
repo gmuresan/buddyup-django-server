@@ -733,8 +733,9 @@ def createTestUser(request):
 
     blockedFriends = userProfile.blockedFriends.all()
     for friend in friends:
-        friend.friends.add(userProfile)
-        userProfile.friends.add(friend)
+        if friend not in friend.friends.all():
+            friend.friends.add(userProfile)
+            userProfile.friends.add(friend)
 
     friends = userProfile.friends.all()
     response['friends'] = list()
