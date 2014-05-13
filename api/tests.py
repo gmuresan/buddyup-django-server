@@ -13,6 +13,9 @@ from api.helpers import DATETIME_FORMAT, MICROSECOND_DATETIME_FORMAT, loadJson
 from buddyup import settings
 from chat.models import Conversation, Message
 from notifications.models import GCMDevice, APNSDevice, Notification
+from notifications.push_notifications import sendFavoritesStatusPushNotification, sendChatNotifications, \
+    sendAttendingStatusPushNotification, sendInvitedToStatusNotification, sendDeleteStatusNotfication, \
+    sendStatusMessageNotification, sendEditStatusNotification
 from status.helpers import createLocationJson
 from status.models import Status, Poke, Location, StatusMessage, TimeSuggestion, LocationSuggestion
 from userprofile.models import UserProfile, Group, Setting, FacebookUser
@@ -384,7 +387,7 @@ class PostStatusTests(TestCase):
             'expires': self.expires.strftime(DATETIME_FORMAT),
             'text': self.text,
             'type': 'sports',
-            'imageorientation':'d'
+            'imageorientation': 'd'
         })
 
         responseObj = loadJson(response.content)
@@ -582,38 +585,38 @@ class facebookShareStatusTests(TestCase):
         self.group.members.add(self.friend2)
         self.group.save()
 
-    # def testShareStatusOnFacebook(self):
-    #     client = Client()
-    #
-    #     text = "Hangout at my house"
-    #
-    #     expires = datetime.now(pytz.timezone("UTC"))
-    #     expires = expires + timedelta(hours=1)
-    #
-    #     lng = 42.341560
-    #     lat = -83.501783
-    #     address = '46894 spinning wheel'
-    #     city = 'canton'
-    #     state = 'MI'
-    #     venue = "My house"
-    #     location = {'lat': lat, 'lng': lng, 'address': address, 'state': state,
-    #                 'city': city, 'venue': venue}
-    #
-    #     response = client.post(reverse('postStatusAPI'), {
-    #         'userid': self.user.id,
-    #         'expires': expires.strftime(DATETIME_FORMAT),
-    #         'text': text,
-    #         'groupids': json.dumps([self.group.id]),
-    #         'location': json.dumps(location)
-    #     })
-    #
-    #     response = loadJson(response.content)
-    #
-    #     statusId = response['statusid']
-    #     status = Status.objects.get(pk=statusId)
-    #
-    #     fbProfile = FacebookProfile(self.user, self.accessTokenUser)
-    #     response = fbProfile.shareStatus(status)
+        # def testShareStatusOnFacebook(self):
+        #     client = Client()
+        #
+        #     text = "Hangout at my house"
+        #
+        #     expires = datetime.now(pytz.timezone("UTC"))
+        #     expires = expires + timedelta(hours=1)
+        #
+        #     lng = 42.341560
+        #     lat = -83.501783
+        #     address = '46894 spinning wheel'
+        #     city = 'canton'
+        #     state = 'MI'
+        #     venue = "My house"
+        #     location = {'lat': lat, 'lng': lng, 'address': address, 'state': state,
+        #                 'city': city, 'venue': venue}
+        #
+        #     response = client.post(reverse('postStatusAPI'), {
+        #         'userid': self.user.id,
+        #         'expires': expires.strftime(DATETIME_FORMAT),
+        #         'text': text,
+        #         'groupids': json.dumps([self.group.id]),
+        #         'location': json.dumps(location)
+        #     })
+        #
+        #     response = loadJson(response.content)
+        #
+        #     statusId = response['statusid']
+        #     status = Status.objects.get(pk=statusId)
+        #
+        #     fbProfile = FacebookProfile(self.user, self.accessTokenUser)
+        #     response = fbProfile.shareStatus(status)
 
 
 class deleteStatusTest(TestCase):
@@ -1882,177 +1885,213 @@ class SettingsTests(TestCase):
         self.assertEqual('', response['value'])
 
 
-# class PushNotificationTests(LiveServerTestCase):
-#     def setUp(self):
-#         user = User.objects.create(username='user', password='0', email='user')
-#         self.user = UserProfile.objects.create(user=user)
-#
-#         friend = User.objects.create(username='friend', password='0', email='friend', first_name="friend 1")
-#         self.friend = UserProfile.objects.create(user=friend)
-#
-#         self.user.friends.add(self.friend)
-#         self.friend.friends.add(self.user)
-#
-#         friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name="friend 2")
-#         self.friend2 = UserProfile.objects.create(user=friend2)
-#
-#         self.user.friends.add(self.friend2)
-#         self.friend2.friends.add(self.user)
-#
-#         friend3 = User.objects.create(username='friend3', password='0', email='friend3', first_name="friend 3")
-#         self.friend3 = UserProfile.objects.create(user=friend3)
-#
-#         self.user.friends.add(self.friend3)
-#         self.friend3.friends.add(self.user)
-#
-#         nonFriend = User.objects.create(username='friend4', password='0', email='friend4', first_name="friend 4")
-#         self.nonFriend = UserProfile.objects.create(user=nonFriend)
-#
-#         self.friend3.friends.add(self.nonFriend)
-#         self.nonFriend.friends.add(self.friend3)
-#
-#         self.convo = Conversation.objects.create()
-#         self.convo.members.add(self.user, self.friend, self.friend2, self.friend3)
-#
-#         self.message = Message.objects.create(user=self.user, text='Hello', conversation=self.convo)
-#         self.convo.save()
-#
-#         self.friend1Device = APNSDevice.objects.create(user=self.friend,
-#                                                        registration_id="ae134ff0db615fc5725e44d29bf3d83f606f801fed126741ac92ce3489ad77a7")
-#
-#         self.friend2Device = GCMDevice.objects.create(user=self.friend2,
-#                                                       registration_id="f7f6544e7bdb153cb17b0fb2c01dcd72d1ba315b753b29844258c66243b69f08")
-#         self.friend2APNSDevice = APNSDevice.objects.create(user=self.friend2,
-#                                                            registration_id="f7f6544e7bdb153cb17b0fb2c01dcd72d1ba315b753b29844258c66243b69f08")
-#         self.friend3APNSDevice = APNSDevice.objects.create(user=self.friend3,
-#                                                            registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
-#
-#         self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend2)
-#
-#     # def testWithFavoritesNotification(self):
-#     #     print("Post Status With Favorites Notification")
-#     #     client = Client()
-#     #
-#     #     group1 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend)
-#     #     group2 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend2)
-#     #     group3 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend3)
-#     #     group4 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.nonFriend)
-#     #
-#     #     group1.members.add(self.user)
-#     #     group2.members.add(self.user)
-#     #     group3.members.add(self.user)
-#     #     group4.members.add(self.user)
-#     #
-#     #     expires = datetime.now() + timedelta(hours=1)
-#     #     text = "text"
-#     #
-#     #     lat = 42.341560
-#     #     lng = -83.501783
-#     #     address = '46894 spinning wheel'
-#     #     city = 'canton'
-#     #     state = 'MI'
-#     #     venue = "My house"
-#     #     expirationDate = datetime.utcnow() + timedelta(hours=1)
-#     #
-#     #     location = Location.objects.create(lng=lng, lat=lat, point=Point(lng, lat), city=city, state=state, venue=venue,
-#     #                                        address=address)
-#     #
-#     #     status = Status.objects.create(user=self.user, expires=expirationDate, text='Hang out1', location=location)
-#     #
-#     #     usersSent = sendFavoritesStatusPushNotificationSynchronous(status.id)
-#     #     self.assertEqual(len(usersSent), 3)
-#     #     self.assertNotIn(self.nonFriend, usersSent)
-#     #
-#     #     status.visibility = Status.VIS_FRIENDS_OF_FRIENDS
-#     #     status.save()
-#     #
-#     #     usersSent = sendFavoritesStatusPushNotificationSynchronous(status.id)
-#     #     self.assertEqual(len(usersSent), 4)
-#     #
-#     #     status.visibility = Status.VIS_CUSTOM
-#     #     status.friendsVisible.add(self.friend)
-#     #     status.save()
-#     #
-#     #     usersSent = sendFavoritesStatusPushNotificationSynchronous(status.id)
-#     #     self.assertEqual(len(usersSent), 1)
-#     #     self.assertIn(self.friend, usersSent)
-#
-#     def testSimpleChatNotification(self):
-#         pass
-#         #print("Chat Push Notification")
-#
-#         #androidResponse, iosResponse = sendChatNotificationsSynchronous(self.message)
-#         #print androidResponse
-#         #print iosResponse
-#
-#     def testPokeNotification(self):
-#         pass
-#         #print("Poke Push Notification"
-#
-#         #androidResponse, iosResponse = sendPokeNotificationSynchronous(self.pokeObj)
-#         #print androidResponse
-#         # print iosResponse
-#
-#     def testRegisterToken(self):
-#         print("Resgister Push Notification Token")
-#         client = Client()
-#
-#         iosToken = 'asfafqwf1f13f1f'
-#         androidToken = 'asff1fh881f9h1fh1ifh'
-#
-#         response = client.post(reverse('registerPushNotificationsAPI'), {
-#             'userid': self.friend.id,
-#             'token': iosToken,
-#             'platform': 'ios'
-#         })
-#
-#         response = loadJson(response.content)
-#
-#         self.assertTrue(response['success'])
-#
-#         response = client.post(reverse('registerPushNotificationsAPI'), {
-#             'userid': self.friend.id,
-#             'token': androidToken,
-#             'platform': 'android'
-#         })
-#
-#         response = loadJson(response.content)
-#
-#         self.assertTrue(response['success'])
-#
-#         androidDevice = GCMDevice.objects.get(user=self.friend, registration_id=androidToken)
-#         iosDevice = APNSDevice.objects.get(user=self.friend, registration_id=iosToken)
-#
-#     def testDeviceFiltering(self):
-#         print("test device filtering")
-#
-#         allUsers = UserProfile.objects.all()
-#         apnsDevices = APNSDevice.objects.filter(user__in=allUsers)
-#
-#         self.assertGreaterEqual(len(apnsDevices), 2)
-#
-#     def testDeviceFilteringConversation(self):
-#         print("Push Notif Device Convo Filter")
-#         client = Client()
-#
-#         chat = Conversation.objects.create()
-#         chat.members.add(self.friend)
-#         chat.members.add(self.friend2)
-#         chat.members.add(self.friend3)
-#         self.assertGreaterEqual(chat.members.all().count(), 2)
-#
-#         members = chat.members.all()
-#         apnsDevices = APNSDevice.objects.filter(user__in=members)
-#         self.assertEqual(len(apnsDevices), 3)
-#
-#         membersMinusSender = chat.members.all().exclude(id=self.friend.id)
-#         apnsDevices = APNSDevice.objects.filter(user__in=membersMinusSender)
-#         self.assertEqual(len(apnsDevices), 2)
-#         response = client.post(reverse('sendMessageAPI'), {
-#             'userid': self.friend.id,
-#             'chatid': chat.id,
-#             'text': 'hello'
-#         })
+class PushNotificationTests(LiveServerTestCase):
+    def setUp(self):
+        user = User.objects.create(username='user', password='0', email='user')
+        self.user = UserProfile.objects.create(user=user)
+
+        friend = User.objects.create(username='friend', password='0', email='friend', first_name="friend 1")
+        self.friend = UserProfile.objects.create(user=friend)
+
+        self.user.friends.add(self.friend)
+        self.friend.friends.add(self.user)
+
+        friend2 = User.objects.create(username='friend2', password='0', email='friend2', first_name="friend 2")
+        self.friend2 = UserProfile.objects.create(user=friend2)
+
+        self.user.friends.add(self.friend2)
+        self.friend2.friends.add(self.user)
+
+        friend3 = User.objects.create(username='friend3', password='0', email='friend3', first_name="friend 3")
+        self.friend3 = UserProfile.objects.create(user=friend3)
+
+        self.user.friends.add(self.friend3)
+        self.friend3.friends.add(self.user)
+
+        nonFriend = User.objects.create(username='friend4', password='0', email='friend4', first_name="friend 4")
+        self.nonFriend = UserProfile.objects.create(user=nonFriend)
+
+        self.friend3.friends.add(self.nonFriend)
+        self.nonFriend.friends.add(self.friend3)
+
+        self.convo = Conversation.objects.create()
+        self.convo.members.add(self.user, self.friend, self.friend2, self.friend3)
+
+        self.message = Message.objects.create(user=self.user, text='Hello', conversation=self.convo)
+        self.convo.save()
+
+        expires = datetime.now() + timedelta(hours=1)
+        text = "text"
+
+        lat = 42.341560
+        lng = -83.501783
+        address = '46894 spinning wheel'
+        city = 'canton'
+        state = 'MI'
+        venue = "My house"
+        expirationDate = datetime.utcnow() + timedelta(hours=1)
+
+        location = Location.objects.create(lng=lng, lat=lat, point=Point(lng, lat), city=city, state=state, venue=venue,
+                                           address=address)
+
+        self.status = Status.objects.create(user=self.user, expires=expirationDate, text='Hang out1', location=location)
+
+        self.friend1Device = APNSDevice.objects.create(user=self.friend,
+                                                       registration_id="ae134ff0db615fc5725e44d29bf3d83f606f801fed126741ac92ce3489ad77a7")
+
+        self.friend2Device = GCMDevice.objects.create(user=self.friend2,
+                                                      registration_id="f7f6544e7bdb153cb17b0fb2c01dcd72d1ba315b753b29844258c66243b69f08")
+        self.friend2APNSDevice = APNSDevice.objects.create(user=self.friend2,
+                                                           registration_id="f7f6544e7bdb153cb17b0fb2c01dcd72d1ba315b753b29844258c66243b69f08")
+        self.friend3APNSDevice = APNSDevice.objects.create(user=self.friend3,
+                                                           registration_id="ef4a0cc519a800ab0f56356135ca98a0d22528f4a1277534295af02684df0bed")
+
+        self.pokeObj = Poke.objects.create(sender=self.user, recipient=self.friend2)
+
+    def testAttendingPushNotification(self):
+        print("Attending Push Notification")
+
+        self.status.attending.add(self.friend)
+        sendAttendingStatusPushNotification(self.status, self.friend)
+
+    def testInvitePushNotification(self):
+        print("Invite Push Notification")
+
+        self.status.invited.add(self.friend)
+        sendInvitedToStatusNotification(self.status, self.user, [self.friend, ])
+
+    def testStatusDeletePushNotification(self):
+        print("Delete Status Push Notification")
+
+        self.status.attending.add(self.friend)
+        sendDeleteStatusNotfication(self.status)
+
+    def testStatusEditPushNotification(self):
+        print("Status Edit Push Notification")
+        sendEditStatusNotification(self.status)
+
+    def testStatusMessagePushNotification(self):
+        print("Status Message Push Notification")
+        self.status.attending.add(self.friend)
+        statusMessage = StatusMessage.objects.create(user=self.user, text='safa', status=self.status)
+
+        sendStatusMessageNotification(statusMessage)
+
+    def testWithFavoritesNotification(self):
+        print("Post Status With Favorites Notification")
+        client = Client()
+
+        group1 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend)
+        group2 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend2)
+        group3 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.friend3)
+        group4 = Group.objects.create(name=Group.FAVORITES_GROUP_NAME, user=self.nonFriend)
+
+        group1.members.add(self.user)
+        group2.members.add(self.user)
+        group3.members.add(self.user)
+        group4.members.add(self.user)
+
+        expires = datetime.now() + timedelta(hours=1)
+        text = "text"
+
+        lat = 42.341560
+        lng = -83.501783
+        address = '46894 spinning wheel'
+        city = 'canton'
+        state = 'MI'
+        venue = "My house"
+        expirationDate = datetime.utcnow() + timedelta(hours=1)
+
+        location = Location.objects.create(lng=lng, lat=lat, point=Point(lng, lat), city=city, state=state, venue=venue,
+                                           address=address)
+
+        status = Status.objects.create(user=self.user, expires=expirationDate, text='Hang out1', location=location)
+
+        usersSent = sendFavoritesStatusPushNotification(status)
+        self.assertEqual(len(usersSent), 3)
+        self.assertNotIn(self.nonFriend, usersSent)
+
+        status.visibility = Status.VIS_FRIENDS_OF_FRIENDS
+        status.save()
+
+        usersSent = sendFavoritesStatusPushNotification(status)
+        self.assertEqual(len(usersSent), 4)
+
+        status.visibility = Status.VIS_CUSTOM
+        status.friendsVisible.add(self.friend)
+        status.save()
+
+        usersSent = sendFavoritesStatusPushNotification(status)
+        self.assertEqual(len(usersSent), 1)
+
+    #     self.assertIn(self.friend, usersSent)
+
+    def testSimpleChatNotification(self):
+        pass
+        print("Chat Push Notification")
+
+        sendChatNotifications(self.message)
+
+    def testRegisterToken(self):
+        print("Resgister Push Notification Token")
+        client = Client()
+
+        iosToken = 'asfafqwf1f13f1f'
+        androidToken = 'asff1fh881f9h1fh1ifh'
+
+        response = client.post(reverse('registerPushNotificationsAPI'), {
+            'userid': self.friend.id,
+            'token': iosToken,
+            'platform': 'ios'
+        })
+
+        response = loadJson(response.content)
+
+        self.assertTrue(response['success'])
+
+        response = client.post(reverse('registerPushNotificationsAPI'), {
+            'userid': self.friend.id,
+            'token': androidToken,
+            'platform': 'android'
+        })
+
+        response = loadJson(response.content)
+
+        self.assertTrue(response['success'])
+
+        androidDevice = GCMDevice.objects.get(user=self.friend, registration_id=androidToken)
+        iosDevice = APNSDevice.objects.get(user=self.friend, registration_id=iosToken)
+
+    def testDeviceFiltering(self):
+        print("test device filtering")
+
+        allUsers = UserProfile.objects.all()
+        apnsDevices = APNSDevice.objects.filter(user__in=allUsers)
+
+        self.assertGreaterEqual(len(apnsDevices), 2)
+
+    def testDeviceFilteringConversation(self):
+        print("Push Notif Device Convo Filter")
+        client = Client()
+
+        chat = Conversation.objects.create()
+        chat.members.add(self.friend)
+        chat.members.add(self.friend2)
+        chat.members.add(self.friend3)
+        self.assertGreaterEqual(chat.members.all().count(), 2)
+
+        members = chat.members.all()
+        apnsDevices = APNSDevice.objects.filter(user__in=members)
+        self.assertEqual(len(apnsDevices), 3)
+
+        membersMinusSender = chat.members.all().exclude(id=self.friend.id)
+        apnsDevices = APNSDevice.objects.filter(user__in=membersMinusSender)
+        self.assertEqual(len(apnsDevices), 2)
+        response = client.post(reverse('sendMessageAPI'), {
+            'userid': self.friend.id,
+            'chatid': chat.id,
+            'text': 'hello'
+        })
 
 
 class AppNotificationTests(TestCase):

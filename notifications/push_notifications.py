@@ -38,6 +38,8 @@ def sendFavoritesStatusPushNotification(status):
         pushNotification.receivingUsers.add(*usersToNotify)
         handlePushNotification.delay(pushNotification.id)
 
+    return usersToNotify
+
 
 def sendAttendingStatusPushNotification(status, attendingUser):
 
@@ -77,6 +79,7 @@ def sendStatusMessageNotification(message):
                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_MESSAGE,
                                                                           sendingUser=message.user)
     if isCreated:
+        pushNotification.receivingUsers.add(*message.status.attending.all().exclude(pk=message.user.pk))
         handlePushNotification.delay(pushNotification.id)
 
 
@@ -86,6 +89,7 @@ def sendDeleteStatusNotfication(status):
                                                                           sendingUser=status.user)
 
     if isCreated:
+        pushNotification.receivingUsers.add(*status.attending.all().exclude(pk=status.user.pk))
         handlePushNotification.delay(pushNotification.id)
 
 
@@ -93,8 +97,9 @@ def sendEditStatusNotification(status):
     pushNotification, isCreated = PushNotifications.objects.get_or_create(status=status,
                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_CHANGED,
                                                                           sendingUser=status.user)
-    if isCreated:
-        handlePushNotification.delay(pushNotification.id)
+
+    pushNotification.receivingUsers.add(*status.attending.all().exclude(pk=status.user.pk))
+    handlePushNotification.delay(pushNotification.id)
 
 
 def sendChatNotifications(message):
@@ -102,4 +107,5 @@ def sendChatNotifications(message):
                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_CHAT,
                                                                           sendingUser=message.user)
     if isCreated:
+        pushNotification.receivingUsers.add(*message.conversation.members.all().exclude(pk=message.user.pk))
         handlePushNotification.delay(pushNotification.id)
