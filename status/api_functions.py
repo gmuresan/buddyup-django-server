@@ -313,7 +313,8 @@ def inviteToStatus(request):
 
             try:
                 friend = UserProfile.objects.get(facebookUID=friendId)
-                buddyupFriends.append(friend)
+                if friend != status.user and friend not in status.attending.all():
+                    buddyupFriends.append(friend)
             except UserProfile.DoesNotExist:
                 try:
                     fbFriend = FacebookUser.objects.get(facebookUID=friendId)
@@ -324,7 +325,8 @@ def inviteToStatus(request):
         else:
             try:
                 friend = UserProfile.getUser(friendId)
-                buddyupFriends.append(friend)
+                if friend != status.user and friend not in status.attending.all():
+                    buddyupFriends.append(friend)
 
             except UserProfile.DoesNotExist:
                 pass
