@@ -94,6 +94,6 @@ admin.site.register(GCMDevice, DeviceAdmin)
 admin.site.register(Notification)
 
 class PushNotificationAdmin(admin.ModelAdmin):
-    readonly_fields = ('sendingUser', 'receivingUser', 'status', 'message', 'chatMessage',)
+    readonly_fields = ('sendingUser', 'receivingUsers', 'status', 'message', 'chatMessage',)
 
 admin.site.register(PushNotifications, PushNotificationAdmin)
