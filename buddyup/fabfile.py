@@ -13,7 +13,7 @@ from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
-from fabric.operations import run
+from fabric.operations import run, put
 
 
 ################
@@ -58,6 +58,7 @@ env.gunicorn_port = conf.get("GUNICORN_PORT", 8000)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.python_dir = "/opt/lib/python3.3"
 env.is_live_host = True
+env.debug = conf.get("DEBUG", False)
 
 env.pgbouncer_port = 6432
 
@@ -683,6 +684,7 @@ def deploy():
 
     sudo("mkdir -p %s/logs" % env.venv_path)
     sudo("chown %s  %s/run" % (env.user, env.venv_home))
+
     for name in get_templates():
         upload_template_and_reload(name)
     with project():

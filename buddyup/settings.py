@@ -167,7 +167,7 @@ INSTALLED_APPS = (
 
 PUSH_NOTIFICATIONS_SETTINGS = {
     "GCM_API_KEY": "AIzaSyDxi_YVwUKHLl5ePxDVDCoU7h_48mboXB8",
-    "APNS_CERTIFICATE": PROJECT_ROOT + "/BuddyUpDevServerCert.pem",
+    "APNS_CERTIFICATE": PROJECT_ROOT + "deploy/apns_dev.pem",
 }
 
 # A sample logging configuration. The only tangible logging

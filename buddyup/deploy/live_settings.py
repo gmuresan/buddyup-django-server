@@ -1,3 +1,6 @@
+import os
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 DEBUG = True
 
@@ -41,3 +44,9 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_COOKIE_SECURE = True
 
 CONN_MAX_AGE = 60
+
+if not DEBUG:
+    PUSH_NOTIFICATIONS_SETTINGS = {
+        "GCM_API_KEY": "AIzaSyDxi_YVwUKHLl5ePxDVDCoU7h_48mboXB8",
+        "APNS_CERTIFICATE": PROJECT_ROOT + "deploy/apns_prod.pem",
+    }
