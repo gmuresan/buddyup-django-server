@@ -2,7 +2,7 @@ from django.contrib import admin
 from status.models import Status, Location, Poke
 
 class StatusAdmin(admin.ModelAdmin):
-    list_display = ('text', 'user', 'starts', 'expires', 'location', 'attendingCount', 'invitedcount')
+    list_display = ('text', 'user', 'starts', 'expires', 'location', 'attendingCount', 'invitedCount')
 
     def attendingCount(self, obj):
         return obj.attending.count()
