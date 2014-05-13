@@ -97,9 +97,9 @@ def sendEditStatusNotification(status):
     pushNotification, isCreated = PushNotifications.objects.get_or_create(status=status,
                                                                           pushNotificationType=PushNotifications.PUSH_NOTIF_STATUS_CHANGED,
                                                                           sendingUser=status.user)
-    if isCreated:
-        pushNotification.receivingUsers.add(*status.attending.all().exclude(pk=status.user.pk))
-        handlePushNotification.delay(pushNotification.id)
+
+    pushNotification.receivingUsers.add(*status.attending.all().exclude(pk=status.user.pk))
+    handlePushNotification.delay(pushNotification.id)
 
 
 def sendChatNotifications(message):
