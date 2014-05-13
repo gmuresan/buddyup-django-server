@@ -6,4 +6,8 @@ class ConversationAdmin(admin.ModelAdmin):
     readonly_fields = ('id',)
 
 admin.site.register(Conversation, ConversationAdmin)
-admin.site.register(Message)
+
+class MessageAdmin(admin.ModelAdmin):
+    readonly_fields = ('user', 'conversation', )
+
+admin.site.register(Message, MessageAdmin)
