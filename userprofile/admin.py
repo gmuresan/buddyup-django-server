@@ -8,7 +8,7 @@ class UserProileAdmin(admin.ModelAdmin):
 admin.site.register(UserProfile, UserProileAdmin)
 
 class GroupAdmin(admin.ModelAdmin):
-    readonly_fields = ('members', 'fbMembers')
+    readonly_fields = ('user','members', 'fbMembers',)
 
 admin.site.register(Group, GroupAdmin)
 
