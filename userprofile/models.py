@@ -34,6 +34,7 @@ class UserProfile(models.Model):
     def getUser(userId):
         cacheKey= UserProfile.getCacheId(userId)
         user = cache.get(cacheKey)
+        print("cache user %s" % user)
         if user is None:
             user = UserProfile.objects.get(pk=userId)
             cache.set(cacheKey, user)
