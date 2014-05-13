@@ -3,8 +3,7 @@ from status.models import Status, Location, Poke
 
 class StatusAdmin(admin.ModelAdmin):
     list_display = ('text', 'user', 'starts', 'expires', 'location', 'attendingCount', 'invitedCount')
-    readonly_fields = ('user', 'attending', 'invited')
-    exclude = ('attending',)
+    readonly_fields = ('user', 'attending', 'invited', 'groups', 'friendsVisible', 'fbFriendsVisible', 'fbInvited', 'fbAttending',)
 
     def attendingCount(self, obj):
         return obj.attending.count()
