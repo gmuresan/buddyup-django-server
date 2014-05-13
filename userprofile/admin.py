@@ -6,7 +6,11 @@ class UserProileAdmin(admin.ModelAdmin):
     readonly_fields = ('id', 'user', 'friends', 'blockedFriends')
 
 admin.site.register(UserProfile, UserProileAdmin)
-admin.site.register(Group)
+
+class GroupAdmin(admin.ModelAdmin):
+    readonly_fields = ('members', 'fbMembers')
+
+admin.site.register(Group, GroupAdmin)
 
 class FeedBackAdmin(admin.ModelAdmin):
     list_display = ('text', 'user', 'date',)
