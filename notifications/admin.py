@@ -96,4 +96,4 @@ admin.site.register(Notification)
 class PushNotificationAdmin(admin.ModelAdmin):
     readonly_fields = ('sendingUser', 'receivingUser', 'status', 'message', 'chatMessage',)
 
-admin.site.register(PushNotifications)
+admin.site.register(PushNotifications, PushNotificationAdmin)
