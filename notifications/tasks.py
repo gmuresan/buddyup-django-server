@@ -9,7 +9,7 @@ DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 @shared_task
 def handlePushNotification(pushNotificationId):
     try:
-        pushNotification = PushNotifications.objects.get(pk=pushNotificationId)
+        pushNotification = PushNotifications.getNotification(pushNotificationId)
         pushType = pushNotification.pushNotificationType
 
         if pushType == PushNotifications.PUSH_NOTIF_CHAT:

@@ -13,10 +13,6 @@ from celery import Celery
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
-MAX_POOL_WORKERS = 10
-
-THREAD_EXECUTOR = ThreadPoolExecutor(max_workers=MAX_POOL_WORKERS)
-
 
 def sendFavoritesStatusPushNotification(status):
     favoriteGroupsWithThisUser = Group.objects.filter(name=Group.FAVORITES_GROUP_NAME, members=status.user)
@@ -36,6 +32,7 @@ def sendFavoritesStatusPushNotification(status):
                                                                           sendingUser=status.user)
     if isCreated:
         pushNotification.receivingUsers.add(*usersToNotify)
+        pushNotification.cache()
         handlePushNotification.delay(pushNotification.id)
 
     return usersToNotify
@@ -48,6 +45,7 @@ def sendAttendingStatusPushNotification(status, attendingUser):
                                                          sendingUser=attendingUser)
     if created:
         pushNotification.receivingUsers.add(status.user)
+        pushNotification.cache()
         handlePushNotification.delay(pushNotification.id)
 
 
@@ -71,6 +69,7 @@ def sendInvitedToStatusNotification(status, invitingUser, invitedUsers):
             sendNotification = True
 
         if sendNotification:
+            pushNotification.cache()
             handlePushNotification.delay(pushNotification.id)
 
 
@@ -80,6 +79,7 @@ def sendStatusMessageNotification(message):
                                                                           sendingUser=message.user)
     if isCreated:
         pushNotification.receivingUsers.add(*message.status.attending.all().exclude(pk=message.user.pk))
+        pushNotification.cache()
         handlePushNotification.delay(pushNotification.id)
 
 
@@ -90,6 +90,7 @@ def sendDeleteStatusNotfication(status):
 
     if isCreated:
         pushNotification.receivingUsers.add(*status.attending.all().exclude(pk=status.user.pk))
+        pushNotification.cache()
         handlePushNotification.delay(pushNotification.id)
 
 
@@ -99,6 +100,7 @@ def sendEditStatusNotification(status):
                                                                           sendingUser=status.user)
 
     pushNotification.receivingUsers.add(*status.attending.all().exclude(pk=status.user.pk))
+    pushNotification.cache()
     handlePushNotification.delay(pushNotification.id)
 
 
@@ -108,4 +110,5 @@ def sendChatNotifications(message):
                                                                           sendingUser=message.user)
     if isCreated:
         pushNotification.receivingUsers.add(*message.conversation.members.all().exclude(pk=message.user.pk))
+        pushNotification.cache()
         handlePushNotification.delay(pushNotification.id)
