@@ -3,6 +3,7 @@ from status.models import Status, Location, Poke
 
 class StatusAdmin(admin.ModelAdmin):
     list_display = ('text', 'user', 'starts', 'expires', 'location', 'attendingCount', 'invitedCount')
+    readonly_fields = ('user',)
 
     def attendingCount(self, obj):
         return obj.attending.count()
