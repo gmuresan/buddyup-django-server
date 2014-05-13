@@ -12,6 +12,7 @@ class DeviceAdmin(admin.ModelAdmin):
     list_display = ("__str__", "device_id", "user", "active")
     search_fields = ("name", "device_id", "user__username")
     list_filter = ("active", )
+    readonly_fields = ("user",)
     actions = ("sendTestPokeNotification", "sendTestChatNotification", "send_message", "send_bulk_message", "enable", "disable")
 
     def send_message(self, request, queryset):
@@ -91,5 +92,13 @@ class DeviceAdmin(admin.ModelAdmin):
 
 admin.site.register(APNSDevice, DeviceAdmin)
 admin.site.register(GCMDevice, DeviceAdmin)
-admin.site.register(Notification)
-admin.site.register(PushNotifications)
+
+class NotificationAdmin(admin.ModelAdmin):
+    readonly_fields = ('users', 'initiatingUser', 'status', 'message')
+
+admin.site.register(Notification, NotificationAdmin)
+
+class PushNotificationAdmin(admin.ModelAdmin):
+    readonly_fields = ('sendingUser', 'receivingUsers', 'status', 'message', 'chatMessage',)
+
+admin.site.register(PushNotifications, PushNotificationAdmin)

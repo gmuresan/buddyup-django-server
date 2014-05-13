@@ -3,7 +3,11 @@ from chat.models import Conversation, Message
 
 
 class ConversationAdmin(admin.ModelAdmin):
-    readonly_fields = ('id',)
+    readonly_fields = ('id', 'members')
 
 admin.site.register(Conversation, ConversationAdmin)
-admin.site.register(Message)
+
+class MessageAdmin(admin.ModelAdmin):
+    readonly_fields = ('user', 'conversation', )
+
+admin.site.register(Message, MessageAdmin)
