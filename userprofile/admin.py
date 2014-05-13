@@ -3,7 +3,7 @@ from userprofile.models import UserProfile, Group, Feedback, Setting
 
 class UserProileAdmin(admin.ModelAdmin):
     list_display = ('user','id',)
-    readonly_fields = ('id',)
+    readonly_fields = ('user','id',)
 
 admin.site.register(UserProfile, UserProileAdmin)
 admin.site.register(Group)
