@@ -1,5 +1,5 @@
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["%(live_host)s"]
 
