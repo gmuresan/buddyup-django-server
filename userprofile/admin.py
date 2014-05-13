@@ -17,6 +17,10 @@ class FeedBackAdmin(admin.ModelAdmin):
     readonly_fields = ('user', 'date', )
 
 admin.site.register(Feedback, FeedBackAdmin)
-admin.site.register(Setting)
+
+class SettingsAdmin(admin.ModelAdmin):
+    readonly_fields=('user')
+
+admin.site.register(Setting, admin.ModelAdmin)
 
 
