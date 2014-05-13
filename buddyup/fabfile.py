@@ -680,6 +680,8 @@ def deploy():
             print("\nAborting!")
             return False
         create()
+
+    sudo("mkdir -p %s/logs" % env.venv_path)
     for name in get_templates():
         upload_template_and_reload(name)
     with project():
