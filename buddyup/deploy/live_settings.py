@@ -2,7 +2,8 @@ import os
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
-DEBUG = True
+DEBUG = False
+TEMPLATE_DEBUG = False
 
 ALLOWED_HOSTS = ["%(live_host)s"]
 
@@ -50,3 +51,10 @@ if not DEBUG:
         "GCM_API_KEY": "AIzaSyDxi_YVwUKHLl5ePxDVDCoU7h_48mboXB8",
         "APNS_CERTIFICATE": PROJECT_ROOT + "deploy/apns_prod.pem",
     }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': 'unix:%(venv_home)/run/memcached.sock',
+    }
+}
