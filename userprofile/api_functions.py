@@ -76,6 +76,7 @@ def facebookLogin(request):
 
     if newUser:
         createFriendJoinedNotification(userProfile)
+        Group.objects.create(name="Favorites", user=userProfile)
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name

@@ -60,6 +60,11 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(userProfile.user.first_name, self.firstName)
         self.assertEqual(userProfile.user.last_name, self.lastName)
 
+        try:
+            group = Group.object.get(user=userProfile, name="Favorites")
+        except Group.DoesNotExist:
+            self.assertTrue(False)
+
     def testFacebookLoginWithFriends(self):
         print("FacebookLoginWithFriends")
         client = Client()
