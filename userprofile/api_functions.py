@@ -66,7 +66,6 @@ def facebookLogin(request):
 
     statusesResponse, newSince = getNewStatusesJsonResponse(userProfile, None, lat, lng)
     myStatusesResponse = getMyStatusesJsonResponse(userProfile)
-    groupsData = getMyGroupsJsonResponse(userProfile)
 
     settings = getSettingsData(userProfile)
 
@@ -77,6 +76,9 @@ def facebookLogin(request):
     if newUser:
         createFriendJoinedNotification(userProfile)
         Group.objects.create(name="Favorites", user=userProfile)
+
+    groupsData = getMyGroupsJsonResponse(userProfile)
+
 
     response['success'] = True
     response['firstname'] = userProfile.user.first_name
