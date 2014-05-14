@@ -6,6 +6,7 @@ from notifications.fields import UUIDField
 from status.models import Status, StatusMessage
 
 from userprofile.models import UserProfile
+from django.core.cache import cache
 
 
 class Device(models.Model):
@@ -191,3 +192,20 @@ class PushNotifications(models.Model):
 
         elif self.pushNotificationType == self.PUSH_NOTIF_FAVORITES:
             return self.status.user.user.first_name + " " + self.status.user.user.last_name + " posted an activity: " + self.status.text
+
+    def cache(self):
+        cache.set(PushNotifications.getCacheId(self.id), self)
+
+    @staticmethod
+    def getCacheId(notifId):
+        return "push_notif_" + str(notifId)
+
+    @staticmethod
+    def getNotification(notifId):
+        cacheKey= UserProfile.getCacheId(notifId)
+        pushNotif = cache.get(cacheKey)
+        if pushNotif is None:
+            pushNotif = PushNotifications.objects.get(pk=notifId)
+            cache.set(cacheKey, pushNotif)
+            return pushNotif
+        return pushNotif

@@ -13,7 +13,7 @@ from fabric.api import env, cd, prefix, sudo as _sudo, run as _run, hide, task
 from fabric.context_managers import warn_only
 from fabric.contrib.files import exists, upload_template
 from fabric.colors import yellow, green, blue, red
-from fabric.operations import run
+from fabric.operations import run, put
 
 
 ################
@@ -58,6 +58,7 @@ env.gunicorn_port = conf.get("GUNICORN_PORT", 8000)
 env.locale = conf.get("LOCALE", "en_US.UTF-8")
 env.python_dir = "/opt/lib/python3.3"
 env.is_live_host = True
+env.debug = conf.get("DEBUG", False)
 
 env.pgbouncer_port = 6432
 
@@ -126,7 +127,15 @@ templates = {
         "remote_path": "/etc/nginx/nginx.conf",
         "reload_command": "service nginx restart",
     },
+    "postgresql_conf_prod": {
+        "local_path": "deploy/postgresql_prod.conf",
+        "remote_path": "/etc/postgresql/9.3/main/postgresql.conf",
+        "owner": "postgres",
+        "reload_command": "service postgresql restart"
+    }
 }
+
+
 
 
 ######################################
@@ -436,6 +445,10 @@ def install():
 
     sudo("service pgbouncer start")
 
+    if env.is_live_host:
+        upload_template_and_reload("postgresql_conf_prod")
+        sudo("service postgresql restart")
+
     sudo("easy_install pip")
     sudo("pip install virtualenv")
     sudo("mkdir -p %s" % env.python_dir)
@@ -578,8 +591,8 @@ def create():
 
     sudo("mkdir -p %s/logs" % env.venv_path)
     sudo("touch %s/logs/gunicorn_supervisor.log" % env.venv_path)
-    sudo("mkdir %s/logs/celery")
-    sudo("touch %s/logs/celery/worker.log")
+    sudo("mkdir %s/logs/celery" % env.venv_path)
+    sudo("touch %s/logs/celery/worker.log" % env.venv_path)
 
     return True
 
@@ -589,6 +602,7 @@ def create():
 def uploadSSLCerts():
     # Set up SSL certificate.
 
+    pdb.set_trace()
     conf_path = "/etc/nginx/conf"
     if not exists(conf_path):
         sudo("mkdir %s" % conf_path)
@@ -599,8 +613,8 @@ def uploadSSLCerts():
             try:
                 if not env.is_live_host:
                     raise ValueError()
-                crt_local, = glob(os.path.join("deploy", "*.pem"))
-                key_local, = glob(os.path.join("deploy", "*.key"))
+                crt_local = os.path.join("deploy", "buddyup.pem")
+                key_local = os.path.join("deploy", "buddyup.key")
             except ValueError:
                 parts = (crt_file, key_file, env.live_host)
                 sudo("openssl req -new -x509 -nodes -out %s -keyout %s "
@@ -608,6 +622,8 @@ def uploadSSLCerts():
             else:
                 upload_template(crt_local, crt_file, use_sudo=True)
                 upload_template(key_local, key_file, use_sudo=True)
+
+    sudo("service nginx restart")
 
 
 @task
@@ -654,9 +670,10 @@ def restart():
     Restart gunicorn worker processes for the project.
     """
     with cd(env.venv_path):
-        pid_path = "%s/gunicorn.pid" % env.proj_path
+        #pid_path = "%s/gunicorn.pid" % env.proj_path
         #if exists(pid_path):
         #sudo("kill -HUP `cat %s`" % pid_path)
+        sudo("supervisorctl restart memcached")
         sudo("supervisorctl restart celery_%s" % env.proj_name)
         sudo("supervisorctl restart gunicorn_%s" % env.proj_name)
         #else:
@@ -682,9 +699,12 @@ def deploy():
         create()
 
     sudo("mkdir -p %s/logs" % env.venv_path)
+    sudo("mkdir -p %s/run" % env.venv_home)
     sudo("chown %s  %s/run" % (env.user, env.venv_home))
+
     for name in get_templates():
-        upload_template_and_reload(name)
+        if name != 'postgresql_conf_prod' or env.is_live_host:
+            upload_template_and_reload(name)
     with project():
         backup("last.db")
         static_dir = static()

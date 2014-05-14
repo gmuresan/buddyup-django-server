@@ -167,7 +167,7 @@ INSTALLED_APPS = (
 
 PUSH_NOTIFICATIONS_SETTINGS = {
     "GCM_API_KEY": "AIzaSyDxi_YVwUKHLl5ePxDVDCoU7h_48mboXB8",
-    "APNS_CERTIFICATE": PROJECT_ROOT + "/BuddyUpDevServerCert.pem",
+    "APNS_CERTIFICATE": PROJECT_ROOT + "deploy/apns_dev.pem",
 }
 
 # A sample logging configuration. The only tangible logging
@@ -204,7 +204,7 @@ FABRIC = {
 #    "SSH_PASS":  "", # SSH password (consider key-based authentication)
      "SSH_KEY_PATH":  "buddyupaws.pem", # Local path to SSH key file, for key-based auth
      "HOSTS": ['buddyup.im'], # List of hosts to deploy to
-     "TEST_HOST": "ec2-54-86-191-248.compute-1.amazonaws.com",
+     "TEST_HOST": " ec2-54-86-123-171.compute-1.amazonaws.com",
      "LOAD_TEST_HOST": "ec2-54-86-191-248.compute-1.amazonaws.com",
      "VIRTUALENV_HOME":  "/opt/buddyup", # Absolute remote path for virtualenvs
      "PROJECT_NAME": "buddyup", # Unique identifier for project
