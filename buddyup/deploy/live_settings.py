@@ -33,13 +33,6 @@ CACHE_MIDDLEWARE_SECONDS = 60
 
 CACHE_MIDDLEWARE_KEY_PREFIX = "%(proj_name)s"
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
-        "LOCATION": "127.0.0.1:11211",
-    }
-}
-
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 SESSION_COOKIE_SECURE = True
@@ -58,3 +51,4 @@ CACHES = {
         'LOCATION': 'unix:%(venv_home)s/run/memcached.sock',
     }
 }
+
