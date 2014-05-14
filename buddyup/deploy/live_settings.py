@@ -55,6 +55,6 @@ if not DEBUG:
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'unix:%(venv_home)/run/memcached.sock',
+        'LOCATION': 'unix:%(venv_home)s/run/memcached.sock',
     }
 }
