@@ -167,7 +167,7 @@ INSTALLED_APPS = (
 
 PUSH_NOTIFICATIONS_SETTINGS = {
     "GCM_API_KEY": "AIzaSyDxi_YVwUKHLl5ePxDVDCoU7h_48mboXB8",
-    "APNS_CERTIFICATE": PROJECT_ROOT + "deploy/apns_dev.pem",
+    "APNS_CERTIFICATE": PROJECT_ROOT + "/buddyup/deploy/apns_dev.pem",
 }
 
 # A sample logging configuration. The only tangible logging
@@ -226,6 +226,8 @@ CACHES = {
 
 AWS_ACCESS_KEY = "AKIAJKHISB4RSILV4XCA"
 AWS_SECRET_KEY = "752I5LkUnYEESgQv9QvhbXwZRd931snU5RqxJwmd"
+
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 
 try:
     from buddyup.local_settings import *

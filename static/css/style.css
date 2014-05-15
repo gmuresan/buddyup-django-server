@@ -712,8 +712,8 @@ section.intro {
     min-height: 485px;
     background-color: #f73f24;
     background-image: -webkit-gradient(linear, left top, left bottom, color-stop(25%, #f73f24), color-stop(100%, #ffffff));
-    background-image: -webkit-linear-gradient(top, #f73f24 30%, #ffffff 100%);
-    background-image: linear-gradient(to bottom, #f73f24 30%, #ffffff 100%);
+    background-image: -webkit-linear-gradient(top, #f73f24 40%, #ffffff 100%);
+    background-image: linear-gradient(to bottom, #f73f24 40%, #ffffff 100%);
     text-align: center;
 }
 
@@ -770,15 +770,22 @@ section.intro .center .app-store-button {
 @media screen and (max-width: 47.9375em) {
     section.intro .center .app-store-button {
         margin-top: 1.25em;
-        width: 12.5em;
+        width: 18.5em;
     }
 
+    section.intro .center .tagline{
+        margin-top: 2.50em;
+        color: white;
+        font-size: 1.50em;
+    }
+
+
     section.intro .center h1 {
-        font-size: 2.25em;
+        font-size: 2.50em;
     }
 
     .feature .description h1{
-        font-size: 1.25em;
+        font-size: 1.50em;
         text-align: center;
     }
 

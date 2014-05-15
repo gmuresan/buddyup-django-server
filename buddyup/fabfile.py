@@ -602,7 +602,6 @@ def create():
 def uploadSSLCerts():
     # Set up SSL certificate.
 
-    pdb.set_trace()
     conf_path = "/etc/nginx/conf"
     if not exists(conf_path):
         sudo("mkdir %s" % conf_path)
