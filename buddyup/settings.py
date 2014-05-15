@@ -227,6 +227,8 @@ CACHES = {
 AWS_ACCESS_KEY = "AKIAJKHISB4RSILV4XCA"
 AWS_SECRET_KEY = "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"
 
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+
 try:
     from buddyup.local_settings import *
 except ImportError as e:
