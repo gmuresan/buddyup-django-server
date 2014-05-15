@@ -42,7 +42,7 @@ CONN_MAX_AGE = 60
 if not DEBUG:
     PUSH_NOTIFICATIONS_SETTINGS = {
         "GCM_API_KEY": "AIzaSyDxi_YVwUKHLl5ePxDVDCoU7h_48mboXB8",
-        "APNS_CERTIFICATE": PROJECT_ROOT + "deploy/apns_prod.pem",
+        "APNS_CERTIFICATE": PROJECT_ROOT + "/buddyup/deploy/apns_prod.pem",
     }
 
 CACHES = {
