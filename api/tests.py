@@ -60,6 +60,11 @@ class FacebookRegisterTest(TestCase):
         self.assertEqual(userProfile.user.first_name, self.firstName)
         self.assertEqual(userProfile.user.last_name, self.lastName)
 
+        try:
+            group = Group.objects.get(user=userProfile, name="Favorites")
+        except Group.DoesNotExist:
+            self.assertTrue(False)
+
     def testFacebookLoginWithFriends(self):
         print("FacebookLoginWithFriends")
         client = Client()
@@ -147,7 +152,7 @@ class FacebookRegisterTest(TestCase):
 
         self.assertTrue(response['success'])
         self.assertEqual(response['statuses'][0]['statusid'], friendStatus.id)
-        self.assertEqual(response['groups'][0]['groupid'], group.id)
+        self.assertEqual(response['groups'][1]['groupid'], group.id)
         self.assertEqual(response['mystatuses'][0]['statusid'], myStatus.id)
         self.assertEqual(response['friends'][0]['userid'], friendProfile.id)
         self.assertIn('chats', response)
