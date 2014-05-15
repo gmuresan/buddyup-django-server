@@ -712,8 +712,8 @@ section.intro {
     min-height: 485px;
     background-color: #f73f24;
     background-image: -webkit-gradient(linear, left top, left bottom, color-stop(25%, #f73f24), color-stop(100%, #ffffff));
-    background-image: -webkit-linear-gradient(top, #f73f24 30%, #ffffff 100%);
-    background-image: linear-gradient(to bottom, #f73f24 30%, #ffffff 100%);
+    background-image: -webkit-linear-gradient(top, #f73f24 40%, #ffffff 100%);
+    background-image: linear-gradient(to bottom, #f73f24 40%, #ffffff 100%);
     text-align: center;
 }
 
