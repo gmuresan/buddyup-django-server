@@ -770,15 +770,15 @@ section.intro .center .app-store-button {
 @media screen and (max-width: 47.9375em) {
     section.intro .center .app-store-button {
         margin-top: 1.25em;
-        width: 12.5em;
+        width: 18.5em;
     }
 
     section.intro .center h1 {
-        font-size: 2.00em;
+        font-size: 2.25em;
     }
 
     .feature .description h1{
-        font-size: 1.25em;
+        font-size: 1.00em;
         text-align: center;
     }
 
