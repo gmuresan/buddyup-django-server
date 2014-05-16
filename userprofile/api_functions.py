@@ -98,6 +98,20 @@ def facebookLogin(request):
 
 
 @csrf_exempt
+def refreshFacebookFriends(request):
+    response = dict()
+
+    userid = request.REQUEST.get('userid', None)
+    accessToken = request.REQUEST.get('accesstoken')
+
+    try:
+        userProfile = UserProfile.getUser(userid)
+    except UserProfile.DoesNotExist:
+        return errorResponse("Invalid user id")
+
+
+
+@csrf_exempt
 def getUserDetails(request):
     response = dict()
 
