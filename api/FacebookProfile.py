@@ -39,15 +39,31 @@ class FacebookProfile:
         profile = graph.get_object("me")
         facebookId = profile['id']
 
+        if 'email' in profile:
+            username = str(profile['email'])
+        elif not 'email' in profile:
+            if 'first_name' in profile and 'last_name' in profile:
+                username = str(profile['first_name']) + str(profile['last_name'])
+            elif 'name' in profile:
+                username = str(profile['name'])
+            elif 'first_name' in profile:
+                username = str(profile['first_name'])
+            elif 'last_name' in profile:
+                username = str(profile['last_name'])
+
         newUser = False
         try:
             userProfile = UserProfile.objects.get(facebookUID=facebookId)
         except UserProfile.DoesNotExist:
             try:
-                user = User.objects.get(username=profile['email'])
+                user = User.objects.get(username=username)
             except User.DoesNotExist:
-                user = User(username=profile['email'], email=profile['email'], first_name=profile['first_name'],
+                user = User(username=username, first_name=profile['first_name'],
                             last_name=profile['last_name'],password=0)
+                if 'email' in profile:
+                    user.email = str(profile['email'])
+                else:
+                    user.email = ''
 
                 user.save()
                 newUser = True
