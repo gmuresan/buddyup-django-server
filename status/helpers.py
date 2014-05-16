@@ -91,7 +91,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
 
     statusesData = []
     for status in statuses:
-        statusData = createStatusJsonObject(status, userProfile)
+        statusData = createStatusJsonObject(status, None)
         statusesData.append(statusData)
 
     return statusesData, newSince
