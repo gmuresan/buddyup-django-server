@@ -80,6 +80,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
     friendsOfFriendsStatuses = list(friendsOfFriendsStatuses)
     invitedStatuses = list(invitedStatuses)
 
+
     if publicStatuses:
         statuses = set(inVisibleList + friendsStatuses + friendsOfFriendsStatuses + publicStatuses + invitedStatuses)
     else:
@@ -90,7 +91,7 @@ def getNewStatusesJsonResponse(userProfile, since, lat=None, lng=None, radius=No
 
     statusesData = []
     for status in statuses:
-        statusData = createStatusJsonObject(status)
+        statusData = createStatusJsonObject(status, None)
         statusesData.append(statusData)
 
     return statusesData, newSince
@@ -107,7 +108,7 @@ def getMyStatusesJsonResponse(userProfile):
     return myStatusesData
 
 
-def createStatusJsonObject(status):
+def createStatusJsonObject(status, userProfile = None):
     statusData = dict()
 
     statusData['statusid'] = status.id
@@ -132,6 +133,10 @@ def createStatusJsonObject(status):
 
     if status.location:
         statusData['location'] = createLocationJson(status.location)
+
+    if userProfile is not None:
+        if status.visibility == Status.VIS_FRIENDS_OF_FRIENDS or status.visibility == Status.VIS_PUBLIC:
+            statusData['mutualFriends'] = UserProfile.getMutualFriends(status.user_id, userProfile.id)
 
     return statusData
 

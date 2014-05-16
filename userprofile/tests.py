@@ -95,3 +95,23 @@ class CreateTestUserTests(TestCase):
 
         self.assertTrue(response['success'])
 
+# class MutualFriendsTests(TestCase):
+#     def setUp(self):
+#         user = User.objects.create(first_name="first", last_name="last", email="email", username='asfasf')
+#         self.userProfile = UserProfile.objects.create(facebookUID='1234', user=user)
+#
+#         user2 = User.objects.create(first_name="first2", last_name="last2", email="email2", username='aq1fqwq')
+#         self.userProfile2 = UserProfile.objects.create(facebookUID='12345', user=user2)
+#
+#         user3 = User.objects.create(first_name="first3", last_name="last3", email="email3", username='aq1fqwa')
+#         self.userProfile3 = UserProfile.objects.create(facebookUID='123456', user=user3)
+#
+#         self.userProfile.friends.add(self.userProfile3)
+#         self.userProfile2.friends.add(self.userProfile3)
+#
+#     def testMutalFriends(self):
+#         print("Mutal Friends Test")
+#         data = UserProfile.getMutualFriends(self.userProfile.id, self.userProfile2.id)
+#         userid = data['userd']
+#         self.assertEqual(userid, self.userProfile3.id)
+#

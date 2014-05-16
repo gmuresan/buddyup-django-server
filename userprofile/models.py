@@ -4,6 +4,7 @@ import pdb
 from buddyup import settings
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from userprofile.helpers import getUserProfileDetailsJson
 
 
 class UserProfile(models.Model):
@@ -39,6 +40,28 @@ class UserProfile(models.Model):
             cache.set(cacheKey, user)
             return user
         return user
+
+    @staticmethod
+    def getMutualFriends(userId1, userId2):
+        pass
+        # user1 = UserProfile.getUser(userId1)
+        # user2 = UserProfile.getUser(userId2)
+        # mutualFriends = UserProfile.objects.filter(friends=user1, friends=user2)
+        # if(userId1 > userId2):
+        #     key =  userId2 + '_' + userId1
+        # else:
+        #     key = userId1 + '_' + userId2
+        # mutualFriendsList = cache.get(key)
+        # if mutualFriendsList is None:
+        #     mutualFriendsList =  mutualFriends.objects.all()
+        #
+        # mutualFriendsData = list()
+        #
+        # for mutualFriend in mutualFriendsList:
+        #     mutalFriendData = getUserProfileDetailsJson(mutualFriend)
+        #     mutualFriendsData.append(mutalFriendData)
+        #
+        # return mutualFriendsData
 
 
 class FacebookUser(models.Model):
