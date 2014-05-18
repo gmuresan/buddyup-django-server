@@ -33,6 +33,8 @@ if sys.argv[0].split(os.sep)[-1] == "fab":
         print("Aborting, no hosts defined.")
         exit()
 
+env.timeout = 60
+
 env.db_pass = conf.get("DB_PASS", None)
 env.admin_pass = conf.get("ADMIN_PASS", None)
 env.user = conf.get("SSH_USER", getuser())
