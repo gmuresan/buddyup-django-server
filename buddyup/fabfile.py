@@ -527,7 +527,7 @@ def create():
     upload_template_and_reload('pgbouncer_settings')
     upload_template_and_reload('pgbouncer_users')
 
-    sudo("service pgbouncer start")
+    sudo("service pgbouncer restart")
 
     with cd(env.venv_home):
         if exists(env.proj_name):
