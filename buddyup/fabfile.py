@@ -439,12 +439,6 @@ def install():
     apt("nginx python-dev python-setuptools git-core "
         "postgresql libpq-dev memcached supervisor make g++ libbz2-dev pgbouncer")
 
-    upload_template_and_reload('pgbouncer')
-    upload_template_and_reload('pgbouncer_settings')
-    upload_template_and_reload('pgbouncer_users')
-
-    sudo("service pgbouncer start")
-
     if env.is_live_host:
         upload_template_and_reload("postgresql_conf_prod")
         sudo("service postgresql restart")
@@ -528,7 +522,13 @@ def create():
     sudo("mkdir -p %s" % env.venv_home, True)
     sudo("chown %s %s" % (env.user, env.venv_home), True)
     sudo("chown -R %s %s" % (env.user, env.python_dir), True)
-    #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
+
+    upload_template_and_reload('pgbouncer')
+    upload_template_and_reload('pgbouncer_settings')
+    upload_template_and_reload('pgbouncer_users')
+
+    sudo("service pgbouncer start")
+
     with cd(env.venv_home):
         if exists(env.proj_name):
             prompt = raw_input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
