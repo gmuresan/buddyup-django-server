@@ -34,6 +34,7 @@ urlpatterns = patterns('',
                        url(r'^registernotifications', registerForPushNotifications, {}, 'registerPushNotificationsAPI'),
 
                         url(r'^setfavnotif/$', setFavoritesNotifications, {}, 'setFavNotificationsAPI'),
+                        url(r'^refreshfbfriends/$', refreshFacebookFriends, {}, 'refreshFacebookFriendsAPI'),
 
                         url(r'^createtestuser/$', createTestUser, {}, 'createTestUserAPI'),
 
