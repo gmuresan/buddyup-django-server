@@ -43,25 +43,24 @@ class UserProfile(models.Model):
 
     @staticmethod
     def getMutualFriends(userId1, userId2):
-        pass
-        # user1 = UserProfile.getUser(userId1)
-        # user2 = UserProfile.getUser(userId2)
-        # mutualFriends = UserProfile.objects.filter(friends=user1, friends=user2)
-        # if(userId1 > userId2):
-        #     key =  userId2 + '_' + userId1
-        # else:
-        #     key = userId1 + '_' + userId2
-        # mutualFriendsList = cache.get(key)
-        # if mutualFriendsList is None:
-        #     mutualFriendsList =  mutualFriends.objects.all()
-        #
-        # mutualFriendsData = list()
-        #
-        # for mutualFriend in mutualFriendsList:
-        #     mutalFriendData = getUserProfileDetailsJson(mutualFriend)
-        #     mutualFriendsData.append(mutalFriendData)
-        #
-        # return mutualFriendsData
+        user1 = UserProfile.getUser(userId1)
+        user2 = UserProfile.getUser(userId2)
+        mutualFriends = UserProfile.objects.filter(friends=user1).filter(friends=user2)
+        if(userId1 > userId2):
+            key =  str(userId2) + '_' + str(userId1)
+        else:
+            key = str(userId1) + '_' + str(userId2)
+        mutualFriendsList = cache.get(key)
+        if mutualFriendsList is None:
+            mutualFriendsList =  mutualFriends.all()
+
+        mutualFriendsData = list()
+
+        for mutualFriend in mutualFriendsList:
+            mutualFriendData = getUserProfileDetailsJson(mutualFriend)
+            mutualFriendsData.append(mutualFriendData)
+
+        return mutualFriendsData
 
 
 class FacebookUser(models.Model):
