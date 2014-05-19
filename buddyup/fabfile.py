@@ -108,6 +108,12 @@ templates = {
     "settings": {
         "local_path": "deploy/live_settings.py",
         "remote_path": "%(proj_path)s/buddyup/local_settings.py",
+        "live_host": True,
+    },
+    "test_settings": {
+        "local_path": "deploy/test_settings.py",
+        "remote_path": "%(proj_path)s/buddyup/local_settings.py",
+        "live_host": False,
     },
     "pgbouncer_settings": {
         "local_path": "deploy/pgbouncer.ini",
@@ -291,6 +297,11 @@ def upload_template_and_reload(name):
     related service.
     """
     template = get_templates()[name]
+
+    deployToLiveHost = template['live_host']
+    if env.is_live_host != deployToLiveHost:
+        return
+    
     local_path = template["local_path"]
     remote_path = template["remote_path"]
     reload_command = template.get("reload_command")
