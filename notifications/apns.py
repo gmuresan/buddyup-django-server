@@ -80,12 +80,21 @@ def _apns_send(token, alert, badge=0, sound="chime", content_available=False, ac
     data.update(extra)
 
     # convert to json, avoiding unnecessary whitespace with separators
-    data = json.dumps({"aps": data}, separators=(",", ":"))
+    payload = json.dumps({"aps": data}, separators=(",", ":"))
 
-    if len(data) > APNS_MAX_NOTIFICATION_SIZE:
-        raise APNSDataOverflow("Notification body cannot exceed %i bytes" % (APNS_MAX_NOTIFICATION_SIZE))
+    numBytes = len(payload)
+    if numBytes > APNS_MAX_NOTIFICATION_SIZE:
+        overflow = numBytes - APNS_MAX_NOTIFICATION_SIZE + 3
+        notificationText = data['alert']
+        shortenedText = notificationText[:overflow*-1]
+        shortenedText += "..."
+        data['alert'] = shortenedText
+        payload = json.dumps({"aps": data}, separators=(",", ":"))
 
-    data = _apns_pack_message(token, data)
+        if len(payload) > APNS_MAX_NOTIFICATION_SIZE:
+            raise APNSDataOverflow("Notification body cannot exceed %i bytes" % APNS_MAX_NOTIFICATION_SIZE)
+
+    data = _apns_pack_message(token, payload)
 
     if socket:
         socket.write(data)
