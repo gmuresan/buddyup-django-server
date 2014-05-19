@@ -104,7 +104,6 @@ def getStatuses(request):
     response['success'] = True
     response['newsince'] = newSince.strftime(MICROSECOND_DATETIME_FORMAT)
     response['statuses'] = statusesData
-
     return HttpResponse(json.dumps(response))
 
 
