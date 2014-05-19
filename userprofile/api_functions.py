@@ -24,7 +24,6 @@ def facebookLogin(request):
     :param request:
     :return:
     """
-    asfasfafsaf
     response = dict()
 
     device = request.REQUEST['device']
