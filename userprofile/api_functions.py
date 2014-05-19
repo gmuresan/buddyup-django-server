@@ -112,9 +112,9 @@ def refreshFacebookFriends(request):
     facebookProfile = FacebookProfile(userProfile, accessToken)
     friends = facebookProfile.getFacebookFriends()
 
-    response['friends'] = []
+    response['users'] = []
     for friend in friends:
-        response['friends'].append(getUserProfileDetailsJson(friend))
+        response['users'].append(getUserProfileDetailsJson(friend))
 
     response['success'] = True
 

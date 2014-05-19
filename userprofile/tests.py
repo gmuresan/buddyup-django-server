@@ -196,8 +196,8 @@ class FacebookRegisterTest(TestCase):
         })
         response = loadJson(response.content)
 
-        self.assertIn('friends', response)
-        friends = response['friends']
+        self.assertIn('users', response)
+        friends = response['users']
 
         for friend in friends:
             self.assertIn('userid', friend)
