@@ -6,6 +6,7 @@ from notifications.models import PushNotifications, GCMDevice, APNSDevice
 
 DATETIME_FORMAT = '%m-%d-%Y %H:%M:%S'  # 06-01-2013 13:12
 
+
 @shared_task
 def handlePushNotification(pushNotificationId):
     try:
@@ -38,7 +39,6 @@ def handlePushNotification(pushNotificationId):
 
 
 def sendFavoritesStatusPushNotificationTask(pushNotification):
-
     status = pushNotification.status
     usersToNotify = pushNotification.receivingUsers.all()
 
@@ -55,9 +55,7 @@ def sendFavoritesStatusPushNotificationTask(pushNotification):
     return usersToNotify
 
 
-
 def sendAttendingStatusPushNotificationTask(pushNotification):
-
     try:
         status = pushNotification.status
         attendingUser = pushNotification.sendingUser
@@ -108,8 +106,7 @@ def sendStatusMessageNotificationTask(pushNotification):
 
         messageContents = str(pushNotification)
         extra = {'id': message.status.id, 'statusid': message.status.id,
-                 'date': message.date.strftime(DATETIME_FORMAT),
-                 'text': message.text, 'type': 'statuscomment', 'userid': message.user.id}
+                 'date': message.date.strftime(DATETIME_FORMAT), 'type': 'statuscomment', 'userid': message.user.id}
 
         androidDevices = GCMDevice.objects.filter(user__in=audience)
         iosDevices = APNSDevice.objects.filter(user__in=audience)
@@ -120,7 +117,6 @@ def sendStatusMessageNotificationTask(pushNotification):
         return androidResponse, iosResponse
     except User.DoesNotExist:
         return None, None
-
 
 
 def sendChatNotificationTask(pushNotification):
@@ -149,7 +145,6 @@ def sendChatNotificationTask(pushNotification):
 
 
 def sendEditStatusNotificationTask(pushNotification):
-
     try:
         status = pushNotification.status
 
@@ -172,7 +167,6 @@ def sendEditStatusNotificationTask(pushNotification):
 
 
 def sendDeleteStatusNotficationTask(pushNotification):
-
     try:
         status = pushNotification.status
         audience = pushNotification.receivingUsers.all()
