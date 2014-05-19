@@ -229,6 +229,16 @@ AWS_SECRET_KEY = "752I5LkUnYEESgQv9QvhbXwZRd931snU5RqxJwmd"
 
 CELERY_ACCEPT_CONTENT = ['pickle', 'json']
 
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_HOST_USER = 'buddyupapp'
+
+EMAIL_HOST_PASSWORD = 'TeaStain14'
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+
 try:
     from buddyup.local_settings import *
 except ImportError as e:

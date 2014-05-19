@@ -1,7 +1,9 @@
 import datetime
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
+from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
+from api.helpers import loadJson
 from notifications.models import APNSDevice, PushNotifications
 from notifications.push_notifications import DATETIME_FORMAT
 from notifications.tasks import sendStatusMessageNotificationTask
@@ -49,3 +51,26 @@ class APNSTests(TestCase):
         pushNotification.receivingUsers.add(self.friend)
 
         sendStatusMessageNotificationTask(pushNotification)
+
+
+class FavoritesNotificationsTests(TestCase):
+    def setUp(self):
+        user = User.objects.create(first_name="first", last_name="last", email="email", username='asfasf')
+        self.user = UserProfile.objects.create(facebookUID='1234', user=user)
+
+    def testSetFavNotifications(self):
+        print("Set Fav Notifs")
+        client = Client()
+
+        response = client.get(reverse('setFavNotificationsAPI'), {
+            'userid': self.user.id,
+            'value': False
+        })
+        response = loadJson(response.content)
+
+        self.assertTrue(response['success'])
+
+        user = UserProfile.objects.get(pk=self.user.id)
+        self.assertFalse(user.favoritesNotifications)
+
+
