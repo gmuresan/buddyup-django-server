@@ -135,7 +135,7 @@ def createStatusJsonObject(status, userProfile = None):
         statusData['location'] = createLocationJson(status.location)
     if userProfile is not None:
        # if status.visibility == Status.VIS_FRIENDS_OF_FRIENDS or status.visibility == Status.VIS_PUBLIC:
-        statusData['mutualFriends'] = UserProfile.getMutualFriends(status.user_id, userProfile.id)
+        statusData['mutualfriends'] = UserProfile.getMutualFriends(status.user_id, userProfile.id)
 
     return statusData
 
