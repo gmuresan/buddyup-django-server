@@ -716,7 +716,7 @@ def deploy():
         run("%s > last.commit" % last_commit)
         with update_changed_requirements():
             if env.is_live_host:
-                run("git pull origin master -f" if git else "hg pull && hg up -C")
+                run("git pull origin live -f" if git else "hg pull && hg up -C")
             else:
                 run("git pull origin testing -f" if git else "hg pull && hg up -C")
 

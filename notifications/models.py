@@ -202,7 +202,7 @@ class PushNotifications(models.Model):
 
     @staticmethod
     def getNotification(notifId):
-        cacheKey= UserProfile.getCacheId(notifId)
+        cacheKey= PushNotifications.getCacheId(notifId)
         pushNotif = cache.get(cacheKey)
         if pushNotif is None:
             pushNotif = PushNotifications.objects.get(pk=notifId)
