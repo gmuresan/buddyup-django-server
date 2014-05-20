@@ -58,8 +58,11 @@ class FacebookProfile:
             try:
                 user = User.objects.get(username=username)
             except User.DoesNotExist:
+                username = username[:30]
+                firstName = str(profile['first_name'])[:30]
+                lastName = str(profile['last_name'])[:30]
                 user = User(username=username, first_name=profile['first_name'],
-                            last_name=profile['last_name'],password=0)
+                            last_name=profile['last_name'], password=0)
                 if 'email' in profile:
                     user.email = str(profile['email'])
                 else:
