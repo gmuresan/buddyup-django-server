@@ -5,6 +5,13 @@ class UserProileAdmin(admin.ModelAdmin):
     list_display = ('user','id',)
     readonly_fields = ('id', 'user', 'friends', 'blockedFriends')
 
+
+    def send_custom_push_notification(self):
+        pass
+
+    send_custom_push_notification.short_description = _("Send Custom Push Notification")
+
+
 admin.site.register(UserProfile, UserProileAdmin)
 
 class GroupAdmin(admin.ModelAdmin):
