@@ -204,7 +204,7 @@ FABRIC = {
 #    "SSH_PASS":  "", # SSH password (consider key-based authentication)
      "SSH_KEY_PATH":  "buddyupaws.pem", # Local path to SSH key file, for key-based auth
      "HOSTS": ['buddyup.im'], # List of hosts to deploy to
-     "TEST_HOST": " ec2-54-86-174-151.compute-1.amazonaws.com",
+     "TEST_HOST": "ec2-54-86-174-151.compute-1.amazonaws.com",
      "LOAD_TEST_HOST": "ec2-54-86-191-248.compute-1.amazonaws.com",
      "VIRTUALENV_HOME":  "/opt/buddyup", # Absolute remote path for virtualenvs
      "PROJECT_NAME": "buddyup", # Unique identifier for project
@@ -228,6 +228,16 @@ AWS_ACCESS_KEY = "AKIAJKHISB4RSILV4XCA"
 AWS_SECRET_KEY = "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"
 
 CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_HOST_USER = 'buddyupapp'
+
+EMAIL_HOST_PASSWORD = 'TeaStain14'
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
 
 try:
     from buddyup.local_settings import *

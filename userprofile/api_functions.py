@@ -109,6 +109,16 @@ def refreshFacebookFriends(request):
     except UserProfile.DoesNotExist:
         return errorResponse("Invalid user id")
 
+    facebookProfile = FacebookProfile(userProfile, accessToken)
+    friends = facebookProfile.getFacebookFriends()
+
+    response['users'] = []
+    for friend in friends:
+        response['users'].append(getUserProfileDetailsJson(friend))
+
+    response['success'] = True
+
+    return HttpResponse(json.dumps(response))
 
 
 @csrf_exempt

@@ -109,8 +109,8 @@ class Location(geomodels.Model):
     point = geomodels.PointField(srid=4326, geography=True)
     objects = geomodels.GeoManager()
 
-    venue = geomodels.CharField(max_length=60, db_index=True, null=True, blank=True)
-    address = geomodels.CharField(max_length=40, db_index=True, null=True, blank=True)
+    venue = geomodels.CharField(max_length=80, db_index=True, null=True, blank=True)
+    address = geomodels.CharField(max_length=100, db_index=True, null=True, blank=True)
     city = geomodels.CharField(max_length=30, db_index=True, null=True, blank=True)
     state = geomodels.CharField(max_length=2, db_index=True, null=True, blank=True)
 

@@ -33,6 +33,8 @@ if sys.argv[0].split(os.sep)[-1] == "fab":
         print("Aborting, no hosts defined.")
         exit()
 
+env.timeout = 60
+
 env.db_pass = conf.get("DB_PASS", None)
 env.admin_pass = conf.get("ADMIN_PASS", None)
 env.user = conf.get("SSH_USER", getuser())
@@ -106,6 +108,12 @@ templates = {
     "settings": {
         "local_path": "deploy/live_settings.py",
         "remote_path": "%(proj_path)s/buddyup/local_settings.py",
+        "live_host": "true",
+    },
+    "test_settings": {
+        "local_path": "deploy/test_settings.py",
+        "remote_path": "%(proj_path)s/buddyup/local_settings.py",
+        "live_host": "false",
     },
     "pgbouncer_settings": {
         "local_path": "deploy/pgbouncer.ini",
@@ -289,6 +297,17 @@ def upload_template_and_reload(name):
     related service.
     """
     template = get_templates()[name]
+
+    if 'live_host' in template:
+        liveHostDeploy = template['live_host']
+        if liveHostDeploy == 'true':
+            deployToLiveHost = True
+        else:
+            deployToLiveHost = False
+
+        if env.is_live_host != deployToLiveHost:
+            return
+
     local_path = template["local_path"]
     remote_path = template["remote_path"]
     reload_command = template.get("reload_command")
@@ -439,12 +458,6 @@ def install():
     apt("nginx python-dev python-setuptools git-core "
         "postgresql libpq-dev memcached supervisor make g++ libbz2-dev pgbouncer")
 
-    upload_template_and_reload('pgbouncer')
-    upload_template_and_reload('pgbouncer_settings')
-    upload_template_and_reload('pgbouncer_users')
-
-    sudo("service pgbouncer start")
-
     if env.is_live_host:
         upload_template_and_reload("postgresql_conf_prod")
         sudo("service postgresql restart")
@@ -528,7 +541,13 @@ def create():
     sudo("mkdir -p %s" % env.venv_home, True)
     sudo("chown %s %s" % (env.user, env.venv_home), True)
     sudo("chown -R %s %s" % (env.user, env.python_dir), True)
-    #sudo("chown -R %s /home/ubuntu/bin" % env.user, True)
+
+    upload_template_and_reload('pgbouncer')
+    upload_template_and_reload('pgbouncer_settings')
+    upload_template_and_reload('pgbouncer_users')
+
+    sudo("service pgbouncer restart")
+
     with cd(env.venv_home):
         if exists(env.proj_name):
             prompt = raw_input("\nVirtualenv exists: %s\nWould you like to replace it? (yes/no) " % env.proj_name)
@@ -713,7 +732,11 @@ def deploy():
         last_commit = "git rev-parse HEAD" if git else "hg id -i"
         run("%s > last.commit" % last_commit)
         with update_changed_requirements():
-            run("git pull origin master -f" if git else "hg pull && hg up -C")
+            if env.is_live_host:
+                run("git pull origin live -f" if git else "hg pull && hg up -C")
+            else:
+                run("git pull origin testing -f" if git else "hg pull && hg up -C")
+
         manage("collectstatic -v 3 --noinput")
         manage("syncdb --noinput")
         manage("migrate --noinput")
